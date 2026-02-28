@@ -24,3 +24,8 @@ dependencyResolutionManagement {
 
 rootProject.name = "Local Lense"
 include(":app")
+include(":core")
+include(":core:common")
+include(":core:common-impl")
+include(":core:presentation")
+include(":core:components")
