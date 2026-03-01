@@ -1,5 +1,6 @@
 package ru.hse.edu.geoar.location
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
 import android.os.Looper
@@ -10,63 +11,65 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.stateIn
 import ru.hse.locallense.common.ResultContainer
 
-class LocationTracker(
-    scope: CoroutineScope,
-    context: Context,
-) {
+@SuppressLint("MissingPermission")
+class LocationTracker(private val context: Context) {
+
     private val appContext = context.applicationContext
     private val fusedClient = LocationServices.getFusedLocationProviderClient(appContext)
 
-    private var isTracking = false
+    private val _locationState = MutableStateFlow<ResultContainer<LocationData>>(ResultContainer.Loading)
+    val locationState: StateFlow<ResultContainer<LocationData>> = _locationState.asStateFlow()
 
-    fun isActive(): Boolean = isTracking
+    private var callback: LocationCallback? = null
 
-    val locationState: StateFlow<ResultContainer<LocationData>> = callbackFlow {
-        trySend(ResultContainer.Loading)
+    val isActive: Boolean
+        get() = callback != null
+
+    fun start() {
+        if (callback != null) return
+
+        _locationState.value = ResultContainer.Loading
 
         if (!LocationPermissionHelper.hasPermission(appContext)) {
-            trySend(ResultContainer.Error(PermissionDeniedException()))
-            close()
-            return@callbackFlow
+            _locationState.value = ResultContainer.Error(PermissionDeniedException())
+            return
         }
 
         if (!LocationPermissionHelper.isGpsEnabled(appContext)) {
-            trySend(ResultContainer.Error(GpsDisabledException()))
-            close()
-            return@callbackFlow
+            _locationState.value = ResultContainer.Error(GpsDisabledException())
+            return
         }
 
-        val callback = object : LocationCallback() {
+        callback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
-                val loc = result.lastLocation
-                if (loc != null) {
-                    trySend(ResultContainer.Done(loc.toLocationData()))
+                result.lastLocation?.let {
+                    _locationState.value = ResultContainer.Done(it.toLocationData())
                 }
             }
         }
 
         try {
-            fusedClient.requestLocationUpdates(buildRequest(), callback, Looper.getMainLooper())
+            fusedClient.requestLocationUpdates(buildRequest(), callback!!, Looper.getMainLooper())
         } catch (e: Exception) {
-            trySend(ResultContainer.Error(UnknownLocationException(e)))
-            close()
-        }
-
-        awaitClose {
-            fusedClient.removeLocationUpdates(callback)
+            _locationState.value = ResultContainer.Error(UnknownLocationException(e))
+            callback = null
         }
     }
-        .stateIn(
-            scope = scope,
-            started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000L),
-            initialValue = ResultContainer.Loading
-        )
+
+    fun stop() {
+        callback?.let {
+            fusedClient.removeLocationUpdates(it)
+            callback = null
+        }
+    }
 
     private fun buildRequest() = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1_000L)
         .setMinUpdateIntervalMillis(1_000L)
@@ -83,5 +86,4 @@ class LocationTracker(
         altitude = altitude,
         timestamp = time
     )
-
 }

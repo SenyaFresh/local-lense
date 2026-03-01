@@ -11,6 +11,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    defaultConfig {
+        minSdk = 26
+    }
 }
 
 dependencies {
@@ -20,4 +23,6 @@ dependencies {
     implementation(libs.material)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.play.services.location)
+    implementation(libs.ar.core)
+    implementation(libs.arsceneview)
 }
