@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.lifecycleScope
 import io.github.sceneview.ar.ARSceneView
+import kotlinx.coroutines.launch
 import ru.hse.edu.geoar.ArGeoEngine
 import ru.hse.edu.geoar.geo.GeoObject
 import ru.hse.edu.geoar.geo.GeoUtils
@@ -59,17 +60,19 @@ fun ArScreen(
                 )
                 arGeoEngine = engine
 
-                val viewNode = sceneView.createComposeViewNode(activity) {
-                    CounterButton()
+                activity.lifecycleScope.launch {
+                    val viewNode = sceneView.createComposeViewNode(activity) {
+                        CounterButton()
+                    }
+
+                    geoObject = GeoObject(
+                        latitude = 55.6068317,
+                        longitude = 37.41446,
+                        node = viewNode
+                    ).apply {
+                        engine.place(this)
+                    }
                 }
-
-                geoObject = GeoObject(
-                    latitude = 55.6068317,
-                    longitude = 37.41446,
-                    node = viewNode
-                )
-
-                engine.place(geoObject!!)
             }
         },
         modifier = Modifier.fillMaxSize(),

@@ -18,6 +18,8 @@ import ru.hse.locallense.common.ResultContainer
 import kotlin.math.cos
 import kotlin.math.ln
 import kotlin.math.sin
+import io.github.sceneview.math.Rotation
+import kotlin.math.atan2
 
 class ArGeoEngine(
     private val sceneView: ARSceneView,
@@ -92,11 +94,17 @@ class ArGeoEngine(
 
             val arDist = compressDistance(distance)
 
-            geoObject.node.worldPosition = Position(
-                x = cameraPose.tx() + (sin(angle) * arDist).toFloat(),
-                y = cameraPose.ty(),
-                z = cameraPose.tz() - (cos(angle) * arDist).toFloat()
-            )
+            val nodeX = cameraPose.tx() + (sin(angle) * arDist).toFloat()
+            val nodeY = cameraPose.ty()
+            val nodeZ = cameraPose.tz() - (cos(angle) * arDist).toFloat()
+
+            geoObject.node.worldPosition = Position(nodeX, nodeY, nodeZ)
+
+            val dx = cameraPose.tx() - nodeX
+            val dz = cameraPose.tz() - nodeZ
+            val yawDeg = Math.toDegrees(atan2(dx.toDouble(), dz.toDouble())).toFloat()
+            geoObject.node.worldRotation = Rotation(0f, yawDeg, 0f)
+
             geoObject.node.scale = scaleFor(distance)
         }
     }
@@ -107,9 +115,12 @@ class ArGeoEngine(
     }
 
     private fun scaleFor(meters: Double): Scale {
-        val s = (1.0 - meters / maxDistanceMeters)
-            .coerceIn(0.1, 1.0)
+        val baseScale = 0.2f
+        val factor = (1.0 - meters / maxDistanceMeters)
+            .coerceIn(0.3, 1.0)
             .toFloat()
+
+        val s = factor * baseScale
         return Scale(s, s, s)
     }
 }
