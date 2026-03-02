@@ -14,11 +14,11 @@ import ru.hse.edu.geoar.geo.GeoUtils
 import ru.hse.edu.geoar.heading.HeadingProvider
 import ru.hse.edu.geoar.location.LocationData
 import ru.hse.edu.geoar.location.LocationTracker
-import ru.hse.locallense.common.ResultContainer
 import kotlin.math.cos
 import kotlin.math.ln
 import kotlin.math.sin
 import io.github.sceneview.math.Rotation
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.atan2
 
 class ArGeoEngine(
@@ -27,11 +27,10 @@ class ArGeoEngine(
     private val headingProvider: HeadingProvider,
     private val scope: CoroutineScope
 ) {
-
     var maxDistanceMeters = 500.0
     var arRadius = 10f
 
-    private val geoObjects = mutableListOf<GeoObject>()
+    private val geoObjects = CopyOnWriteArrayList<GeoObject>()
     private var job: Job? = null
 
     fun place(obj: GeoObject) {
@@ -62,24 +61,26 @@ class ArGeoEngine(
                 headingProvider.heading
             ) { loc, heading -> loc to heading }
                 .collect { (locResult, heading) ->
-                    val loc = (locResult as? ResultContainer.Done)?.value
-                        ?: return@collect
-                    val camera = sceneView.frame?.camera
-                        ?: return@collect
+                    val loc = locResult.unwrapOrNull() ?: return@collect
+                    val camera = sceneView.frame?.camera ?: return@collect
                     if (camera.trackingState != TrackingState.TRACKING) return@collect
-                    placeAll(loc, heading, camera.pose)
+                    updatePositions(loc, heading, camera.pose)
                 }
         }
     }
 
     private fun stop() {
-        headingProvider.stop()
-        locationTracker.stop()
         job?.cancel()
         job = null
+        headingProvider.stop()
+        locationTracker.stop()
     }
 
-    private fun placeAll(location: LocationData, heading: Float, cameraPose: Pose) {
+    private fun updatePositions(
+        location: LocationData,
+        heading: Float,
+        cameraPose: Pose
+    ) {
         for (geoObject in geoObjects) {
             val distance = GeoUtils.distanceMeters(location, geoObject)
 
@@ -91,7 +92,6 @@ class ArGeoEngine(
 
             val bearing = GeoUtils.bearingDegrees(location, geoObject)
             val angle = Math.toRadians(bearing - heading.toDouble())
-
             val arDist = compressDistance(distance)
 
             val nodeX = cameraPose.tx() + (sin(angle) * arDist).toFloat()
@@ -100,8 +100,8 @@ class ArGeoEngine(
 
             geoObject.node.worldPosition = Position(nodeX, nodeY, nodeZ)
 
-            val dx = cameraPose.tx() - nodeX
-            val dz = cameraPose.tz() - nodeZ
+            val dx = nodeX - cameraPose.tx()
+            val dz = nodeZ - cameraPose.tz()
             val yawDeg = Math.toDegrees(atan2(dx.toDouble(), dz.toDouble())).toFloat()
             geoObject.node.worldRotation = Rotation(0f, yawDeg, 0f)
 
@@ -111,16 +111,21 @@ class ArGeoEngine(
 
     private fun compressDistance(meters: Double): Double {
         val t = (meters / maxDistanceMeters).coerceIn(0.0, 1.0)
-        return ln(1.0 + t * 9.0) / ln(10.0) * arRadius
+        return ln(1.0 + t * LOG_RANGE) / ln(LOG_BASE) * arRadius
     }
 
     private fun scaleFor(meters: Double): Scale {
-        val baseScale = 0.2f
         val factor = (1.0 - meters / maxDistanceMeters)
-            .coerceIn(0.3, 1.0)
+            .coerceIn(MIN_SCALE_FACTOR, 1.0)
             .toFloat()
-
-        val s = factor * baseScale
+        val s = factor * BASE_SCALE
         return Scale(s, s, s)
+    }
+
+    private companion object {
+        const val BASE_SCALE = 0.2f
+        const val MIN_SCALE_FACTOR = 0.3
+        const val LOG_BASE = 10.0
+        const val LOG_RANGE = 9.0
     }
 }

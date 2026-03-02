@@ -30,6 +30,7 @@ import ru.hse.edu.geoar.geo.GeoObject
 import ru.hse.edu.geoar.geo.GeoUtils
 import ru.hse.edu.geoar.heading.HeadingProvider
 import ru.hse.edu.geoar.location.LocationTracker
+import ru.hse.edu.locallense.compose.extensions.createComposeViewNode
 
 @Composable
 fun ArScreen(
