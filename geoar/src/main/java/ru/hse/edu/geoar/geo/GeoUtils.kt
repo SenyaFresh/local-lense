@@ -34,4 +34,11 @@ object GeoUtils {
 
         return (Math.toDegrees(atan2(y, x)) + 360) % 360
     }
+
+    fun relativeBearing(currentHeading: Float, from: LocationData, to: GeoObject): Double {
+        val bearing = bearingDegrees(from, to)
+        val diff = bearing - currentHeading
+
+        return ((diff + 540) % 360) - 180
+    }
 }

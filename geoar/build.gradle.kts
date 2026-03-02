@@ -21,8 +21,8 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    implementation(libs.kotlinx.coroutines.core)
-    implementation(libs.play.services.location)
-    implementation(libs.ar.core)
-    implementation(libs.arsceneview)
+    api(libs.kotlinx.coroutines.core)
+    api(libs.play.services.location)
+    api(libs.ar.core)
+    api(libs.arsceneview)
 }
