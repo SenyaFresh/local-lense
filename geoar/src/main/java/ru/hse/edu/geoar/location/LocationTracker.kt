@@ -9,18 +9,13 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.stateIn
 import ru.hse.locallense.common.ResultContainer
 
 @SuppressLint("MissingPermission")
-class LocationTracker(private val context: Context) {
+class LocationTracker(context: Context) {
 
     private val appContext = context.applicationContext
     private val fusedClient = LocationServices.getFusedLocationProviderClient(appContext)
