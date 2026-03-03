@@ -46,7 +46,9 @@ class LocationTracker(context: Context) {
         callback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 result.lastLocation?.let {
-                    _locationState.value = ResultContainer.Done(it.toLocationData())
+                    if (locationState.value !is ResultContainer.Done) {
+                        _locationState.value = ResultContainer.Done(it.toLocationData())
+                    }
                 }
             }
         }

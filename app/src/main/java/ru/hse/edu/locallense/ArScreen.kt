@@ -25,7 +25,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.lifecycleScope
 import io.github.sceneview.ar.ARSceneView
 import kotlinx.coroutines.launch
-import ru.hse.edu.geoar.ArGeoEngine
+import ru.hse.edu.geoar.main.ArGeoEngine
 import ru.hse.edu.geoar.geo.GeoObject
 import ru.hse.edu.geoar.geo.GeoUtils
 import ru.hse.edu.geoar.heading.HeadingProvider
