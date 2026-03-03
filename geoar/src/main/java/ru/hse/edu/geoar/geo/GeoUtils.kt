@@ -1,8 +1,11 @@
 package ru.hse.edu.geoar.geo
 
+import io.github.sceneview.math.Scale
 import ru.hse.edu.geoar.location.LocationData
+import ru.hse.edu.geoar.main.ArGeoConfig
 import kotlin.math.atan2
 import kotlin.math.cos
+import kotlin.math.ln
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -39,6 +42,19 @@ object GeoUtils {
         val bearing = bearingDegrees(from, to)
         val diff = bearing - currentHeading
 
-        return ((diff + 540) % 360) - 180
+        return (diff + 540.0).mod(360.0) - 180.0
+    }
+
+    fun compressDistance(meters: Double): Double {
+        val t = (meters / ArGeoConfig.MAX_DISTANCE_METERS).coerceIn(0.0, 1.0)
+        return ln(1.0 + t * ArGeoConfig.LOG_RANGE) /
+                ln(ArGeoConfig.LOG_BASE) * ArGeoConfig.AR_RADIUS
+    }
+
+    fun calculateScale(meters: Double): Scale {
+        val factor = (1.0 - meters / ArGeoConfig.MAX_DISTANCE_METERS)
+            .coerceIn(ArGeoConfig.MIN_SCALE_FACTOR, 1.0).toFloat()
+        val s = factor * ArGeoConfig.BASE_SCALE
+        return Scale(s, s, s)
     }
 }

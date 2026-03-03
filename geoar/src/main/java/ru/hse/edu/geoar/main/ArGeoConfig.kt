@@ -12,5 +12,5 @@ object ArGeoConfig {
     const val BASE_SCALE = 0.2f
     const val MIN_SCALE_FACTOR = 0.3
 
-    const val SHOW_WHILE_SEARCHING = true
+    const val WALL_RECHECK_INTERVAL_MS = 2_000L
 }

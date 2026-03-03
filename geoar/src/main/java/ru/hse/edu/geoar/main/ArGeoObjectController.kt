@@ -2,25 +2,38 @@ package ru.hse.edu.geoar.main
 
 import com.google.ar.core.Anchor
 import com.google.ar.core.Frame
+import com.google.ar.core.HitResult
 import com.google.ar.core.Pose
 import com.google.ar.core.TrackingState
-import com.google.ar.core.HitResult
-import io.github.sceneview.math.Scale
+import io.github.sceneview.math.Position
+import io.github.sceneview.math.Rotation
 import ru.hse.edu.geoar.geo.GeoObject
 import ru.hse.edu.geoar.geo.GeoUtils
+import ru.hse.edu.geoar.geo.GeoUtils.calculateScale
+import ru.hse.edu.geoar.geo.GeoUtils.compressDistance
 import ru.hse.edu.geoar.location.LocationData
+import ru.hse.edu.geoar.main.ArGeoConfig.WALL_RECHECK_INTERVAL_MS
 import kotlin.math.atan2
-import kotlin.math.ln
-import io.github.sceneview.math.Position
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 class ArGeoObjectController(val geoObject: GeoObject) {
-    private enum class State { SEARCHING, ATTACHED }
 
-    private var state: State = State.SEARCHING
+    private enum class State {
+        SEARCHING,
+        ATTACHED_WALL,
+        PLACED_AIR
+    }
+
+    private var state = State.SEARCHING
     private var anchor: Anchor? = null
-    private var wallNormal: FloatArray = FloatArray(3)
+    private var wallNormal = FloatArray(3)
+
+    private var fixedPosition: Position? = null
+    private var fixedRotation: Rotation? = null
+
+    private var lastWallRecheckTime = 0L
 
     fun update(
         userLocation: LocationData,
@@ -39,30 +52,37 @@ class ArGeoObjectController(val geoObject: GeoObject) {
         geoObject.node.scale = calculateScale(distance)
 
         when (state) {
-            State.ATTACHED -> updateAttachedState()
-            State.SEARCHING -> updateSearchingState(userLocation, userHeading, cameraPose, frame, wallFinder, distance)
+            State.ATTACHED_WALL -> onAttachedWall()
+
+            State.PLACED_AIR -> onPlacedAir(
+                userLocation, userHeading, cameraPose, frame, wallFinder
+            )
+
+            State.SEARCHING -> onSearching(
+                userLocation, userHeading, cameraPose, frame, wallFinder, distance
+            )
         }
     }
 
     fun detachAnchor() {
         anchor?.detach()
         anchor = null
+        fixedPosition = null
+        fixedRotation = null
         state = State.SEARCHING
     }
 
-    private fun updateAttachedState() {
-        val currentAnchor = anchor
-        if (currentAnchor == null || currentAnchor.trackingState != TrackingState.TRACKING) {
+    private fun onAttachedWall() {
+        val a = anchor
+        if (a == null || a.trackingState != TrackingState.TRACKING) {
             detachAnchor()
             return
         }
-
-        val pose = currentAnchor.pose
-        applyWallTransform(pose, wallNormal)
+        applyWallTransform(a.pose, wallNormal)
         geoObject.node.isVisible = true
     }
 
-    private fun updateSearchingState(
+    private fun onSearching(
         userLoc: LocationData,
         userHeading: Float,
         cameraPose: Pose,
@@ -70,66 +90,109 @@ class ArGeoObjectController(val geoObject: GeoObject) {
         wallFinder: ArGeoWallFinder,
         distance: Double
     ) {
-        val bearing = GeoUtils.bearingDegrees(userLoc, geoObject)
-        val angleRad = Math.toRadians(bearing - userHeading.toDouble())
-
-        val dirX = sin(angleRad).toFloat()
-        val dirZ = -cos(angleRad).toFloat()
-
+        val (dirX, dirZ) = computeWorldDirection(userLoc, userHeading, cameraPose)
         val wallHit = wallFinder.raycastWall(frame, cameraPose, dirX, dirZ)
 
         if (wallHit != null) {
             attachToWall(wallHit)
-        } else if (ArGeoConfig.SHOW_WHILE_SEARCHING) {
-            placeInAir(cameraPose, angleRad, distance)
-            geoObject.node.isVisible = true
-        } else {
-            geoObject.node.isVisible = false
+            return
         }
+
+        snapToAir(cameraPose, userLoc, userHeading, distance)
+        state = State.PLACED_AIR
+        lastWallRecheckTime = System.currentTimeMillis()
     }
 
-    private fun attachToWall(hit: HitResult) {
-        anchor = hit.createAnchor()
+    private fun onPlacedAir(
+        userLoc: LocationData,
+        userHeading: Float,
+        cameraPose: Pose,
+        frame: Frame,
+        wallFinder: ArGeoWallFinder,
+    ) {
+        val now = System.currentTimeMillis()
+        if (now - lastWallRecheckTime > WALL_RECHECK_INTERVAL_MS) {
+            lastWallRecheckTime = now
+            val (dirX, dirZ) = computeWorldDirection(userLoc, userHeading, cameraPose)
+            val wallHit = wallFinder.raycastWall(frame, cameraPose, dirX, dirZ)
+            if (wallHit != null) {
+                attachToWall(wallHit)
+                return
+            }
+        }
 
-        hit.hitPose.getTransformedAxis(1, 1f, wallNormal, 0)
-
-        state = State.ATTACHED
         geoObject.node.isVisible = true
     }
 
-    private fun placeInAir(cameraPose: Pose, angleRad: Double, realDistance: Double) {
-        val arDistance = compressDistance(realDistance)
+    private fun computeWorldDirection(
+        userLoc: LocationData,
+        userHeading: Float,
+        cameraPose: Pose
+    ): Pair<Float, Float> {
+        val bearing = GeoUtils.relativeBearing(userHeading, userLoc, geoObject)
 
-        val x = cameraPose.tx() + (sin(angleRad) * arDistance).toFloat()
+        val fwd = FloatArray(3)
+        cameraPose.getTransformedAxis(2, -1f, fwd, 0)
+
+        val right = FloatArray(3)
+        cameraPose.getTransformedAxis(0, 1f, right, 0)
+
+        val cosA = cos(bearing).toFloat()
+        val sinA = sin(bearing).toFloat()
+
+        val dx = fwd[0] * cosA + right[0] * sinA
+        val dz = fwd[2] * cosA + right[2] * sinA
+
+        val len = sqrt(dx * dx + dz * dz)
+        return if (len > 1e-4f) Pair(dx / len, dz / len) else Pair(0f, -1f)
+    }
+
+    private fun snapToAir(
+        cameraPose: Pose,
+        userLoc: LocationData,
+        userHeading: Float,
+        realDistance: Double
+    ) {
+        val (dirX, dirZ) = computeWorldDirection(userLoc, userHeading, cameraPose)
+        val arDist = compressDistance(realDistance).toFloat()
+
+        val x = cameraPose.tx() + dirX * arDist
         val y = cameraPose.ty()
-        val z = cameraPose.tz() - (cos(angleRad) * arDistance).toFloat()
+        val z = cameraPose.tz() + dirZ * arDist
 
-        geoObject.node.worldPosition = Position(x, y, z)
+        fixedPosition = Position(x, y, z)
+        fixedRotation = Rotation(
+            0f,
+            Math.toDegrees(atan2(dirX.toDouble(), dirZ.toDouble())).toFloat(),
+            0f
+        )
 
-        val yaw = Math.toDegrees(atan2((x - cameraPose.tx()).toDouble(), (z - cameraPose.tz()).toDouble())).toFloat()
-        geoObject.node.worldRotation = io.github.sceneview.math.Rotation(0f, yaw, 0f)
+        geoObject.node.worldPosition = fixedPosition!!
+        geoObject.node.worldRotation = fixedRotation!!
+        geoObject.node.isVisible = true
     }
 
-    private fun applyWallTransform(anchorPose: Pose, normal: FloatArray) {
-        val x = anchorPose.tx() + normal[0] * ArGeoConfig.WALL_OFFSET
-        val y = anchorPose.ty() + normal[1] * ArGeoConfig.WALL_OFFSET
-        val z = anchorPose.tz() + normal[2] * ArGeoConfig.WALL_OFFSET
+    private fun attachToWall(hit: HitResult) {
+        anchor?.detach()
+        anchor = hit.createAnchor()
+        hit.hitPose.getTransformedAxis(1, 1f, wallNormal, 0)
 
-        geoObject.node.worldPosition = Position(x, y, z)
-
-        val yaw = Math.toDegrees(atan2(normal[0].toDouble(), normal[2].toDouble())).toFloat()
-        geoObject.node.worldRotation = io.github.sceneview.math.Rotation(0f, yaw, 0f)
+        fixedPosition = null
+        fixedRotation = null
+        state = State.ATTACHED_WALL
+        geoObject.node.isVisible = true
     }
 
-    private fun compressDistance(meters: Double): Double {
-        val t = (meters / ArGeoConfig.MAX_DISTANCE_METERS).coerceIn(0.0, 1.0)
-        return ln(1.0 + t * ArGeoConfig.LOG_RANGE) / ln(ArGeoConfig.LOG_BASE) * ArGeoConfig.AR_RADIUS
-    }
-
-    private fun calculateScale(meters: Double): Scale {
-        val factor = (1.0 - meters / ArGeoConfig.MAX_DISTANCE_METERS)
-            .coerceIn(ArGeoConfig.MIN_SCALE_FACTOR, 1.0).toFloat()
-        val s = factor * ArGeoConfig.BASE_SCALE
-        return Scale(s, s, s)
+    private fun applyWallTransform(pose: Pose, normal: FloatArray) {
+        geoObject.node.worldPosition = Position(
+            pose.tx() + normal[0] * ArGeoConfig.WALL_OFFSET,
+            pose.ty() + normal[1] * ArGeoConfig.WALL_OFFSET,
+            pose.tz() + normal[2] * ArGeoConfig.WALL_OFFSET
+        )
+        geoObject.node.worldRotation = Rotation(
+            0f,
+            Math.toDegrees(atan2(normal[0].toDouble(), normal[2].toDouble())).toFloat(),
+            0f
+        )
     }
 }
