@@ -5,25 +5,59 @@ import com.google.ar.core.HitResult
 import com.google.ar.core.Plane
 import com.google.ar.core.Pose
 import com.google.ar.core.TrackingState
+import kotlin.math.abs
+import kotlin.math.atan
 import kotlin.math.cos
 import kotlin.math.sin
 
 class ArGeoWallFinder {
+
+    companion object {
+        private const val MAX_LATERAL_DEVIATION_M = 1.5f
+
+        private val SEARCH_ANGLES_DEG = intArrayOf(
+            0,
+            -10, 10,
+            -20, 20,
+            -30, 30,
+            -45, 45,
+            -60, 60
+        )
+    }
+
     fun raycastWall(frame: Frame, cameraPose: Pose, dirX: Float, dirZ: Float): HitResult? {
         val origin = floatArrayOf(cameraPose.tx(), cameraPose.ty(), cameraPose.tz())
 
-        findVerticalHit(frame, origin, dirX, dirZ)?.let { return it }
+        for (angleDeg in SEARCH_ANGLES_DEG) {
+            val (rx, rz) = rotateDirection(dirX, dirZ, angleDeg)
+            val hit = findVerticalHit(frame, origin, rx, rz) ?: continue
 
-        for (angleDeg in intArrayOf(-15, 15, -30, 30)) {
-            val rad = Math.toRadians(angleDeg.toDouble())
-            val c = cos(rad).toFloat()
-            val s = sin(rad).toFloat()
-            val rx = dirX * c - dirZ * s
-            val rz = dirX * s + dirZ * c
-            findVerticalHit(frame, origin, rx, rz)?.let { return it }
+            if (isAngleAcceptableForDistance(angleDeg, hit.distance)) {
+                return hit
+            }
         }
 
         return null
+    }
+
+    private fun isAngleAcceptableForDistance(angleDeg: Int, distance: Float): Boolean {
+        if (angleDeg == 0) return true
+        val maxAngleDeg = Math.toDegrees(
+            atan(MAX_LATERAL_DEVIATION_M / distance).toDouble()
+        ).toFloat()
+        return abs(angleDeg) <= maxAngleDeg
+    }
+
+    private fun rotateDirection(
+        dirX: Float,
+        dirZ: Float,
+        angleDeg: Int
+    ): Pair<Float, Float> {
+        if (angleDeg == 0) return dirX to dirZ
+        val rad = Math.toRadians(angleDeg.toDouble())
+        val c = cos(rad).toFloat()
+        val s = sin(rad).toFloat()
+        return (dirX * c - dirZ * s) to (dirX * s + dirZ * c)
     }
 
     private fun findVerticalHit(
