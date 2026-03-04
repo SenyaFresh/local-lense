@@ -1,4 +1,4 @@
-package ru.hse.edu.geoar.main
+package ru.hse.edu.geoar.ar
 
 import com.google.ar.core.Frame
 import com.google.ar.core.HitResult

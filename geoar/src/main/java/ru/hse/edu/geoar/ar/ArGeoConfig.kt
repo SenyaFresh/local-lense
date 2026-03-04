@@ -1,4 +1,4 @@
-package ru.hse.edu.geoar.main
+package ru.hse.edu.geoar.ar
 
 object ArGeoConfig {
     const val MAX_DISTANCE_METERS = 500.0

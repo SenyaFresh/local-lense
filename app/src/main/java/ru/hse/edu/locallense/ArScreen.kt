@@ -25,9 +25,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.lifecycleScope
 import io.github.sceneview.ar.ARSceneView
 import kotlinx.coroutines.launch
-import ru.hse.edu.geoar.main.ArGeoEngine
+import ru.hse.edu.geoar.ar.ArGeoEngine
+import ru.hse.edu.geoar.geo.GeoMath
 import ru.hse.edu.geoar.geo.GeoObject
-import ru.hse.edu.geoar.geo.GeoUtils
 import ru.hse.edu.geoar.heading.HeadingProvider
 import ru.hse.edu.geoar.location.LocationTracker
 import ru.hse.edu.locallense.compose.extensions.createComposeViewNode
@@ -85,10 +85,6 @@ fun ArScreen(
     Column {
         Text("Current location: latitude=${location.unwrapOrNull()?.latitude}, longitude=${location.unwrapOrNull()?.longitude}")
         Text("Target location: latitude=${geoObject?.latitude}, longitude=${geoObject?.longitude}")
-        location.unwrapOrNull()?.let {
-            Text("Distance to target: ${GeoUtils.distanceMeters(it, geoObject!!)}")
-            Text("Bearing to target: ${GeoUtils.relativeBearing(heading,it, geoObject!!)}")
-        }
     }
 }
 

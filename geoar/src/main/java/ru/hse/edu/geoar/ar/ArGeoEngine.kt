@@ -1,7 +1,5 @@
-package ru.hse.edu.geoar.main
+package ru.hse.edu.geoar.ar
 
-import com.google.ar.core.Frame
-import com.google.ar.core.Pose
 import com.google.ar.core.TrackingState
 import io.github.sceneview.ar.ARSceneView
 import kotlinx.coroutines.CoroutineScope
@@ -13,6 +11,7 @@ import ru.hse.edu.geoar.geo.GeoObject
 import ru.hse.edu.geoar.heading.HeadingProvider
 import ru.hse.edu.geoar.location.LocationData
 import ru.hse.edu.geoar.location.LocationTracker
+import ru.hse.locallense.common.ResultContainer
 import java.util.concurrent.CopyOnWriteArrayList
 
 class ArGeoEngine(
@@ -35,7 +34,7 @@ class ArGeoEngine(
 
     fun remove(geoObject: GeoObject) {
         val controller = controllers.find { it.geoObject == geoObject } ?: return
-        controller.detachAnchor()
+        controller.detach()
         sceneView.removeChildNode(controller.geoObject.node)
         controllers.remove(controller)
 
@@ -44,7 +43,7 @@ class ArGeoEngine(
 
     fun clear() {
         controllers.forEach {
-            it.detachAnchor()
+            it.detach()
             sceneView.removeChildNode(it.geoObject.node)
         }
         controllers.clear()
@@ -62,14 +61,26 @@ class ArGeoEngine(
                 headingProvider.heading
             ) { loc, heading -> loc to heading }
                 .collect { (locResult, heading) ->
-                    val frame = sceneView.frame ?: return@collect
-                    val loc = locResult.unwrapOrNull() ?: return@collect
-                    val camera = frame.camera
-
-                    if (camera.trackingState == TrackingState.TRACKING) {
-                        updateControllers(loc, heading, frame, camera.pose)
-                    }
+                    processFrame(locResult, heading)
                 }
+        }
+    }
+
+    private fun processFrame(locResult: ResultContainer<LocationData>, heading: Float) {
+        val frame = sceneView.frame ?: return
+        val loc = locResult.unwrapOrNull() ?: return
+        val camera = frame.camera
+
+        if (camera.trackingState != TrackingState.TRACKING) return
+
+        for (controller in controllers) {
+            controller.update(
+                userLocation = loc,
+                userHeading = heading,
+                frame = frame,
+                cameraPose = camera.pose,
+                wallFinder = wallFinder
+            )
         }
     }
 
@@ -78,22 +89,5 @@ class ArGeoEngine(
         job = null
         headingProvider.stop()
         locationTracker.stop()
-    }
-
-    private fun updateControllers(
-        userLocation: LocationData,
-        userHeading: Float,
-        frame: Frame,
-        cameraPose: Pose
-    ) {
-        for (controller in controllers) {
-            controller.update(
-                userLocation = userLocation,
-                userHeading = userHeading,
-                frame = frame,
-                cameraPose = cameraPose,
-                wallFinder = wallFinder
-            )
-        }
     }
 }
