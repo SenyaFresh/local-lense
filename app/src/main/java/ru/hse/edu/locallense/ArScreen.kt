@@ -1,7 +1,6 @@
 package ru.hse.edu.locallense
 
 import androidx.activity.ComponentActivity
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -11,7 +10,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -26,23 +24,14 @@ import androidx.lifecycle.lifecycleScope
 import io.github.sceneview.ar.ARSceneView
 import kotlinx.coroutines.launch
 import ru.hse.edu.geoar.ar.ArGeoEngine
-import ru.hse.edu.geoar.geo.GeoMath
 import ru.hse.edu.geoar.geo.GeoObject
-import ru.hse.edu.geoar.heading.HeadingProvider
-import ru.hse.edu.geoar.location.LocationTracker
 import ru.hse.edu.locallense.compose.extensions.createComposeViewNode
 
 @Composable
 fun ArScreen(
     activity: ComponentActivity,
-    locationTracker: LocationTracker,
-    headingProvider: HeadingProvider
 ) {
     var arGeoEngine by remember { mutableStateOf<ArGeoEngine?>(null) }
-    var geoObject by remember { mutableStateOf<GeoObject?>(null) }
-
-    val location by locationTracker.locationState.collectAsState()
-    val heading by headingProvider.heading.collectAsState()
 
     DisposableEffect(Unit) {
         onDispose {
@@ -55,9 +44,8 @@ fun ArScreen(
             ARSceneView(context).also { sceneView ->
                 val engine = ArGeoEngine(
                     sceneView = sceneView,
-                    locationTracker = locationTracker,
-                    headingProvider = headingProvider,
-                    scope = activity.lifecycleScope
+                    context = context,
+                    scope = activity.lifecycleScope,
                 )
                 arGeoEngine = engine
 
@@ -66,13 +54,12 @@ fun ArScreen(
                         CounterButton()
                     }
 
-                    geoObject = GeoObject(
+                    val geoObject = GeoObject(
                         latitude = 55.6068317,
                         longitude = 37.41446,
                         node = viewNode
-                    ).apply {
-                        engine.place(this)
-                    }
+                    )
+                    engine.place(geoObject)
                 }
             }
         },
@@ -82,10 +69,6 @@ fun ArScreen(
             sceneView.destroy()
         }
     )
-    Column {
-        Text("Current location: latitude=${location.unwrapOrNull()?.latitude}, longitude=${location.unwrapOrNull()?.longitude}")
-        Text("Target location: latitude=${geoObject?.latitude}, longitude=${geoObject?.longitude}")
-    }
 }
 
 @Composable

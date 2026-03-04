@@ -4,7 +4,6 @@ import com.google.ar.core.Pose
 import io.github.sceneview.math.Position
 import io.github.sceneview.math.Rotation
 import io.github.sceneview.node.Node
-import ru.hse.edu.geoar.geo.GeoMath
 import ru.hse.edu.geoar.location.LocationData
 
 class PlacedAirState(
@@ -15,7 +14,7 @@ class PlacedAirState(
 ) : ArPlacementState {
 
     override fun update(params: PlacementParams): ArPlacementState {
-        if (hasGpsDrifted(params.userLocation)) {
+        if (placedUserLocation != params.userLocation) {
             return SearchingState
         }
 
@@ -27,10 +26,6 @@ class PlacedAirState(
 
         return this
     }
-
-    private fun hasGpsDrifted(currentLocation: LocationData): Boolean =
-        GeoMath.distanceMeters(placedUserLocation, currentLocation) >
-                ArGeoConfig.GPS_DRIFT_THRESHOLD_METERS
 
     private fun tryRecheckWall(params: PlacementParams): AttachedWallState? {
         val now = System.currentTimeMillis()

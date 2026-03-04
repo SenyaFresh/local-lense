@@ -13,6 +13,4 @@ object ArGeoConfig {
     const val MIN_SCALE_FACTOR = 0.3
 
     const val WALL_RECHECK_INTERVAL_MS = 100L
-
-    const val GPS_DRIFT_THRESHOLD_METERS = 3.0
 }

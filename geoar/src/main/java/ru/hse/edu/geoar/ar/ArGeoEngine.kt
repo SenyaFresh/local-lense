@@ -1,5 +1,6 @@
 package ru.hse.edu.geoar.ar
 
+import android.content.Context
 import com.google.ar.core.TrackingState
 import io.github.sceneview.ar.ARSceneView
 import kotlinx.coroutines.CoroutineScope
@@ -8,18 +9,23 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import ru.hse.edu.geoar.geo.GeoObject
-import ru.hse.edu.geoar.heading.HeadingProvider
 import ru.hse.edu.geoar.location.LocationData
 import ru.hse.edu.geoar.location.LocationTracker
+import ru.hse.edu.geoar.sensors.HeadingProvider
+import ru.hse.edu.geoar.sensors.LinearAccelerationProvider
+import ru.hse.edu.geoar.sensors.StepDetectorProvider
 import ru.hse.locallense.common.ResultContainer
 import java.util.concurrent.CopyOnWriteArrayList
 
 class ArGeoEngine(
     private val sceneView: ARSceneView,
-    private val locationTracker: LocationTracker,
-    private val headingProvider: HeadingProvider,
-    private val scope: CoroutineScope
+    private val scope: CoroutineScope,
+    context: Context
 ) {
+    private val headingProvider = HeadingProvider(context)
+    private val linearAccelerationProvider = LinearAccelerationProvider(context)
+    private val stepDetectorProvider = StepDetectorProvider(context)
+    private val locationTracker = LocationTracker(headingProvider, stepDetectorProvider, linearAccelerationProvider, scope, context)
     private val controllers = CopyOnWriteArrayList<ArGeoObjectController>()
     private var job: Job? = null
 
@@ -58,7 +64,7 @@ class ArGeoEngine(
         job = scope.launch {
             combine(
                 locationTracker.locationState.filterNotNull(),
-                headingProvider.heading
+                headingProvider.smoothed
             ) { loc, heading -> loc to heading }
                 .collect { (locResult, heading) ->
                     processFrame(locResult, heading)
