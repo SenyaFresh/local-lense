@@ -132,6 +132,16 @@ class ArGeoObjectController(val geoObject: GeoObject) {
             }
         }
 
+        val pos = fixedPosition
+        if (pos != null) {
+            val dx = cameraPose.tx() - pos.x
+            val dz = cameraPose.tz() - pos.z
+            val yaw = Math.toDegrees(atan2(dx.toDouble(), dz.toDouble())).toFloat()
+            val rotation = Rotation(0f, yaw, 0f)
+            fixedRotation = rotation
+            geoObject.node.worldRotation = rotation
+        }
+
         geoObject.node.isVisible = true
     }
 
