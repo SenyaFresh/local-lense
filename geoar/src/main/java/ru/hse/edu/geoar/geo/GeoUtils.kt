@@ -26,6 +26,18 @@ object GeoUtils {
         return EARTH_RADIUS_M * 2 * atan2(sqrt(a), sqrt(1 - a))
     }
 
+    fun distanceMeters(from: LocationData, to: LocationData): Double {
+        val dLat = Math.toRadians(to.latitude - from.latitude)
+        val dLon = Math.toRadians(to.longitude - from.longitude)
+        val lat1 = Math.toRadians(from.latitude)
+        val lat2 = Math.toRadians(to.latitude)
+
+        val a = sin(dLat / 2).pow(2) +
+                cos(lat1) * cos(lat2) * sin(dLon / 2).pow(2)
+
+        return EARTH_RADIUS_M * 2 * atan2(sqrt(a), sqrt(1 - a))
+    }
+
     fun bearingDegrees(from: LocationData, to: GeoObject): Double {
         val lat1 = Math.toRadians(from.latitude)
         val lat2 = Math.toRadians(to.latitude)

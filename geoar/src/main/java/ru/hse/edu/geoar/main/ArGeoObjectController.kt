@@ -12,6 +12,7 @@ import ru.hse.edu.geoar.geo.GeoUtils
 import ru.hse.edu.geoar.geo.GeoUtils.calculateScale
 import ru.hse.edu.geoar.geo.GeoUtils.compressDistance
 import ru.hse.edu.geoar.location.LocationData
+import ru.hse.edu.geoar.main.ArGeoConfig.GPS_DRIFT_THRESHOLD_METERS
 import ru.hse.edu.geoar.main.ArGeoConfig.WALL_RECHECK_INTERVAL_MS
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -34,6 +35,7 @@ class ArGeoObjectController(val geoObject: GeoObject) {
     private var fixedRotation: Rotation? = null
 
     private var lastWallRecheckTime = 0L
+    private var placedUserLocation: LocationData? = null
 
     fun update(
         userLocation: LocationData,
@@ -55,7 +57,7 @@ class ArGeoObjectController(val geoObject: GeoObject) {
             State.ATTACHED_WALL -> onAttachedWall()
 
             State.PLACED_AIR -> onPlacedAir(
-                userLocation, userHeading, cameraPose, frame, wallFinder
+                userLocation, cameraPose, frame, wallFinder
             )
 
             State.SEARCHING -> onSearching(
@@ -69,6 +71,7 @@ class ArGeoObjectController(val geoObject: GeoObject) {
         anchor = null
         fixedPosition = null
         fixedRotation = null
+        placedUserLocation = null
         state = State.SEARCHING
     }
 
@@ -98,30 +101,50 @@ class ArGeoObjectController(val geoObject: GeoObject) {
             return
         }
 
-        snapToAir(cameraPose, userLoc, userHeading, distance)
+        snapToAir(cameraPose, dirX, dirZ, distance)
+        placedUserLocation = userLoc
         state = State.PLACED_AIR
         lastWallRecheckTime = System.currentTimeMillis()
     }
 
     private fun onPlacedAir(
         userLoc: LocationData,
-        userHeading: Float,
         cameraPose: Pose,
         frame: Frame,
-        wallFinder: ArGeoWallFinder,
+        wallFinder: ArGeoWallFinder
     ) {
+        val placedLoc = placedUserLocation
+        if (placedLoc != null && hasGpsDrifted(placedLoc, userLoc)) {
+            state = State.SEARCHING
+            return
+        }
+
         val now = System.currentTimeMillis()
         if (now - lastWallRecheckTime > WALL_RECHECK_INTERVAL_MS) {
             lastWallRecheckTime = now
-            val (dirX, dirZ) = computeWorldDirection(userLoc, userHeading, cameraPose)
-            val wallHit = wallFinder.raycastWall(frame, cameraPose, dirX, dirZ)
-            if (wallHit != null) {
-                attachToWall(wallHit)
-                return
+            val dir = directionToFixed(cameraPose)
+            if (dir != null) {
+                val wallHit = wallFinder.raycastWall(frame, cameraPose, dir.first, dir.second)
+                if (wallHit != null) {
+                    attachToWall(wallHit)
+                    return
+                }
             }
         }
 
         geoObject.node.isVisible = true
+    }
+
+    private fun directionToFixed(cameraPose: Pose): Pair<Float, Float>? {
+        val pos = fixedPosition ?: return null
+        val dx = pos.x - cameraPose.tx()
+        val dz = pos.z - cameraPose.tz()
+        val len = sqrt(dx * dx + dz * dz)
+        return if (len > 1e-4f) Pair(dx / len, dz / len) else null
+    }
+
+    private fun hasGpsDrifted(from: LocationData, to: LocationData): Boolean {
+        return GeoUtils.distanceMeters(from, to) > GPS_DRIFT_THRESHOLD_METERS
     }
 
     private fun computeWorldDirection(
@@ -149,11 +172,10 @@ class ArGeoObjectController(val geoObject: GeoObject) {
 
     private fun snapToAir(
         cameraPose: Pose,
-        userLoc: LocationData,
-        userHeading: Float,
+        dirX: Float,
+        dirZ: Float,
         realDistance: Double
     ) {
-        val (dirX, dirZ) = computeWorldDirection(userLoc, userHeading, cameraPose)
         val arDist = compressDistance(realDistance).toFloat()
 
         val x = cameraPose.tx() + dirX * arDist
@@ -179,6 +201,7 @@ class ArGeoObjectController(val geoObject: GeoObject) {
 
         fixedPosition = null
         fixedRotation = null
+        placedUserLocation = null
         state = State.ATTACHED_WALL
         geoObject.node.isVisible = true
     }
