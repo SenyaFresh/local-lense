@@ -7,8 +7,7 @@ import ru.hse.edu.geoar.ar.ArGeoConfig
 import ru.hse.edu.geoar.ar.ArMath
 
 class AttachedWallState(
-    private val anchor: Anchor,
-    private val wallNormal: FloatArray
+    private val anchor: Anchor
 ) : ArPlacementState {
 
     override fun update(params: PlacementParams): ArPlacementState {
@@ -16,11 +15,14 @@ class AttachedWallState(
             return SearchingState
         }
 
+        val normal = FloatArray(3)
+        anchor.pose.getTransformedAxis(1, 1f, normal, 0)
+
         val node = params.geoObject.node
         node.worldPosition = ArMath.wallPosition(
-            anchor.pose, wallNormal, ArGeoConfig.WALL_OFFSET
+            anchor.pose, normal, ArGeoConfig.WALL_OFFSET
         )
-        node.worldRotation = ArMath.wallRotation(wallNormal)
+        node.worldRotation = ArMath.wallRotation(normal)
         node.isVisible = true
 
         return this
@@ -34,8 +36,9 @@ class AttachedWallState(
 
         fun create(hit: HitResult, params: PlacementParams): AttachedWallState {
             val anchor = hit.createAnchor()
+
             val normal = FloatArray(3)
-            hit.hitPose.getTransformedAxis(1, 1f, normal, 0)
+            anchor.pose.getTransformedAxis(1, 1f, normal, 0)
 
             val node = params.geoObject.node
             node.worldPosition = ArMath.wallPosition(
@@ -44,7 +47,7 @@ class AttachedWallState(
             node.worldRotation = ArMath.wallRotation(normal)
             node.isVisible = true
 
-            return AttachedWallState(anchor, normal)
+            return AttachedWallState(anchor)
         }
     }
 }

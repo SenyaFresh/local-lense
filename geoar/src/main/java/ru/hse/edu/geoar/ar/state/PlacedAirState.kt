@@ -5,6 +5,7 @@ import io.github.sceneview.math.Position
 import io.github.sceneview.math.Rotation
 import io.github.sceneview.node.Node
 import ru.hse.edu.geoar.ar.ArGeoConfig
+import ru.hse.edu.geoar.ar.ArGeoWallFinder
 import ru.hse.edu.geoar.ar.ArMath
 import ru.hse.edu.geoar.ar.Direction2D
 import ru.hse.edu.geoar.location.LocationData
@@ -35,13 +36,8 @@ class PlacedAirState(
         if (now - lastWallRecheckTime <= ArGeoConfig.WALL_RECHECK_INTERVAL_MS) return null
         lastWallRecheckTime = now
 
-        val dir = ArMath.horizontalDirection(
-            params.cameraPose.tx(), params.cameraPose.tz(),
-            fixedPosition.x, fixedPosition.z
-        ) ?: return null
-
-        val wallHit = params.wallFinder.raycastWall(
-            params.frame, params.cameraPose, dir.x, dir.z
+        val wallHit = ArGeoWallFinder.searchAroundPosition(
+            params.frame, params.cameraPose, fixedPosition
         ) ?: return null
 
         return AttachedWallState.create(wallHit, params)

@@ -19,7 +19,6 @@ class ArGeoObjectController(val geoObject: GeoObject) {
         userHeading: Float,
         frame: Frame,
         cameraPose: Pose,
-        wallFinder: ArGeoWallFinder
     ) {
         Log.d("ArGeoObjectController", "pose: $cameraPose")
         val distance = GeoMath.distanceMeters(userLocation, geoObject)
@@ -37,7 +36,6 @@ class ArGeoObjectController(val geoObject: GeoObject) {
             userHeading = userHeading,
             frame = frame,
             cameraPose = cameraPose,
-            wallFinder = wallFinder,
             distance = distance
         )
 

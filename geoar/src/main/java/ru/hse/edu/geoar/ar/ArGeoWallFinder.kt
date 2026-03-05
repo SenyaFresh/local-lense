@@ -5,29 +5,71 @@ import com.google.ar.core.HitResult
 import com.google.ar.core.Plane
 import com.google.ar.core.Pose
 import com.google.ar.core.TrackingState
+import io.github.sceneview.math.Position
 import kotlin.math.abs
 import kotlin.math.atan
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.sqrt
 
-class ArGeoWallFinder {
+object ArGeoWallFinder {
 
-    companion object {
-        private const val MAX_LATERAL_DEVIATION_M = 1.5f
+    private const val MAX_LATERAL_DEVIATION_M = 1.5f
 
-        private val SEARCH_ANGLES_DEG = intArrayOf(
-            0,
-            -10, 10,
-            -20, 20,
-            -30, 30,
-            -45, 45,
-            -60, 60
-        )
+    private val SEARCH_ANGLES_DEG = intArrayOf(
+        0,
+        -10, 10,
+        -20, 20,
+        -30, 30,
+        -45, 45,
+        -60, 60,
+    )
+
+    private val RADIAL_ANGLES_DEG = floatArrayOf(
+        90f, -90f, 0f, 180f, 45f, -45f, 135f, -135f
+    )
+
+    fun searchAroundPosition(
+        frame: Frame,
+        cameraPose: Pose,
+        objectPosition: Position
+    ): HitResult? {
+        val camX = cameraPose.tx()
+        val camZ = cameraPose.tz()
+
+        val baseDirX = objectPosition.x - camX
+        val baseDirZ = objectPosition.z - camZ
+        val length = sqrt(baseDirX * baseDirX + baseDirZ * baseDirZ)
+
+        if (length == 0f) return null
+        val normX = baseDirX / length
+        val normZ = baseDirZ / length
+
+        val origin = floatArrayOf(objectPosition.x, cameraPose.ty(), objectPosition.z)
+
+        var bestHit: HitResult? = null
+        var minDistance = Float.MAX_VALUE
+
+        for (angleDeg in RADIAL_ANGLES_DEG) {
+            val rad = Math.toRadians(angleDeg.toDouble())
+            val cos = cos(rad).toFloat()
+            val sin = sin(rad).toFloat()
+
+            val dirX = normX * cos - normZ * sin
+            val dirZ = normX * sin + normZ * cos
+
+            val hit = raycastFromOrigin(frame, origin, dirX, dirZ)
+
+            if (hit != null && hit.distance < minDistance) {
+                minDistance = hit.distance
+                bestHit = hit
+            }
+        }
+
+        return bestHit
     }
 
-    fun raycastWall(frame: Frame, cameraPose: Pose, dirX: Float, dirZ: Float): HitResult? {
-        val origin = floatArrayOf(cameraPose.tx(), cameraPose.ty(), cameraPose.tz())
-
+    private fun raycastFromOrigin(frame: Frame, origin: FloatArray, dirX: Float, dirZ: Float): HitResult? {
         for (angleDeg in SEARCH_ANGLES_DEG) {
             val (rx, rz) = rotateDirection(dirX, dirZ, angleDeg)
             val hit = findVerticalHit(frame, origin, rx, rz) ?: continue
@@ -36,7 +78,6 @@ class ArGeoWallFinder {
                 return hit
             }
         }
-
         return null
     }
 

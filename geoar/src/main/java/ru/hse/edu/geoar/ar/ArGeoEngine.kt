@@ -29,8 +29,6 @@ class ArGeoEngine(
     private val controllers = CopyOnWriteArrayList<ArGeoObjectController>()
     private var job: Job? = null
 
-    private val wallFinder = ArGeoWallFinder()
-
     fun place(geoObject: GeoObject) {
         val controller = ArGeoObjectController(geoObject)
         controllers.add(controller)
@@ -85,7 +83,6 @@ class ArGeoEngine(
                 userHeading = heading,
                 frame = frame,
                 cameraPose = camera.pose,
-                wallFinder = wallFinder
             )
         }
     }

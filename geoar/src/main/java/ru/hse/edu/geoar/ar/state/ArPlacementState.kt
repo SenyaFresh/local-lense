@@ -12,7 +12,6 @@ data class PlacementParams(
     val userHeading: Float,
     val frame: Frame,
     val cameraPose: Pose,
-    val wallFinder: ArGeoWallFinder,
     val distance: Double
 )
 
