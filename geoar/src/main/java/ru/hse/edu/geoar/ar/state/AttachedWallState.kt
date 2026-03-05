@@ -4,7 +4,7 @@ import com.google.ar.core.Anchor
 import com.google.ar.core.HitResult
 import com.google.ar.core.TrackingState
 import ru.hse.edu.geoar.ar.ArGeoConfig
-import ru.hse.edu.geoar.ar.ArMath
+import ru.hse.edu.geoar.math.ArMath
 
 class AttachedWallState(
     private val anchor: Anchor
@@ -18,7 +18,7 @@ class AttachedWallState(
         val normal = FloatArray(3)
         anchor.pose.getTransformedAxis(1, 1f, normal, 0)
 
-        val node = params.geoObject.node
+        val node = params.arGeoObject.node
         node.worldPosition = ArMath.wallPosition(
             anchor.pose, normal, ArGeoConfig.WALL_OFFSET
         )
@@ -40,7 +40,7 @@ class AttachedWallState(
             val normal = FloatArray(3)
             anchor.pose.getTransformedAxis(1, 1f, normal, 0)
 
-            val node = params.geoObject.node
+            val node = params.arGeoObject.node
             node.worldPosition = ArMath.wallPosition(
                 anchor.pose, normal, ArGeoConfig.WALL_OFFSET
             )

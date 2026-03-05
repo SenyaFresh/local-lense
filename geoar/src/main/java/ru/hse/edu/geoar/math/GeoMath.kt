@@ -1,6 +1,8 @@
-package ru.hse.edu.geoar.geo
+package ru.hse.edu.geoar.math
 
+import ru.hse.edu.geoar.ar.ArGeoObject
 import ru.hse.edu.geoar.location.LocationData
+import ru.hse.edu.geoar.math.Constants.EARTH_RADIUS_M
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.pow
@@ -9,15 +11,10 @@ import kotlin.math.sqrt
 
 object GeoMath {
 
-    private const val EARTH_RADIUS_M = 6_371_000.0
-
-    fun distanceMeters(from: LocationData, to: GeoObject): Double =
+    fun distanceMeters(from: LocationData, to: ArGeoObject): Double =
         haversine(from.latitude, from.longitude, to.latitude, to.longitude)
 
-    fun distanceMeters(from: LocationData, to: LocationData): Double =
-        haversine(from.latitude, from.longitude, to.latitude, to.longitude)
-
-    fun bearingDegrees(from: LocationData, to: GeoObject): Double {
+    fun bearingDegrees(from: LocationData, to: ArGeoObject): Double {
         val lat1 = Math.toRadians(from.latitude)
         val lat2 = Math.toRadians(to.latitude)
         val dLon = Math.toRadians(to.longitude - from.longitude)
@@ -32,7 +29,7 @@ object GeoMath {
     fun relativeBearingRadians(
         headingDegrees: Float,
         from: LocationData,
-        to: GeoObject
+        to: ArGeoObject
     ): Double {
         val bearingDeg = bearingDegrees(from, to)
         val diffDeg = (bearingDeg - headingDegrees + 540.0).mod(360.0) - 180.0

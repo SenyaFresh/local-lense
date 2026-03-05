@@ -6,11 +6,11 @@ import com.google.ar.core.Pose
 import ru.hse.edu.geoar.ar.state.ArPlacementState
 import ru.hse.edu.geoar.ar.state.PlacementParams
 import ru.hse.edu.geoar.ar.state.SearchingState
-import ru.hse.edu.geoar.geo.GeoMath
-import ru.hse.edu.geoar.geo.GeoObject
+import ru.hse.edu.geoar.math.GeoMath
 import ru.hse.edu.geoar.location.LocationData
+import ru.hse.edu.geoar.math.ArMath
 
-class ArGeoObjectController(val geoObject: GeoObject) {
+class ArGeoObjectController(val arGeoObject: ArGeoObject) {
 
     private var state: ArPlacementState = SearchingState
 
@@ -21,17 +21,17 @@ class ArGeoObjectController(val geoObject: GeoObject) {
         cameraPose: Pose,
     ) {
         Log.d("ArGeoObjectController", "pose: $cameraPose")
-        val distance = GeoMath.distanceMeters(userLocation, geoObject)
+        val distance = GeoMath.distanceMeters(userLocation, arGeoObject)
 
         if (distance > ArGeoConfig.MAX_DISTANCE_METERS) {
-            geoObject.node.isVisible = false
+            arGeoObject.node.isVisible = false
             return
         }
 
-        geoObject.node.scale = ArMath.calculateScale(distance)
+        arGeoObject.node.scale = ArMath.calculateScale(distance)
 
         val params = PlacementParams(
-            geoObject = geoObject,
+            arGeoObject = arGeoObject,
             userLocation = userLocation,
             userHeading = userHeading,
             frame = frame,

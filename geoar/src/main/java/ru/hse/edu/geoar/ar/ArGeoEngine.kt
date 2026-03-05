@@ -8,7 +8,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
-import ru.hse.edu.geoar.geo.GeoObject
 import ru.hse.edu.geoar.location.LocationData
 import ru.hse.edu.geoar.location.LocationTracker
 import ru.hse.edu.geoar.sensors.HeadingProvider
@@ -29,17 +28,17 @@ class ArGeoEngine(
     private val controllers = CopyOnWriteArrayList<ArGeoObjectController>()
     private var job: Job? = null
 
-    fun place(geoObject: GeoObject) {
-        val controller = ArGeoObjectController(geoObject)
+    fun place(arGeoObject: ArGeoObject) {
+        val controller = ArGeoObjectController(arGeoObject)
         controllers.add(controller)
-        sceneView.addChildNode(geoObject.node)
+        sceneView.addChildNode(arGeoObject.node)
         ensureRunning()
     }
 
-    fun remove(geoObject: GeoObject) {
-        val controller = controllers.find { it.geoObject == geoObject } ?: return
+    fun remove(arGeoObject: ArGeoObject) {
+        val controller = controllers.find { it.arGeoObject == arGeoObject } ?: return
         controller.detach()
-        sceneView.removeChildNode(controller.geoObject.node)
+        sceneView.removeChildNode(controller.arGeoObject.node)
         controllers.remove(controller)
 
         if (controllers.isEmpty()) stop()
@@ -48,7 +47,7 @@ class ArGeoEngine(
     fun clear() {
         controllers.forEach {
             it.detach()
-            sceneView.removeChildNode(it.geoObject.node)
+            sceneView.removeChildNode(it.arGeoObject.node)
         }
         controllers.clear()
         stop()

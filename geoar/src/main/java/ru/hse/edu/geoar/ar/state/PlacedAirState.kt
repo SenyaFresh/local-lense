@@ -6,8 +6,8 @@ import io.github.sceneview.math.Rotation
 import io.github.sceneview.node.Node
 import ru.hse.edu.geoar.ar.ArGeoConfig
 import ru.hse.edu.geoar.ar.ArGeoWallFinder
-import ru.hse.edu.geoar.ar.ArMath
-import ru.hse.edu.geoar.ar.Direction2D
+import ru.hse.edu.geoar.math.ArMath
+import ru.hse.edu.geoar.math.Direction2D
 import ru.hse.edu.geoar.location.LocationData
 
 class PlacedAirState(
@@ -25,8 +25,8 @@ class PlacedAirState(
         val wallState = tryRecheckWall(params)
         if (wallState != null) return wallState
 
-        applyBillboardRotation(params.cameraPose, params.geoObject.node)
-        params.geoObject.node.isVisible = true
+        applyBillboardRotation(params.cameraPose, params.arGeoObject.node)
+        params.arGeoObject.node.isVisible = true
 
         return this
     }
@@ -61,7 +61,7 @@ class PlacedAirState(
             )
             val rotation = ArMath.yawRotation(direction.x, direction.z)
 
-            val node = params.geoObject.node
+            val node = params.arGeoObject.node
             node.worldPosition = position
             node.worldRotation = rotation
             node.isVisible = true

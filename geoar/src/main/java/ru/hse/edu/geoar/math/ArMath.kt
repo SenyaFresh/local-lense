@@ -1,14 +1,14 @@
-package ru.hse.edu.geoar.ar
+package ru.hse.edu.geoar.math
 
 import com.google.ar.core.Pose
 import io.github.sceneview.math.Position
 import io.github.sceneview.math.Rotation
 import io.github.sceneview.math.Scale
+import ru.hse.edu.geoar.ar.ArGeoConfig
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.ln
-import kotlin.math.round
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -35,16 +35,6 @@ object ArMath {
         val len = sqrt(dx * dx + dz * dz)
         return if (len > 1e-4f) Direction2D(dx / len, dz / len)
         else Direction2D(0f, -1f)
-    }
-
-    fun horizontalDirection(
-        fromX: Float, fromZ: Float,
-        toX: Float, toZ: Float
-    ): Direction2D? {
-        val dx = toX - fromX
-        val dz = toZ - fromZ
-        val len = sqrt(dx * dx + dz * dz)
-        return if (len > 1e-4f) Direction2D(dx / len, dz / len) else null
     }
 
     fun yawDegrees(dx: Float, dz: Float): Float =
