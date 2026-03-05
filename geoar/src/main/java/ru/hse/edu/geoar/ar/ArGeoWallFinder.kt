@@ -73,7 +73,7 @@ class ArGeoWallFinder {
                 trackable is Plane
                         && trackable.type == Plane.Type.VERTICAL
                         && trackable.trackingState == TrackingState.TRACKING
-                        && hit.distance <= ArGeoConfig.MAX_WALL_DETECTION_DISTANCE
+                        && hit.distance <= ArGeoConfig.AR_RADIUS
             }
     }
 }

@@ -17,7 +17,7 @@ class PlacedAirState(
 ) : ArPlacementState {
 
     override fun update(params: PlacementParams): ArPlacementState {
-        if (placedUserLocation != params.userLocation) {
+        if (placedUserLocation != params.userLocation && params.distance > ArGeoConfig.AR_RADIUS) {
             return SearchingState
         }
 

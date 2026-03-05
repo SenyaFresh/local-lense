@@ -2,7 +2,6 @@ package ru.hse.edu.geoar.ar
 
 object ArGeoConfig {
     const val MAX_DISTANCE_METERS = 500.0
-    const val MAX_WALL_DETECTION_DISTANCE = 10f
     const val WALL_OFFSET = 0.02f
 
     const val AR_RADIUS = 10f
