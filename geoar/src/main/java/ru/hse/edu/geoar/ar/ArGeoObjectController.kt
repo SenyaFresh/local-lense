@@ -4,7 +4,7 @@ import android.util.Log
 import com.google.ar.core.Frame
 import com.google.ar.core.Pose
 import ru.hse.edu.geoar.ar.state.ArPlacementState
-import ru.hse.edu.geoar.ar.state.PlacementParams
+import ru.hse.edu.geoar.ar.state.PlacementParameters
 import ru.hse.edu.geoar.ar.state.SearchingState
 import ru.hse.edu.geoar.math.GeoMath
 import ru.hse.edu.geoar.location.LocationData
@@ -30,7 +30,7 @@ class ArGeoObjectController(val arGeoObject: ArGeoObject) {
 
         arGeoObject.node.scale = ArMath.calculateScale(distance)
 
-        val params = PlacementParams(
+        val parameters = PlacementParameters(
             arGeoObject = arGeoObject,
             userLocation = userLocation,
             userHeading = userHeading,
@@ -39,7 +39,7 @@ class ArGeoObjectController(val arGeoObject: ArGeoObject) {
             distance = distance
         )
 
-        val nextState = state.update(params)
+        val nextState = state.update(parameters)
         if (nextState !== state) {
             state.release()
             state = nextState

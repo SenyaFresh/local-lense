@@ -10,7 +10,7 @@ class AttachedWallState(
     private val anchor: Anchor
 ) : ArPlacementState {
 
-    override fun update(params: PlacementParams): ArPlacementState {
+    override fun update(parameters: PlacementParameters): ArPlacementState {
         if (anchor.trackingState != TrackingState.TRACKING) {
             return SearchingState
         }
@@ -18,7 +18,7 @@ class AttachedWallState(
         val normal = FloatArray(3)
         anchor.pose.getTransformedAxis(1, 1f, normal, 0)
 
-        val node = params.arGeoObject.node
+        val node = parameters.arGeoObject.node
         node.worldPosition = ArMath.wallPosition(
             anchor.pose, normal, ArGeoConfig.WALL_OFFSET
         )
@@ -34,13 +34,13 @@ class AttachedWallState(
 
     companion object {
 
-        fun create(hit: HitResult, params: PlacementParams): AttachedWallState {
-            val anchor = hit.createAnchor()
+        fun create(hitResult: HitResult, parameters: PlacementParameters): AttachedWallState {
+            val anchor = hitResult.createAnchor()
 
             val normal = FloatArray(3)
             anchor.pose.getTransformedAxis(1, 1f, normal, 0)
 
-            val node = params.arGeoObject.node
+            val node = parameters.arGeoObject.node
             node.worldPosition = ArMath.wallPosition(
                 anchor.pose, normal, ArGeoConfig.WALL_OFFSET
             )

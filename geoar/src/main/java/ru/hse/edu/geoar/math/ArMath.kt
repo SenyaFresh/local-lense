@@ -18,41 +18,41 @@ object ArMath {
 
     fun worldDirection(
         cameraPose: Pose,
-        relativeBearingRad: Double
+        relativeBearingRadians: Double
     ): Direction2D {
-        val fwd = FloatArray(3)
-        cameraPose.getTransformedAxis(2, -1f, fwd, 0)
+        val forward = FloatArray(3)
+        cameraPose.getTransformedAxis(2, -1f, forward, 0)
 
         val right = FloatArray(3)
         cameraPose.getTransformedAxis(0, 1f, right, 0)
 
-        val cosA = cos(relativeBearingRad).toFloat()
-        val sinA = sin(relativeBearingRad).toFloat()
+        val cosAngle = cos(relativeBearingRadians).toFloat()
+        val sinAngle = sin(relativeBearingRadians).toFloat()
 
-        val dx = fwd[0] * cosA + right[0] * sinA
-        val dz = fwd[2] * cosA + right[2] * sinA
+        val deltaX = forward[0] * cosAngle + right[0] * sinAngle
+        val deltaZ = forward[2] * cosAngle + right[2] * sinAngle
 
-        val len = sqrt(dx * dx + dz * dz)
-        return if (len > 1e-4f) Direction2D(dx / len, dz / len)
+        val length = sqrt(deltaX * deltaX + deltaZ * deltaZ)
+        return if (length > 1e-4f) Direction2D(deltaX / length, deltaZ / length)
         else Direction2D(0f, -1f)
     }
 
-    fun yawDegrees(dx: Float, dz: Float): Float =
-        Math.toDegrees(atan2(dx.toDouble(), dz.toDouble())).toFloat()
+    fun yawDegrees(deltaX: Float, deltaZ: Float): Float =
+        Math.toDegrees(atan2(deltaX.toDouble(), deltaZ.toDouble())).toFloat()
 
-    fun yawRotation(dx: Float, dz: Float): Rotation =
-        Rotation(0f, yawDegrees(dx, dz), 0f)
+    fun yawRotation(deltaX: Float, deltaZ: Float): Rotation =
+        Rotation(0f, yawDegrees(deltaX, deltaZ), 0f)
 
     fun airPosition(
         cameraPose: Pose,
         direction: Direction2D,
-        realDistanceM: Double
+        realDistanceMeters: Double
     ): Position {
-        val arDist = compressDistance(realDistanceM)
+        val arDistance = compressDistance(realDistanceMeters)
         return Position(
-            cameraPose.tx() + direction.x * arDist,
+            cameraPose.tx() + direction.x * arDistance,
             floor(cameraPose.ty()),
-            cameraPose.tz() + direction.z * arDist
+            cameraPose.tz() + direction.z * arDistance
         )
     }
 

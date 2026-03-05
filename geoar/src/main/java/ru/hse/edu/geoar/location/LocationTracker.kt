@@ -21,78 +21,78 @@ import ru.hse.locallense.common.ResultContainer
 
 @SuppressLint("MissingPermission")
 class LocationTracker(
-    heading: HeadingProvider,
-    step: StepDetectorProvider,
-    acceleration: LinearAccelerationProvider,
+    headingProvider: HeadingProvider,
+    stepDetectorProvider: StepDetectorProvider,
+    linearAccelerationProvider: LinearAccelerationProvider,
     private val scope: CoroutineScope,
     context: Context
 ) {
 
-    private val appContext = context.applicationContext
-    private val fusedClient = LocationServices.getFusedLocationProviderClient(appContext)
+    private val applicationContext = context.applicationContext
+    private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(applicationContext)
 
-    private val kalman = LocationKalmanFilter()
-    private val sensorsManager = SensorsManager(heading, step, acceleration)
+    private val locationKalmanFilter = LocationKalmanFilter()
+    private val sensorsManager = SensorsManager(headingProvider, stepDetectorProvider, linearAccelerationProvider)
 
     private val _locationState =
         MutableStateFlow<ResultContainer<LocationData>>(ResultContainer.Loading)
     val locationState: StateFlow<ResultContainer<LocationData>> = _locationState.asStateFlow()
 
-    private var callback: LocationCallback? = null
+    private var locationCallback: LocationCallback? = null
 
     fun start() {
-        if (callback != null) return
+        if (locationCallback != null) return
 
         _locationState.value = ResultContainer.Loading
-        kalman.reset()
+        locationKalmanFilter.reset()
 
         sensorsManager.start(
             scope = scope,
             onStep = { azimuth ->
-                kalman.predictStep( azimuth)
+                locationKalmanFilter.predictStep(azimuth)
                 emitCurrentEstimate()
             },
-            onMovementChanged = { moving ->
-                kalman.setMoving(moving)
+            onMovementChanged = { isMoving ->
+                locationKalmanFilter.setMoving(isMoving)
             }
         )
 
-        callback = object : LocationCallback() {
+        locationCallback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
-                result.lastLocation?.let { raw ->
-                    val measurement = raw.toLocationData()
-                    val filtered = kalman.process(measurement)
-                    if (filtered != null) {
-                        _locationState.value = ResultContainer.Done(filtered)
+                result.lastLocation?.let { rawLocation ->
+                    val measurement = rawLocation.toLocationData()
+                    val filteredLocation = locationKalmanFilter.process(measurement)
+                    if (filteredLocation != null) {
+                        _locationState.value = ResultContainer.Done(filteredLocation)
                     }
                 }
             }
         }
 
         try {
-            fusedClient.requestLocationUpdates(
-                buildRequest(), callback!!, Looper.getMainLooper()
+            fusedLocationClient.requestLocationUpdates(
+                buildLocationRequest(), locationCallback!!, Looper.getMainLooper()
             )
-        } catch (e: Exception) {
-            _locationState.value = ResultContainer.Error(e)
-            callback = null
+        } catch (exception: Exception) {
+            _locationState.value = ResultContainer.Error(exception)
+            locationCallback = null
         }
     }
 
     fun stop() {
-        callback?.let {
-            fusedClient.removeLocationUpdates(it)
-            callback = null
+        locationCallback?.let { callback ->
+            fusedLocationClient.removeLocationUpdates(callback)
+            locationCallback = null
         }
         sensorsManager.stop()
     }
 
     private fun emitCurrentEstimate() {
-        val estimate = kalman.buildEstimateNow() ?: return
+        val estimate = locationKalmanFilter.buildEstimateNow() ?: return
         _locationState.value = ResultContainer.Done(estimate)
     }
 
-    private fun buildRequest() =
+    private fun buildLocationRequest() =
         LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 2_000L)
             .setMinUpdateIntervalMillis(1_000L)
             .setMinUpdateDistanceMeters(0f)

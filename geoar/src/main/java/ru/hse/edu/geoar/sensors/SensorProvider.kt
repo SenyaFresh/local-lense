@@ -13,26 +13,26 @@ abstract class SensorProvider(
     context: Context,
     private val sensorType: Int,
     protected val alpha: Float = 0.15f,
-    private val delay: Int = SensorManager.SENSOR_DELAY_FASTEST
+    private val sensorDelay: Int = SensorManager.SENSOR_DELAY_FASTEST
 ) {
 
     private val sensorManager =
         context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
-    private val _raw = MutableStateFlow(0f)
-    val raw: StateFlow<Float> = _raw.asStateFlow()
+    private val _rawValue = MutableStateFlow(0f)
+    val rawValue: StateFlow<Float> = _rawValue.asStateFlow()
 
-    private val _smoothed = MutableStateFlow(0f)
-    val smoothed: StateFlow<Float> = _smoothed.asStateFlow()
+    private val _smoothedValue = MutableStateFlow(0f)
+    val smoothedValue: StateFlow<Float> = _smoothedValue.asStateFlow()
 
     private var emaValue = 0f
 
-    private val listener = object : SensorEventListener {
+    private val sensorEventListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent) {
             val value = extract(event)
-            _raw.value = value
+            _rawValue.value = value
             emaValue = smooth(value, emaValue)
-            _smoothed.value = emaValue
+            _smoothedValue.value = emaValue
         }
 
         override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
@@ -40,15 +40,15 @@ abstract class SensorProvider(
 
     protected abstract fun extract(event: SensorEvent): Float
 
-    protected open fun smooth(new: Float, prev: Float): Float =
-        prev + alpha * (new - prev)
+    protected open fun smooth(newValue: Float, previousValue: Float): Float =
+        previousValue + alpha * (newValue - previousValue)
 
     fun start() {
         val sensor = sensorManager.getDefaultSensor(sensorType) ?: return
-        sensorManager.registerListener(listener, sensor, delay)
+        sensorManager.registerListener(sensorEventListener, sensor, sensorDelay)
     }
 
     fun stop() {
-        sensorManager.unregisterListener(listener)
+        sensorManager.unregisterListener(sensorEventListener)
     }
 }

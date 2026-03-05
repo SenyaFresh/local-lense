@@ -26,7 +26,7 @@ class ArGeoEngine(
     private val stepDetectorProvider = StepDetectorProvider(context)
     private val locationTracker = LocationTracker(headingProvider, stepDetectorProvider, linearAccelerationProvider, scope, context)
     private val controllers = CopyOnWriteArrayList<ArGeoObjectController>()
-    private var job: Job? = null
+    private var updateJob: Job? = null
 
     fun place(arGeoObject: ArGeoObject) {
         val controller = ArGeoObjectController(arGeoObject)
@@ -54,31 +54,31 @@ class ArGeoEngine(
     }
 
     private fun ensureRunning() {
-        if (job != null) return
+        if (updateJob != null) return
         headingProvider.start()
         locationTracker.start()
 
-        job = scope.launch {
+        updateJob = scope.launch {
             combine(
                 locationTracker.locationState.filterNotNull(),
-                headingProvider.smoothed
-            ) { loc, heading -> loc to heading }
-                .collect { (locResult, heading) ->
-                    processFrame(locResult, heading)
+                headingProvider.smoothedValue
+            ) { location, heading -> location to heading }
+                .collect { (locationResult, heading) ->
+                    processFrame(locationResult, heading)
                 }
         }
     }
 
-    private fun processFrame(locResult: ResultContainer<LocationData>, heading: Float) {
+    private fun processFrame(locationResult: ResultContainer<LocationData>, heading: Float) {
         val frame = sceneView.frame ?: return
-        val loc = locResult.unwrapOrNull() ?: return
+        val location = locationResult.unwrapOrNull() ?: return
         val camera = frame.camera
 
         if (camera.trackingState != TrackingState.TRACKING) return
 
         for (controller in controllers) {
             controller.update(
-                userLocation = loc,
+                userLocation = location,
                 userHeading = heading,
                 frame = frame,
                 cameraPose = camera.pose,
@@ -87,8 +87,8 @@ class ArGeoEngine(
     }
 
     private fun stop() {
-        job?.cancel()
-        job = null
+        updateJob?.cancel()
+        updateJob = null
         headingProvider.stop()
         locationTracker.stop()
     }

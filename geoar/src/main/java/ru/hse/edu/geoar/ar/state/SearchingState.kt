@@ -6,23 +6,23 @@ import ru.hse.edu.geoar.math.GeoMath
 
 object SearchingState : ArPlacementState {
 
-    override fun update(params: PlacementParams): ArPlacementState {
-        val bearingRad = GeoMath.relativeBearingRadians(
-            params.userHeading,
-            params.userLocation,
-            params.arGeoObject
+    override fun update(parameters: PlacementParameters): ArPlacementState {
+        val bearingRadians = GeoMath.relativeBearingRadians(
+            parameters.userHeading,
+            parameters.userLocation,
+            parameters.arGeoObject
         )
-        val direction = ArMath.worldDirection(params.cameraPose, bearingRad)
-        val objectPosition = ArMath.airPosition(params.cameraPose, direction, params.distance)
+        val direction = ArMath.worldDirection(parameters.cameraPose, bearingRadians)
+        val objectPosition = ArMath.airPosition(parameters.cameraPose, direction, parameters.distance)
 
-        val wallHit = ArGeoWallFinder.searchAroundPosition(
-            params.frame, params.cameraPose, objectPosition
+        val wallHitResult = ArGeoWallFinder.searchAroundPosition(
+            parameters.frame, parameters.cameraPose, objectPosition
         )
 
-        return if (wallHit != null) {
-            AttachedWallState.create(wallHit, params)
+        return if (wallHitResult != null) {
+            AttachedWallState.create(wallHitResult, parameters)
         } else {
-            PlacedAirState.create(params, direction)
+            PlacedAirState.create(parameters, direction)
         }
     }
 }

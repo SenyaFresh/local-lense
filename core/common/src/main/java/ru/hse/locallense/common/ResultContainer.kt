@@ -35,11 +35,11 @@ sealed class ResultContainer<out T> {
          * Wrap specified containers into one.
          */
         fun wrap(vararg values: ResultContainer<Any>): ResultContainer<Unit> {
-            return values.fold(Done(Unit) as ResultContainer<Unit>) { acc, value ->
+            return values.fold(Done(Unit) as ResultContainer<Unit>) { accumulator, value ->
                 when (value) {
                     is Loading -> Loading
                     is Error -> Error(value.exception)
-                    else -> acc
+                    else -> accumulator
                 }
             }
         }

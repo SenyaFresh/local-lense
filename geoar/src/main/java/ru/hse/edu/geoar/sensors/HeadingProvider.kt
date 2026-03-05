@@ -10,22 +10,22 @@ class HeadingProvider(
 ) : SensorProvider(context, Sensor.TYPE_ROTATION_VECTOR) {
 
     private val rotationMatrix = FloatArray(9)
-    private val remapped = FloatArray(9)
-    private val orientation = FloatArray(3)
+    private val remappedRotationMatrix = FloatArray(9)
+    private val orientationAngles = FloatArray(3)
 
     override fun extract(event: SensorEvent): Float {
         SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
         SensorManager.remapCoordinateSystem(
-            rotationMatrix, SensorManager.AXIS_X, SensorManager.AXIS_Z, remapped
+            rotationMatrix, SensorManager.AXIS_X, SensorManager.AXIS_Z, remappedRotationMatrix
         )
-        SensorManager.getOrientation(remapped, orientation)
-        return ((Math.toDegrees(orientation[0].toDouble()) + 360) % 360).toFloat()
+        SensorManager.getOrientation(remappedRotationMatrix, orientationAngles)
+        return ((Math.toDegrees(orientationAngles[0].toDouble()) + 360) % 360).toFloat()
     }
 
-    override fun smooth(new: Float, prev: Float): Float {
-        var delta = new - prev
-        if (delta > 180f) delta -= 360f
-        if (delta < -180f) delta += 360f
-        return (prev + alpha * delta + 360f) % 360f
+    override fun smooth(newValue: Float, previousValue: Float): Float {
+        var difference = newValue - previousValue
+        if (difference > 180f) difference -= 360f
+        if (difference < -180f) difference += 360f
+        return (previousValue + alpha * difference + 360f) % 360f
     }
 }

@@ -23,7 +23,7 @@ class StepDetectorProvider(context: Context) {
     val timeSinceLastStep: Long
         get() = System.currentTimeMillis() - lastStepTime
 
-    private val listener = object : SensorEventListener {
+    private val sensorEventListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent) {
             lastStepTime = System.currentTimeMillis()
             _steps.tryEmit(lastStepTime)
@@ -34,8 +34,8 @@ class StepDetectorProvider(context: Context) {
 
     fun start() {
         val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR) ?: return
-        sensorManager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_FASTEST)
+        sensorManager.registerListener(sensorEventListener, sensor, SensorManager.SENSOR_DELAY_FASTEST)
     }
 
-    fun stop() = sensorManager.unregisterListener(listener)
+    fun stop() = sensorManager.unregisterListener(sensorEventListener)
 }

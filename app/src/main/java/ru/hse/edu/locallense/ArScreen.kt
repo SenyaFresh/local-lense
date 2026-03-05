@@ -73,10 +73,10 @@ fun ArScreen(
 
 @Composable
 fun CounterButton() {
-    var count by remember { mutableIntStateOf(0) }
+    var clickCount by remember { mutableIntStateOf(0) }
 
     Button(
-        onClick = { count++ },
+        onClick = { clickCount++ },
         modifier = Modifier
             .width(300.dp)
             .height(120.dp),
@@ -86,7 +86,7 @@ fun CounterButton() {
         )
     ) {
         Text(
-            text = "Pressed: $count",
+            text = "Pressed: $clickCount",
             fontSize = 32.sp,
             color = Color.White
         )

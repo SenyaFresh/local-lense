@@ -2,7 +2,7 @@ package ru.hse.edu.geoar.math
 
 import ru.hse.edu.geoar.ar.ArGeoObject
 import ru.hse.edu.geoar.location.LocationData
-import ru.hse.edu.geoar.math.Constants.EARTH_RADIUS_METERS
+import ru.hse.edu.geoar.math.Dimens.EARTH_RADIUS_METERS
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.pow
@@ -15,13 +15,13 @@ object GeoMath {
         haversine(from.latitude, from.longitude, to.latitude, to.longitude)
 
     fun bearingDegrees(from: LocationData, to: ArGeoObject): Double {
-        val lat1 = Math.toRadians(from.latitude)
-        val lat2 = Math.toRadians(to.latitude)
-        val dLon = Math.toRadians(to.longitude - from.longitude)
+        val latitude1 = Math.toRadians(from.latitude)
+        val latitude2 = Math.toRadians(to.latitude)
+        val deltaLongitude = Math.toRadians(to.longitude - from.longitude)
 
-        val y = sin(dLon) * cos(lat2)
-        val x = cos(lat1) * sin(lat2) -
-                sin(lat1) * cos(lat2) * cos(dLon)
+        val y = sin(deltaLongitude) * cos(latitude2)
+        val x = cos(latitude1) * sin(latitude2) -
+                sin(latitude1) * cos(latitude2) * cos(deltaLongitude)
 
         return (Math.toDegrees(atan2(y, x)) + 360) % 360
     }
@@ -31,23 +31,23 @@ object GeoMath {
         from: LocationData,
         to: ArGeoObject
     ): Double {
-        val bearingDeg = bearingDegrees(from, to)
-        val diffDeg = (bearingDeg - headingDegrees + 540.0).mod(360.0) - 180.0
-        return Math.toRadians(diffDeg)
+        val currentBearingDegrees = bearingDegrees(from, to)
+        val differenceDegrees = (currentBearingDegrees - headingDegrees + 540.0).mod(360.0) - 180.0
+        return Math.toRadians(differenceDegrees)
     }
 
     fun haversine(
-        lat1: Double, lon1: Double,
-        lat2: Double, lon2: Double
+        latitude1: Double, longitude1: Double,
+        latitude2: Double, longitude2: Double
     ): Double {
-        val dLat = Math.toRadians(lat2 - lat1)
-        val dLon = Math.toRadians(lon2 - lon1)
-        val rLat1 = Math.toRadians(lat1)
-        val rLat2 = Math.toRadians(lat2)
+        val deltaLatitude = Math.toRadians(latitude2 - latitude1)
+        val deltaLongitude = Math.toRadians(longitude2 - longitude1)
+        val radiansLatitude1 = Math.toRadians(latitude1)
+        val radiansLatitude2 = Math.toRadians(latitude2)
 
-        val a = sin(dLat / 2).pow(2) +
-                cos(rLat1) * cos(rLat2) * sin(dLon / 2).pow(2)
+        val haversineValue = sin(deltaLatitude / 2).pow(2) +
+                cos(radiansLatitude1) * cos(radiansLatitude2) * sin(deltaLongitude / 2).pow(2)
 
-        return EARTH_RADIUS_METERS * 2 * atan2(sqrt(a), sqrt(1 - a))
+        return EARTH_RADIUS_METERS * 2 * atan2(sqrt(haversineValue), sqrt(1 - haversineValue))
     }
 }

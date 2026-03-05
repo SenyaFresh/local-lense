@@ -5,7 +5,7 @@ import com.google.ar.core.Pose
 import ru.hse.edu.geoar.ar.ArGeoObject
 import ru.hse.edu.geoar.location.LocationData
 
-data class PlacementParams(
+data class PlacementParameters(
     val arGeoObject: ArGeoObject,
     val userLocation: LocationData,
     val userHeading: Float,
@@ -15,6 +15,6 @@ data class PlacementParams(
 )
 
 sealed interface ArPlacementState {
-    fun update(params: PlacementParams): ArPlacementState
+    fun update(parameters: PlacementParameters): ArPlacementState
     fun release() {}
 }

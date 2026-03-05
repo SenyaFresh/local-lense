@@ -14,9 +14,9 @@ import kotlin.math.sqrt
 
 object ArGeoWallFinder {
 
-    private const val MAX_LATERAL_DEVIATION_M = 1.5f
+    private const val MAX_LATERAL_DEVIATION_METERS = 1.5f
 
-    private val SEARCH_ANGLES_DEG = intArrayOf(
+    private val SEARCH_ANGLES_DEGREES = intArrayOf(
         0,
         -10, 10,
         -20, 20,
@@ -25,7 +25,7 @@ object ArGeoWallFinder {
         -60, 60,
     )
 
-    private val RADIAL_ANGLES_DEG = floatArrayOf(
+    private val RADIAL_ANGLES_DEGREES = floatArrayOf(
         90f, -90f, 0f, 180f, 45f, -45f, 135f, -135f
     )
 
@@ -34,29 +34,29 @@ object ArGeoWallFinder {
         cameraPose: Pose,
         objectPosition: Position
     ): HitResult? {
-        val camX = cameraPose.tx()
-        val camZ = cameraPose.tz()
+        val cameraX = cameraPose.tx()
+        val cameraZ = cameraPose.tz()
 
-        val baseDirectionX = objectPosition.x - camX
-        val baseDirectionZ = objectPosition.z - camZ
+        val baseDirectionX = objectPosition.x - cameraX
+        val baseDirectionZ = objectPosition.z - cameraZ
         val length = sqrt(baseDirectionX * baseDirectionX + baseDirectionZ * baseDirectionZ)
 
         if (length == 0f) return null
-        val normX = baseDirectionX / length
-        val normZ = baseDirectionZ / length
+        val normalizedX = baseDirectionX / length
+        val normalizedZ = baseDirectionZ / length
 
         val origin = floatArrayOf(objectPosition.x, cameraPose.ty(), objectPosition.z)
 
         var bestHit: HitResult? = null
         var minDistance = Float.MAX_VALUE
 
-        for (angleDeg in RADIAL_ANGLES_DEG) {
-            val rad = Math.toRadians(angleDeg.toDouble())
-            val cos = cos(rad).toFloat()
-            val sin = sin(rad).toFloat()
+        for (angleDegrees in RADIAL_ANGLES_DEGREES) {
+            val radians = Math.toRadians(angleDegrees.toDouble())
+            val cosValue = cos(radians).toFloat()
+            val sinValue = sin(radians).toFloat()
 
-            val directionX = normX * cos - normZ * sin
-            val directionZ = normX * sin + normZ * cos
+            val directionX = normalizedX * cosValue - normalizedZ * sinValue
+            val directionZ = normalizedX * sinValue + normalizedZ * cosValue
 
             val hit = raycastFromOrigin(frame, origin, directionX, directionZ)
 
@@ -69,45 +69,45 @@ object ArGeoWallFinder {
         return bestHit
     }
 
-    private fun raycastFromOrigin(frame: Frame, origin: FloatArray, dirX: Float, dirZ: Float): HitResult? {
-        for (angleDeg in SEARCH_ANGLES_DEG) {
-            val (rx, rz) = rotateDirection(dirX, dirZ, angleDeg)
-            val hit = findVerticalHit(frame, origin, rx, rz) ?: continue
+    private fun raycastFromOrigin(frame: Frame, origin: FloatArray, directionX: Float, directionZ: Float): HitResult? {
+        for (angleDegrees in SEARCH_ANGLES_DEGREES) {
+            val (rotatedX, rotatedZ) = rotateDirection(directionX, directionZ, angleDegrees)
+            val hit = findVerticalHit(frame, origin, rotatedX, rotatedZ) ?: continue
 
-            if (isAngleAcceptableForDistance(angleDeg, hit.distance)) {
+            if (isAngleAcceptableForDistance(angleDegrees, hit.distance)) {
                 return hit
             }
         }
         return null
     }
 
-    private fun isAngleAcceptableForDistance(angleDeg: Int, distance: Float): Boolean {
-        if (angleDeg == 0) return true
-        val maxAngleDeg = Math.toDegrees(
-            atan(MAX_LATERAL_DEVIATION_M / distance).toDouble()
+    private fun isAngleAcceptableForDistance(angleDegrees: Int, distance: Float): Boolean {
+        if (angleDegrees == 0) return true
+        val maxAngleDegrees = Math.toDegrees(
+            atan(MAX_LATERAL_DEVIATION_METERS / distance).toDouble()
         ).toFloat()
-        return abs(angleDeg) <= maxAngleDeg
+        return abs(angleDegrees) <= maxAngleDegrees
     }
 
     private fun rotateDirection(
-        dirX: Float,
-        dirZ: Float,
-        angleDeg: Int
+        directionX: Float,
+        directionZ: Float,
+        angleDegrees: Int
     ): Pair<Float, Float> {
-        if (angleDeg == 0) return dirX to dirZ
-        val rad = Math.toRadians(angleDeg.toDouble())
-        val c = cos(rad).toFloat()
-        val s = sin(rad).toFloat()
-        return (dirX * c - dirZ * s) to (dirX * s + dirZ * c)
+        if (angleDegrees == 0) return directionX to directionZ
+        val radians = Math.toRadians(angleDegrees.toDouble())
+        val cosValue = cos(radians).toFloat()
+        val sinValue = sin(radians).toFloat()
+        return (directionX * cosValue - directionZ * sinValue) to (directionX * sinValue + directionZ * cosValue)
     }
 
     private fun findVerticalHit(
         frame: Frame,
         origin: FloatArray,
-        dx: Float,
-        dz: Float
+        deltaX: Float,
+        deltaZ: Float
     ): HitResult? {
-        val direction = floatArrayOf(dx, 0f, dz)
+        val direction = floatArrayOf(deltaX, 0f, deltaZ)
         return frame.hitTest(origin, 0, direction, 0)
             .firstOrNull { hit ->
                 val trackable = hit.trackable

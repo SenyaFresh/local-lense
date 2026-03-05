@@ -17,51 +17,51 @@ class PlacedAirState(
     private var lastWallRecheckTime: Long = System.currentTimeMillis()
 ) : ArPlacementState {
 
-    override fun update(params: PlacementParams): ArPlacementState {
-        if (placedUserLocation != params.userLocation && params.distance > ArGeoConfig.AR_RADIUS) {
+    override fun update(parameters: PlacementParameters): ArPlacementState {
+        if (placedUserLocation != parameters.userLocation && parameters.distance > ArGeoConfig.AR_RADIUS) {
             return SearchingState
         }
 
-        val wallState = tryRecheckWall(params)
+        val wallState = tryRecheckWall(parameters)
         if (wallState != null) return wallState
 
-        applyBillboardRotation(params.cameraPose, params.arGeoObject.node)
-        params.arGeoObject.node.isVisible = true
+        applyBillboardRotation(parameters.cameraPose, parameters.arGeoObject.node)
+        parameters.arGeoObject.node.isVisible = true
 
         return this
     }
 
-    private fun tryRecheckWall(params: PlacementParams): AttachedWallState? {
-        val now = System.currentTimeMillis()
-        if (now - lastWallRecheckTime <= ArGeoConfig.WALL_RECHECK_INTERVAL_MS) return null
-        lastWallRecheckTime = now
+    private fun tryRecheckWall(parameters: PlacementParameters): AttachedWallState? {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastWallRecheckTime <= ArGeoConfig.WALL_RECHECK_INTERVAL_MS) return null
+        lastWallRecheckTime = currentTime
 
-        val wallHit = ArGeoWallFinder.searchAroundPosition(
-            params.frame, params.cameraPose, fixedPosition
+        val wallHitResult = ArGeoWallFinder.searchAroundPosition(
+            parameters.frame, parameters.cameraPose, fixedPosition
         ) ?: return null
 
-        return AttachedWallState.create(wallHit, params)
+        return AttachedWallState.create(wallHitResult, parameters)
     }
 
     private fun applyBillboardRotation(cameraPose: Pose, node: Node) {
-        val dx = cameraPose.tx() - fixedPosition.x
-        val dz = cameraPose.tz() - fixedPosition.z
-        fixedRotation = ArMath.yawRotation(dx, dz)
+        val deltaX = cameraPose.tx() - fixedPosition.x
+        val deltaZ = cameraPose.tz() - fixedPosition.z
+        fixedRotation = ArMath.yawRotation(deltaX, deltaZ)
         node.worldRotation = fixedRotation
     }
 
     companion object {
 
         fun create(
-            params: PlacementParams,
+            parameters: PlacementParameters,
             direction: Direction2D
         ): PlacedAirState {
             val position = ArMath.airPosition(
-                params.cameraPose, direction, params.distance
+                parameters.cameraPose, direction, parameters.distance
             )
             val rotation = ArMath.yawRotation(direction.x, direction.z)
 
-            val node = params.arGeoObject.node
+            val node = parameters.arGeoObject.node
             node.worldPosition = position
             node.worldRotation = rotation
             node.isVisible = true
@@ -69,7 +69,7 @@ class PlacedAirState(
             return PlacedAirState(
                 fixedPosition = position,
                 fixedRotation = rotation,
-                placedUserLocation = params.userLocation
+                placedUserLocation = parameters.userLocation
             )
         }
     }

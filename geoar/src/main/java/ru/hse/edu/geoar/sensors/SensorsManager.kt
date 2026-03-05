@@ -5,36 +5,36 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class SensorsManager(
-    private val heading: HeadingProvider,
-    private val steps: StepDetectorProvider,
-    private val acceleration: LinearAccelerationProvider
+    private val headingProvider: HeadingProvider,
+    private val stepDetectorProvider: StepDetectorProvider,
+    private val linearAccelerationProvider: LinearAccelerationProvider
 ) {
 
     val isMoving: Boolean
-        get() = steps.timeSinceLastStep < 3_000 ||
-                acceleration.raw.value > 0.8f
+        get() = stepDetectorProvider.timeSinceLastStep < 3_000 ||
+                linearAccelerationProvider.rawValue.value > 0.8f
 
     private var wasMoving = false
-    private var job: Job? = null
+    private var sensingJob: Job? = null
 
     fun start(
         scope: CoroutineScope,
         onStep: (azimuthDegrees: Double) -> Unit,
         onMovementChanged: (isMoving: Boolean) -> Unit = {}
     ) {
-        heading.start()
-        steps.start()
-        acceleration.start()
+        headingProvider.start()
+        stepDetectorProvider.start()
+        linearAccelerationProvider.start()
 
-        job = scope.launch {
+        sensingJob = scope.launch {
             launch {
-                steps.steps.collect {
-                    onStep(heading.raw.value.toDouble())
+                stepDetectorProvider.steps.collect {
+                    onStep(headingProvider.rawValue.value.toDouble())
                     checkMovement(onMovementChanged)
                 }
             }
             launch {
-                acceleration.raw.collect {
+                linearAccelerationProvider.rawValue.collect {
                     checkMovement(onMovementChanged)
                 }
             }
@@ -42,18 +42,18 @@ class SensorsManager(
     }
 
     fun stop() {
-        job?.cancel()
-        job = null
-        heading.stop()
-        steps.stop()
-        acceleration.stop()
+        sensingJob?.cancel()
+        sensingJob = null
+        headingProvider.stop()
+        stepDetectorProvider.stop()
+        linearAccelerationProvider.stop()
     }
 
-    private fun checkMovement(callback: (Boolean) -> Unit) {
-        val moving = isMoving
-        if (moving != wasMoving) {
-            wasMoving = moving
-            callback(moving)
+    private fun checkMovement(callback: (isMoving: Boolean) -> Unit) {
+        val isCurrentlyMoving = isMoving
+        if (isCurrentlyMoving != wasMoving) {
+            wasMoving = isCurrentlyMoving
+            callback(isCurrentlyMoving)
         }
     }
 }
