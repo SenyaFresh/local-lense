@@ -1,8 +1,10 @@
-package ru.hse.edu.geoar.ar
+package ru.hse.edu.geoar.ar.state
 
 import com.google.ar.core.Anchor
 import com.google.ar.core.HitResult
 import com.google.ar.core.TrackingState
+import ru.hse.edu.geoar.ar.ArGeoConfig
+import ru.hse.edu.geoar.ar.ArMath
 
 class AttachedWallState(
     private val anchor: Anchor,

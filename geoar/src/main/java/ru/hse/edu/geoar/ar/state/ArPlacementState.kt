@@ -1,7 +1,8 @@
-package ru.hse.edu.geoar.ar
+package ru.hse.edu.geoar.ar.state
 
 import com.google.ar.core.Frame
 import com.google.ar.core.Pose
+import ru.hse.edu.geoar.ar.ArGeoWallFinder
 import ru.hse.edu.geoar.geo.GeoObject
 import ru.hse.edu.geoar.location.LocationData
 

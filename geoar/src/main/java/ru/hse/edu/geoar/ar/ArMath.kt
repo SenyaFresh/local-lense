@@ -6,7 +6,9 @@ import io.github.sceneview.math.Rotation
 import io.github.sceneview.math.Scale
 import kotlin.math.atan2
 import kotlin.math.cos
+import kotlin.math.floor
 import kotlin.math.ln
+import kotlin.math.round
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -59,7 +61,7 @@ object ArMath {
         val arDist = compressDistance(realDistanceM)
         return Position(
             cameraPose.tx() + direction.x * arDist,
-            cameraPose.ty(),
+            floor(cameraPose.ty()),
             cameraPose.tz() + direction.z * arDist
         )
     }
@@ -70,7 +72,7 @@ object ArMath {
         offset: Float
     ): Position = Position(
         anchorPose.tx() + normal[0] * offset,
-        anchorPose.ty() + normal[1] * offset,
+        floor(anchorPose.ty()),
         anchorPose.tz() + normal[2] * offset
     )
 

@@ -1,5 +1,6 @@
-package ru.hse.edu.geoar.ar
+package ru.hse.edu.geoar.ar.state
 
+import ru.hse.edu.geoar.ar.ArMath
 import ru.hse.edu.geoar.geo.GeoMath
 
 object SearchingState : ArPlacementState {

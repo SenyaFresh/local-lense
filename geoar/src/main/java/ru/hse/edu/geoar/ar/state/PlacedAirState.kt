@@ -1,9 +1,12 @@
-package ru.hse.edu.geoar.ar
+package ru.hse.edu.geoar.ar.state
 
 import com.google.ar.core.Pose
 import io.github.sceneview.math.Position
 import io.github.sceneview.math.Rotation
 import io.github.sceneview.node.Node
+import ru.hse.edu.geoar.ar.ArGeoConfig
+import ru.hse.edu.geoar.ar.ArMath
+import ru.hse.edu.geoar.ar.Direction2D
 import ru.hse.edu.geoar.location.LocationData
 
 class PlacedAirState(
