@@ -2,7 +2,7 @@ package ru.hse.edu.geoar.math
 
 import ru.hse.edu.geoar.ar.ArGeoObject
 import ru.hse.edu.geoar.location.LocationData
-import ru.hse.edu.geoar.math.Constants.EARTH_RADIUS_M
+import ru.hse.edu.geoar.math.Constants.EARTH_RADIUS_METERS
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.pow
@@ -48,6 +48,6 @@ object GeoMath {
         val a = sin(dLat / 2).pow(2) +
                 cos(rLat1) * cos(rLat2) * sin(dLon / 2).pow(2)
 
-        return EARTH_RADIUS_M * 2 * atan2(sqrt(a), sqrt(1 - a))
+        return EARTH_RADIUS_METERS * 2 * atan2(sqrt(a), sqrt(1 - a))
     }
 }

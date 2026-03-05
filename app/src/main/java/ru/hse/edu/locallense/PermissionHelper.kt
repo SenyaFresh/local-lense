@@ -1,4 +1,4 @@
-package ru.hse.edu.geoar.location
+package ru.hse.edu.locallense
 
 import android.Manifest
 import android.content.Context
@@ -6,9 +6,9 @@ import android.content.pm.PackageManager
 import android.location.LocationManager
 import androidx.core.content.ContextCompat
 
-object LocationPermissionHelper {
+object PermissionHelper {
 
-    fun hasPermission(context: Context): Boolean {
+    fun hasLocationPermission(context: Context): Boolean {
         return hasFine(context) && hasCoarse(context)
     }
 
@@ -29,7 +29,7 @@ object LocationPermissionHelper {
         return manager.isProviderEnabled(LocationManager.GPS_PROVIDER)
     }
 
-    val requiredPermissions: Array<String> = arrayOf(
+    val locationPermissions: Array<String> = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION
     )

@@ -46,19 +46,10 @@ class LocationTracker(
         _locationState.value = ResultContainer.Loading
         kalman.reset()
 
-        if (!LocationPermissionHelper.hasPermission(appContext)) {
-            _locationState.value = ResultContainer.Error(PermissionDeniedException())
-            return
-        }
-        if (!LocationPermissionHelper.isGpsEnabled(appContext)) {
-            _locationState.value = ResultContainer.Error(GpsDisabledException())
-            return
-        }
-
         sensorsManager.start(
             scope = scope,
             onStep = { azimuth ->
-                kalman.predictStep(sensorsManager.stepLengthMeters, azimuth)
+                kalman.predictStep( azimuth)
                 emitCurrentEstimate()
             },
             onMovementChanged = { moving ->
@@ -83,7 +74,7 @@ class LocationTracker(
                 buildRequest(), callback!!, Looper.getMainLooper()
             )
         } catch (e: Exception) {
-            _locationState.value = ResultContainer.Error(UnknownLocationException(e))
+            _locationState.value = ResultContainer.Error(e)
             callback = null
         }
     }

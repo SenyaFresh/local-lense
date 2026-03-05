@@ -7,8 +7,7 @@ import kotlin.math.sqrt
 
 class LinearAccelerationProvider(
     context: Context,
-    alpha: Float = 0.2f
-) : SensorProvider(context, Sensor.TYPE_LINEAR_ACCELERATION, alpha) {
+) : SensorProvider(context, Sensor.TYPE_LINEAR_ACCELERATION) {
 
     override fun extract(event: SensorEvent): Float = sqrt(
         event.values[0] * event.values[0] +

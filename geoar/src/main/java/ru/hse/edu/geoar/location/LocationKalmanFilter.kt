@@ -1,5 +1,6 @@
 package ru.hse.edu.geoar.location
 
+import ru.hse.edu.geoar.math.Constants.STEP_LENGTH_METERS
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
@@ -27,13 +28,13 @@ class LocationKalmanFilter(
     private var lastUpdateTimestampMs = 0L
     private var isMoving = false
 
-    fun predictStep(stepLengthMeters: Double, azimuthDegrees: Double) {
+    fun predictStep(azimuthDegrees: Double) {
         if (!isInitialized) return
 
         val azimuthRadians = Math.toRadians(azimuthDegrees)
 
-        val stepEastMeters = stepLengthMeters * sin(azimuthRadians)
-        val stepNorthMeters = stepLengthMeters * cos(azimuthRadians)
+        val stepEastMeters = STEP_LENGTH_METERS * sin(azimuthRadians)
+        val stepNorthMeters = STEP_LENGTH_METERS * cos(azimuthRadians)
 
         estimatedEastMeters += stepEastMeters
         estimatedNorthMeters += stepNorthMeters

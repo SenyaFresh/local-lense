@@ -10,9 +10,6 @@ class SensorsManager(
     private val acceleration: LinearAccelerationProvider
 ) {
 
-    var stepLengthMeters = 0.72
-        private set
-
     val isMoving: Boolean
         get() = steps.timeSinceLastStep < 3_000 ||
                 acceleration.raw.value > 0.8f

@@ -37,13 +37,13 @@ object ArGeoWallFinder {
         val camX = cameraPose.tx()
         val camZ = cameraPose.tz()
 
-        val baseDirX = objectPosition.x - camX
-        val baseDirZ = objectPosition.z - camZ
-        val length = sqrt(baseDirX * baseDirX + baseDirZ * baseDirZ)
+        val baseDirectionX = objectPosition.x - camX
+        val baseDirectionZ = objectPosition.z - camZ
+        val length = sqrt(baseDirectionX * baseDirectionX + baseDirectionZ * baseDirectionZ)
 
         if (length == 0f) return null
-        val normX = baseDirX / length
-        val normZ = baseDirZ / length
+        val normX = baseDirectionX / length
+        val normZ = baseDirectionZ / length
 
         val origin = floatArrayOf(objectPosition.x, cameraPose.ty(), objectPosition.z)
 
@@ -55,10 +55,10 @@ object ArGeoWallFinder {
             val cos = cos(rad).toFloat()
             val sin = sin(rad).toFloat()
 
-            val dirX = normX * cos - normZ * sin
-            val dirZ = normX * sin + normZ * cos
+            val directionX = normX * cos - normZ * sin
+            val directionZ = normX * sin + normZ * cos
 
-            val hit = raycastFromOrigin(frame, origin, dirX, dirZ)
+            val hit = raycastFromOrigin(frame, origin, directionX, directionZ)
 
             if (hit != null && hit.distance < minDistance) {
                 minDistance = hit.distance
