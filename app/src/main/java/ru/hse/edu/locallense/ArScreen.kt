@@ -57,7 +57,8 @@ fun ArScreen(
                     val arGeoObject = ArGeoObject(
                         latitude = 55.6068317,
                         longitude = 37.41446,
-                        node = viewNode
+                        node = viewNode,
+                        isWallAnchor = true,
                     )
                     engine.place(arGeoObject)
                 }

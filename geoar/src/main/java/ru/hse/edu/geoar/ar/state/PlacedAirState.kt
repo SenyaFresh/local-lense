@@ -6,9 +6,9 @@ import io.github.sceneview.math.Rotation
 import io.github.sceneview.node.Node
 import ru.hse.edu.geoar.ar.ArGeoConfig
 import ru.hse.edu.geoar.ar.ArGeoWallFinder
+import ru.hse.edu.geoar.location.LocationData
 import ru.hse.edu.geoar.math.ArMath
 import ru.hse.edu.geoar.math.Direction2D
-import ru.hse.edu.geoar.location.LocationData
 
 class PlacedAirState(
     private val fixedPosition: Position,
@@ -22,8 +22,10 @@ class PlacedAirState(
             return SearchingState
         }
 
-        val wallState = tryRecheckWall(parameters)
-        if (wallState != null) return wallState
+        if (parameters.arGeoObject.isWallAnchor) {
+            val wallState = tryRecheckWall(parameters)
+            if (wallState != null) return wallState
+        }
 
         applyBillboardRotation(parameters.cameraPose, parameters.arGeoObject.node)
         parameters.arGeoObject.node.isVisible = true

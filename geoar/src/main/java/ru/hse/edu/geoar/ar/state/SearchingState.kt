@@ -13,8 +13,12 @@ object SearchingState : ArPlacementState {
             parameters.arGeoObject
         )
         val direction = ArMath.worldDirection(parameters.cameraPose, bearingRadians)
-        val objectPosition = ArMath.airPosition(parameters.cameraPose, direction, parameters.distance)
 
+        if (!parameters.arGeoObject.isWallAnchor) {
+            return PlacedAirState.create(parameters, direction)
+        }
+
+        val objectPosition = ArMath.airPosition(parameters.cameraPose, direction, parameters.distance)
         val wallHitResult = ArGeoWallFinder.searchAroundPosition(
             parameters.frame, parameters.cameraPose, objectPosition
         )
