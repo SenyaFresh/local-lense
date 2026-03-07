@@ -53,7 +53,7 @@ class ArGeoObjectController(val arGeoObject: ArGeoObject) {
         )
         _info.value = ArGeoObjectPlacementResult(
             distanceMeters = (distance * 100).roundToInt() / 100.0,
-            bearing = ((userHeading - bearing - initialCameraHeading) * 100).roundToInt() / 100.0,
+            bearing = ((userHeading - bearing - initialCameraHeading + 360) % 360 * 100).roundToInt() / 100.0,
             state = state,
         )
     }

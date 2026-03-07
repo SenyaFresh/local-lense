@@ -52,7 +52,6 @@ class ArPoseLocationTracker(
             }.collect { (heading, locationResult) ->
                 lastHeading = heading
                 lastLocation = locationResult.unwrapOrNull()
-                Log.d("ArPoseLocationTracker", "initHeading: $initialHeading; lastHeading: $lastHeading;")
             }
         }
         sceneView.onSessionUpdated = { _, frame ->
@@ -92,6 +91,7 @@ class ArPoseLocationTracker(
                     initialHeading = initHeading,
                     initialLocation = initLocation
                 )
+                headingProvider.setLocation(location)
                 onFrameUpdate?.invoke(
                     ArFrameData(
                         userLocation = location,
