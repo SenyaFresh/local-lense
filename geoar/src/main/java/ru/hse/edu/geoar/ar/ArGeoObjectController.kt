@@ -28,30 +28,22 @@ class ArGeoObjectController(val arGeoObject: ArGeoObject) {
         frame: Frame,
         cameraPose: Pose,
         initialCameraHeading: Float,
-        initialPose: Pose,
     ) {
-        val distance = distanceMeters(userLocation, arGeoObject)
-        arGeoObject.node.scale = ArMath.calculateScale(distance)
+        val horizontalDistance = distanceMeters(userLocation, arGeoObject)
+        val altitudeDifference = arGeoObject.altitude - userLocation.altitude
+        val distance3D = ArMath.distance3D(horizontalDistance, altitudeDifference)
+        arGeoObject.node.scale = ArMath.calculateScale(distance3D)
         val parameters = PlacementParameters(
             arGeoObject = arGeoObject,
             userLocation = userLocation,
             userHeading = userHeading,
             frame = frame,
             cameraPose = cameraPose,
-            distance = distance,
+            distance = horizontalDistance,
             initialCameraHeading = initialCameraHeading,
-            initialPose = initialPose,
         )
         state = StateUpdater.update(state, parameters)
         arGeoObject.node.isVisible = true
-
-        val bearing = Math.toDegrees(
-            GeoMath.relativeBearingRadians(
-                headingDegrees = initialCameraHeading,
-                from = userLocation,
-                to = arGeoObject
-            )
-        )
         _info.value = buildInfo(parameters)
     }
 

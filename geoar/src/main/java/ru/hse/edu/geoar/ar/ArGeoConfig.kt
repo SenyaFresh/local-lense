@@ -6,6 +6,6 @@ object ArGeoConfig {
 
     const val AR_RADIUS = 10f
 
-    const val BASE_SCALE = 1f
+    const val BASE_SCALE = 0.6f
     const val MIN_SCALE_FACTOR = 0.3
 }

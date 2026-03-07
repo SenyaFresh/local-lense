@@ -13,7 +13,6 @@ data class PlacementParameters(
     val cameraPose: Pose,
     val distance: Double,
     val initialCameraHeading: Float,
-    val initialPose: Pose,
 )
 
 sealed interface ArPlacementState {

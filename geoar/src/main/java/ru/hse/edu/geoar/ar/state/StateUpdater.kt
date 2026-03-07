@@ -44,11 +44,12 @@ object StateUpdater {
     ): AttachedWallState? {
         if (!parameters.arGeoObject.isWallAnchor) return null
 
+        val altitudeDifference = parameters.arGeoObject.altitude - parameters.userLocation.altitude
         val objectPosition = ArMath.airPosition(
-            initialPose = parameters.initialPose,
             cameraPose = parameters.cameraPose,
             relativeBearingRadians = relativeBearingRadians,
-            realDistanceMeters = parameters.distance
+            realDistanceMeters = parameters.distance,
+            altitudeDifference = altitudeDifference
         )
         val wallHitResult = ArGeoWallFinder.searchAroundPosition(
             parameters.frame, parameters.cameraPose, objectPosition

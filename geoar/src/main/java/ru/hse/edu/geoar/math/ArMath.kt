@@ -9,6 +9,7 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.ln
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 object ArMath {
 
@@ -23,26 +24,30 @@ object ArMath {
 
     fun airPosition(
         cameraPose: Pose,
-        initialPose: Pose,
         relativeBearingRadians: Double,
-        realDistanceMeters: Double
+        realDistanceMeters: Double,
+        altitudeDifference: Double
     ): Position {
         val d = compressDistance(realDistanceMeters)
+        val yOffset = if (realDistanceMeters > 1.0) {
+            (altitudeDifference * d / realDistanceMeters).toFloat()
+        } else {
+            altitudeDifference.toFloat()
+        }
         return Position(
             cameraPose.tx() + sin(relativeBearingRadians).toFloat() * d,
-            initialPose.ty(),
+            cameraPose.ty() + yOffset,
             cameraPose.tz() - cos(relativeBearingRadians).toFloat() * d
         )
     }
 
     fun wallPosition(
-        initialPose: Pose,
         anchorPose: Pose,
         normal: FloatArray,
         offset: Float
     ): Position = Position(
         anchorPose.tx() + normal[0] * offset,
-        initialPose.ty(),
+        anchorPose.ty(),
         anchorPose.tz() + normal[2] * offset
     )
 
@@ -54,6 +59,9 @@ object ArMath {
         if (meters <= r) return meters.toFloat()
         return (r + r * ln(1.0 + (meters - r) / r)).toFloat()
     }
+
+    fun distance3D(horizontalMeters: Double, altitudeDifference: Double): Double =
+        sqrt(horizontalMeters * horizontalMeters + altitudeDifference * altitudeDifference)
 
     fun calculateScale(meters: Double): Scale {
         if (meters <= ArGeoConfig.AR_RADIUS) {

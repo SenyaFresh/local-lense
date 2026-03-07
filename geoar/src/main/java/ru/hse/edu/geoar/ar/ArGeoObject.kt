@@ -6,5 +6,6 @@ data class ArGeoObject(
     val node: Node,
     val latitude: Double,
     val longitude: Double,
+    val altitude: Double,
     val isWallAnchor: Boolean,
 )

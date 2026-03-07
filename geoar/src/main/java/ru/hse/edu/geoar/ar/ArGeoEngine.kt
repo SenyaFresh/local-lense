@@ -121,7 +121,6 @@ class ArGeoEngine(
                 frame = frameData.frame,
                 cameraPose = frameData.cameraPose,
                 initialCameraHeading = frameData.initialCameraHeading,
-                initialPose = frameData.initialPose,
             )
         }
     }

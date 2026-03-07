@@ -21,11 +21,13 @@ class PlacedAirState : ArPlacementState {
             to = parameters.arGeoObject
         )
 
+        val altitudeDifference = parameters.arGeoObject.altitude - parameters.userLocation.altitude
+
         val newPosition = ArMath.airPosition(
             cameraPose = parameters.cameraPose,
-            initialPose = parameters.initialPose,
             relativeBearingRadians = relativeBearingRadians,
-            realDistanceMeters = parameters.distance
+            realDistanceMeters = parameters.distance,
+            altitudeDifference = altitudeDifference
         )
 
         node.worldPosition = newPosition
@@ -44,11 +46,12 @@ class PlacedAirState : ArPlacementState {
             parameters: PlacementParameters,
             relativeBearingRadians: Double
         ): PlacedAirState {
+            val altitudeDifference = parameters.arGeoObject.altitude - parameters.userLocation.altitude
             val position = ArMath.airPosition(
-                initialPose = parameters.initialPose,
                 cameraPose = parameters.cameraPose,
                 relativeBearingRadians = relativeBearingRadians,
-                realDistanceMeters = parameters.distance
+                realDistanceMeters = parameters.distance,
+                altitudeDifference = altitudeDifference
             )
             val rotation = ArMath.yawRotation(relativeBearingRadians)
             val node = parameters.arGeoObject.node

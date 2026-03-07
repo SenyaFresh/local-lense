@@ -19,7 +19,6 @@ data class ArFrameData(
     val frame: Frame,
     val cameraPose: Pose,
     val initialCameraHeading: Float,
-    val initialPose: Pose,
 )
 
 class ArPoseLocationTracker(
@@ -98,7 +97,6 @@ class ArPoseLocationTracker(
                         frame = frame,
                         cameraPose = pose,
                         initialCameraHeading = initHeading,
-                        initialPose = initPose,
                     )
                 )
             }
