@@ -13,11 +13,12 @@ import kotlin.math.sqrt
 
 object ArMath {
 
-    fun yawDegrees(deltaX: Float, deltaZ: Float): Float =
-        Math.toDegrees(atan2(deltaX, deltaZ).toDouble()).toFloat()
-
-    fun yawRotation(deltaX: Float, deltaZ: Float): Rotation =
-        Rotation(0f, yawDegrees(deltaX, deltaZ), 0f)
+    fun billboardRotation(deltaX: Float, deltaY: Float, deltaZ: Float): Rotation {
+        val yaw = Math.toDegrees(atan2(deltaX, deltaZ).toDouble()).toFloat()
+        val horizontalDist = sqrt(deltaX * deltaX + deltaZ * deltaZ)
+        val pitch = -Math.toDegrees(atan2(deltaY, horizontalDist).toDouble()).toFloat()
+        return Rotation(pitch, yaw, 0f)
+    }
 
     fun airPosition(
         cameraPose: Pose,

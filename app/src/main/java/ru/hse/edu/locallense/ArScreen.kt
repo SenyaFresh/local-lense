@@ -56,33 +56,33 @@ fun ArScreen(
                         CounterButton()
                     }
 
-//                    engine.onTap = { location ->
-//                        if (location != null) {
-//                            val arGeoObject = ArGeoObject(
-//                                latitude = location.latitude,
-//                                longitude = location.longitude,
-//                                altitude = location.altitude,
-//                                node = viewNode,
-//                                isWallAnchor = true,
-//                            )
-//                            activity.lifecycleScope.launch {
-//                                engine.place(arGeoObject).collect {
-//                                    placementState = it
-//                                }
-//                            }
-//                        }
-//                    }
-
-                    val arGeoObject = ArGeoObject(
-                        latitude = 55.6064317,
-                        longitude = 37.41246,
-                        altitude = 200.0,
-                        node = viewNode,
-                        isWallAnchor = true,
-                    )
-                    engine.place(arGeoObject).collect {
-                        placementState = it
+                    engine.onTap = { location ->
+                        if (location != null) {
+                            val arGeoObject = ArGeoObject(
+                                latitude = location.latitude,
+                                longitude = location.longitude,
+                                altitude = location.altitude,
+                                node = viewNode,
+                                isWallAnchor = false,
+                            )
+                            activity.lifecycleScope.launch {
+                                engine.place(arGeoObject).collect {
+                                    placementState = it
+                                }
+                            }
+                        }
                     }
+
+//                    val arGeoObject = ArGeoObject(
+//                        latitude = 55.6064317,
+//                        longitude = 37.41246,
+//                        altitude = 200.0,
+//                        node = viewNode,
+//                        isWallAnchor = true,
+//                    )
+//                    engine.place(arGeoObject).collect {
+//                        placementState = it
+//                    }
                 }
             }
         },

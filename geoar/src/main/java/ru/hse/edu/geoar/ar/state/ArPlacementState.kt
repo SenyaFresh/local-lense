@@ -20,8 +20,9 @@ data class PlacementParameters(
 abstract class ArPlacementState {
     protected fun applyBillboardRotation(cameraPose: Pose, node: Node) {
         val deltaX = cameraPose.tx() - node.position.x
+        val deltaY = cameraPose.ty() - node.position.y
         val deltaZ = cameraPose.tz() - node.position.z
-        node.worldRotation = ArMath.yawRotation(deltaX, deltaZ)
+        node.worldRotation = ArMath.billboardRotation(deltaX, deltaY, deltaZ)
     }
     open fun isValid(parameters: PlacementParameters): Boolean = false
     open fun update(parameters: PlacementParameters) = Unit
