@@ -48,7 +48,7 @@ class ArGeoObjectController(val arGeoObject: ArGeoObject) {
     }
 
     private fun buildInfo(parameters: PlacementParameters): ArGeoObjectPlacementResult {
-        val relativeBearing = GeoMath.relativeBearing(
+        val relativeBearing = GeoMath.relativeBearingDegrees(
             cameraPose = parameters.cameraPose,
             node = parameters.arGeoObject.node
         )

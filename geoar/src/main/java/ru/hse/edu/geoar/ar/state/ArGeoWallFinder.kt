@@ -1,4 +1,4 @@
-package ru.hse.edu.geoar.ar
+package ru.hse.edu.geoar.ar.state
 
 import com.google.ar.core.Frame
 import com.google.ar.core.HitResult
@@ -6,6 +6,7 @@ import com.google.ar.core.Plane
 import com.google.ar.core.Pose
 import com.google.ar.core.TrackingState
 import io.github.sceneview.math.Position
+import ru.hse.edu.geoar.ar.ArGeoConfig
 import kotlin.math.abs
 import kotlin.math.atan
 import kotlin.math.cos

@@ -1,13 +1,10 @@
 package ru.hse.edu.geoar.ar.state
 
-import com.google.ar.core.Pose
-import io.github.sceneview.math.Position
-import io.github.sceneview.node.Node
 import ru.hse.edu.geoar.ar.ArGeoConfig
 import ru.hse.edu.geoar.math.ArMath
-import ru.hse.edu.geoar.math.GeoMath
+import ru.hse.edu.geoar.math.GeoMath.relativeBearingRadians
 
-class PlacedAirState : ArPlacementState {
+class PlacedAirState : ArPlacementState() {
 
     override fun isValid(parameters: PlacementParameters) =
         parameters.distance > ArGeoConfig.AR_RADIUS
@@ -15,49 +12,31 @@ class PlacedAirState : ArPlacementState {
     override fun update(parameters: PlacementParameters) {
         val node = parameters.arGeoObject.node
 
-        val relativeBearingRadians = GeoMath.relativeBearingRadians(
+        val relativeBearingRadians = relativeBearingRadians(
             headingDegrees = parameters.initialCameraHeading,
             from = parameters.userLocation,
             to = parameters.arGeoObject
         )
 
-        val altitudeDifference = parameters.arGeoObject.altitude - parameters.userLocation.altitude
-
         val newPosition = ArMath.airPosition(
             cameraPose = parameters.cameraPose,
             relativeBearingRadians = relativeBearingRadians,
             realDistanceMeters = parameters.distance,
-            altitudeDifference = altitudeDifference
+            altitudeDifference = parameters.arGeoObject.altitude - parameters.userLocation.altitude
         )
 
         node.worldPosition = newPosition
 
-        applyBillboardRotation(parameters.cameraPose, node, newPosition)
-    }
-
-    private fun applyBillboardRotation(cameraPose: Pose, node: Node, position: Position) {
-        val deltaX = cameraPose.tx() - position.x
-        val deltaZ = cameraPose.tz() - position.z
-        node.worldRotation = ArMath.yawRotation(deltaX, deltaZ)
+        applyBillboardRotation(parameters.cameraPose, node)
     }
 
     companion object {
         fun create(
             parameters: PlacementParameters,
-            relativeBearingRadians: Double
         ): PlacedAirState {
-            val altitudeDifference = parameters.arGeoObject.altitude - parameters.userLocation.altitude
-            val position = ArMath.airPosition(
-                cameraPose = parameters.cameraPose,
-                relativeBearingRadians = relativeBearingRadians,
-                realDistanceMeters = parameters.distance,
-                altitudeDifference = altitudeDifference
-            )
-            val rotation = ArMath.yawRotation(relativeBearingRadians)
-            val node = parameters.arGeoObject.node
-            node.worldPosition = position
-            node.worldRotation = rotation
-            return PlacedAirState()
+            val state = PlacedAirState()
+            state.update(parameters)
+            return state
         }
     }
 }

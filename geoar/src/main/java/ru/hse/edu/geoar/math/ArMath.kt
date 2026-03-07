@@ -19,25 +19,19 @@ object ArMath {
     fun yawRotation(deltaX: Float, deltaZ: Float): Rotation =
         Rotation(0f, yawDegrees(deltaX, deltaZ), 0f)
 
-    fun yawRotation(relativeBearingRadians: Double): Rotation =
-        Rotation(0f, Math.toDegrees(relativeBearingRadians).toFloat(), 0f)
-
     fun airPosition(
         cameraPose: Pose,
         relativeBearingRadians: Double,
         realDistanceMeters: Double,
         altitudeDifference: Double
     ): Position {
-        val d = compressDistance(realDistanceMeters)
-        val yOffset = if (realDistanceMeters > 1.0) {
-            (altitudeDifference * d / realDistanceMeters).toFloat()
-        } else {
-            altitudeDifference.toFloat()
-        }
-        return Position(
-            cameraPose.tx() + sin(relativeBearingRadians).toFloat() * d,
-            cameraPose.ty() + yOffset,
-            cameraPose.tz() - cos(relativeBearingRadians).toFloat() * d
+        val compressedDistance = compressDistance(realDistanceMeters)
+        val verticalOffset = proportionalVerticalOffset(
+            realDistanceMeters, altitudeDifference, compressedDistance
+        )
+        return offsetPositionByBearing(
+            cameraPose.tx(), cameraPose.ty(), cameraPose.tz(),
+            relativeBearingRadians, compressedDistance, verticalOffset
         )
     }
 
@@ -45,19 +39,16 @@ object ArMath {
         anchorPose: Pose,
         normal: FloatArray,
         offset: Float
-    ): Position = Position(
-        anchorPose.tx() + normal[0] * offset,
-        anchorPose.ty(),
-        anchorPose.tz() + normal[2] * offset
+    ): Position = offsetPositionByNormal(
+        anchorPose.tx(), anchorPose.ty(), anchorPose.tz(),
+        normal[0], normal[2], offset
     )
 
-    fun wallRotation(normal: FloatArray): Rotation =
-        yawRotation(normal[0], normal[2])
-
     fun compressDistance(meters: Double): Float {
-        val r = ArGeoConfig.AR_RADIUS
-        if (meters <= r) return meters.toFloat()
-        return (r + r * ln(1.0 + (meters - r) / r)).toFloat()
+        val arRadius = ArGeoConfig.AR_RADIUS
+        if (meters <= arRadius) return meters.toFloat()
+        val logarithmicOverflow = arRadius * ln(1.0 + (meters - arRadius) / arRadius)
+        return (arRadius + logarithmicOverflow).toFloat()
     }
 
     fun distance3D(horizontalMeters: Double, altitudeDifference: Double): Double =
@@ -68,14 +59,45 @@ object ArMath {
             return uniformScale(ArGeoConfig.BASE_SCALE)
         }
 
-        val t = ((meters - ArGeoConfig.AR_RADIUS) /
+        val normalizedDistance = ((meters - ArGeoConfig.AR_RADIUS) /
                 (ArGeoConfig.MAX_DISTANCE_METERS - ArGeoConfig.AR_RADIUS))
             .coerceIn(0.0, 1.0)
 
-        val smooth = t * t * (3.0 - 2.0 * t)
-        val factor = (1.0 - smooth * (1.0 - ArGeoConfig.MIN_SCALE_FACTOR)).toFloat()
-        return uniformScale(factor * ArGeoConfig.BASE_SCALE)
+        val smoothedFraction = smoothStep(normalizedDistance)
+        val scaleFactor = (1.0 - smoothedFraction * (1.0 - ArGeoConfig.MIN_SCALE_FACTOR)).toFloat()
+        return uniformScale(scaleFactor * ArGeoConfig.BASE_SCALE)
     }
 
-    private fun uniformScale(s: Float) = Scale(s, s, s)
+    private fun offsetPositionByBearing(
+        originX: Float, originY: Float, originZ: Float,
+        bearingRadians: Double,
+        horizontalDistance: Float,
+        verticalOffset: Float
+    ): Position = Position(
+        originX + sin(bearingRadians).toFloat() * horizontalDistance,
+        originY + verticalOffset,
+        originZ - cos(bearingRadians).toFloat() * horizontalDistance
+    )
+
+    private fun offsetPositionByNormal(
+        originX: Float, originY: Float, originZ: Float,
+        normalX: Float, normalZ: Float,
+        offset: Float
+    ): Position = Position(
+        originX + normalX * offset,
+        originY,
+        originZ + normalZ * offset
+    )
+
+    private fun proportionalVerticalOffset(
+        realDistanceMeters: Double,
+        altitudeDifference: Double,
+        compressedDistance: Float
+    ): Float = (altitudeDifference * compressedDistance / realDistanceMeters).toFloat()
+
+    private fun smoothStep(value: Double): Double =
+        value * value * (3.0 - 2.0 * value)
+
+    private fun uniformScale(value: Float): Scale =
+        Scale(value, value, value)
 }

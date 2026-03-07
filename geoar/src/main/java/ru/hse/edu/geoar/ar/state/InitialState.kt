@@ -1,3 +1,3 @@
 package ru.hse.edu.geoar.ar.state
 
-object InitialState : ArPlacementState
+object InitialState : ArPlacementState()

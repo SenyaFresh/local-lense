@@ -2,8 +2,10 @@ package ru.hse.edu.geoar.ar.state
 
 import com.google.ar.core.Frame
 import com.google.ar.core.Pose
+import io.github.sceneview.node.Node
 import ru.hse.edu.geoar.ar.ArGeoObject
 import ru.hse.edu.geoar.location.LocationData
+import ru.hse.edu.geoar.math.ArMath
 
 data class PlacementParameters(
     val arGeoObject: ArGeoObject,
@@ -15,8 +17,13 @@ data class PlacementParameters(
     val initialCameraHeading: Float,
 )
 
-sealed interface ArPlacementState {
-    fun isValid(parameters: PlacementParameters): Boolean = false
-    fun update(parameters: PlacementParameters) = Unit
-    fun release() = Unit
+abstract class ArPlacementState {
+    protected fun applyBillboardRotation(cameraPose: Pose, node: Node) {
+        val deltaX = cameraPose.tx() - node.position.x
+        val deltaZ = cameraPose.tz() - node.position.z
+        node.worldRotation = ArMath.yawRotation(deltaX, deltaZ)
+    }
+    open fun isValid(parameters: PlacementParameters): Boolean = false
+    open fun update(parameters: PlacementParameters) = Unit
+    open fun release() = Unit
 }
