@@ -5,19 +5,14 @@ import com.google.ar.core.Pose
 import io.github.sceneview.math.Position
 import io.github.sceneview.node.Node
 import ru.hse.edu.geoar.ar.ArGeoConfig
-import ru.hse.edu.geoar.location.LocationData
 import ru.hse.edu.geoar.math.ArMath
 import ru.hse.edu.geoar.math.GeoMath
 
-class PlacedAirState(
-    private var lastUserLocation: LocationData,
-) : ArPlacementState {
+class PlacedAirState: ArPlacementState {
 
     override fun isValid(parameters: PlacementParameters) = parameters.distance > ArGeoConfig.AR_RADIUS
 
     override fun update(parameters: PlacementParameters) {
-        lastUserLocation = parameters.userLocation
-
         val node = parameters.arGeoObject.node
 
         val relativeBearingRadians = GeoMath.relativeBearingRadians(
@@ -56,7 +51,7 @@ class PlacedAirState(
             val node = parameters.arGeoObject.node
             node.worldPosition = position
             node.worldRotation = rotation
-            return PlacedAirState(lastUserLocation = parameters.userLocation)
+            return PlacedAirState()
         }
     }
 }
