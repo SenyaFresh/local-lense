@@ -34,7 +34,11 @@ class StepDetectorProvider(context: Context) {
 
     fun start() {
         val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR) ?: return
-        sensorManager.registerListener(sensorEventListener, sensor, SensorManager.SENSOR_DELAY_FASTEST)
+        sensorManager.registerListener(
+            sensorEventListener,
+            sensor,
+            SensorManager.SENSOR_DELAY_FASTEST
+        )
     }
 
     fun stop() = sensorManager.unregisterListener(sensorEventListener)

@@ -170,8 +170,10 @@ class LocationKalmanFilter(
         measuredNorthMeters: Double,
         measurementVarianceMeters2: Double
     ) {
-        val kalmanGainEast = varianceEastMeters2 / (varianceEastMeters2 + measurementVarianceMeters2)
-        val kalmanGainNorth = varianceNorthMeters2 / (varianceNorthMeters2 + measurementVarianceMeters2)
+        val kalmanGainEast =
+            varianceEastMeters2 / (varianceEastMeters2 + measurementVarianceMeters2)
+        val kalmanGainNorth =
+            varianceNorthMeters2 / (varianceNorthMeters2 + measurementVarianceMeters2)
 
         val innovationEastMeters = measuredEastMeters - estimatedEastMeters
         val innovationNorthMeters = measuredNorthMeters - estimatedNorthMeters
@@ -187,7 +189,9 @@ class LocationKalmanFilter(
         originLatitudeDegrees + estimatedNorthMeters / metersPerDegreeLatitude()
 
     private fun estimatedLongitudeDegrees(): Double =
-        originLongitudeDegrees + estimatedEastMeters / metersPerDegreeLongitude(originLatitudeDegrees)
+        originLongitudeDegrees + estimatedEastMeters / metersPerDegreeLongitude(
+            originLatitudeDegrees
+        )
 
     private fun longitudeToEastMeters(longitudeDegrees: Double): Double =
         (longitudeDegrees - originLongitudeDegrees) * metersPerDegreeLongitude(originLatitudeDegrees)

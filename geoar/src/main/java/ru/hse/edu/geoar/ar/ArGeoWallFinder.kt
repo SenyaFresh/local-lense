@@ -69,7 +69,12 @@ object ArGeoWallFinder {
         return bestHit
     }
 
-    private fun raycastFromOrigin(frame: Frame, origin: FloatArray, directionX: Float, directionZ: Float): HitResult? {
+    private fun raycastFromOrigin(
+        frame: Frame,
+        origin: FloatArray,
+        directionX: Float,
+        directionZ: Float
+    ): HitResult? {
         for (angleDegrees in SEARCH_ANGLES_DEGREES) {
             val (rotatedX, rotatedZ) = rotateDirection(directionX, directionZ, angleDegrees)
             val hit = findVerticalHit(frame, origin, rotatedX, rotatedZ) ?: continue

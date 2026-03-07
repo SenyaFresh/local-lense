@@ -13,9 +13,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import kotlinx.coroutines.delay
 import ru.hse.locallense.common.Core
 import ru.hse.locallense.common.ResultContainer
-import kotlinx.coroutines.delay
 
 
 /**

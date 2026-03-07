@@ -5,7 +5,6 @@ import com.google.ar.core.HitResult
 import com.google.ar.core.Plane
 import com.google.ar.core.Pose
 import com.google.ar.core.TrackingState
-import io.github.sceneview.math.Position
 import io.github.sceneview.node.Node
 import ru.hse.edu.geoar.ar.ArGeoConfig
 import ru.hse.edu.geoar.math.ArMath

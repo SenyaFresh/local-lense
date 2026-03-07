@@ -1,23 +1,16 @@
 package ru.hse.edu.geoar.ar
 
 import android.content.Context
-import com.google.ar.core.TrackingState
 import io.github.sceneview.ar.ARSceneView
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.launch
 import ru.hse.edu.geoar.location.ArFrameData
 import ru.hse.edu.geoar.location.ArPoseLocationTracker
-import ru.hse.edu.geoar.location.LocationData
 import ru.hse.edu.geoar.location.LocationTracker
 import ru.hse.edu.geoar.sensors.HeadingProvider
 import ru.hse.edu.geoar.sensors.LinearAccelerationProvider
 import ru.hse.edu.geoar.sensors.SensorsManager
 import ru.hse.edu.geoar.sensors.StepDetectorProvider
-import ru.hse.locallense.common.ResultContainer
 import java.util.concurrent.CopyOnWriteArrayList
 
 class ArGeoEngine(

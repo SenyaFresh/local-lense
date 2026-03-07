@@ -1,6 +1,5 @@
 package ru.hse.edu.geoar.ar.state
 
-import android.util.Log
 import com.google.ar.core.Pose
 import io.github.sceneview.math.Position
 import io.github.sceneview.node.Node
@@ -8,9 +7,10 @@ import ru.hse.edu.geoar.ar.ArGeoConfig
 import ru.hse.edu.geoar.math.ArMath
 import ru.hse.edu.geoar.math.GeoMath
 
-class PlacedAirState: ArPlacementState {
+class PlacedAirState : ArPlacementState {
 
-    override fun isValid(parameters: PlacementParameters) = parameters.distance > ArGeoConfig.AR_RADIUS
+    override fun isValid(parameters: PlacementParameters) =
+        parameters.distance > ArGeoConfig.AR_RADIUS
 
     override fun update(parameters: PlacementParameters) {
         val node = parameters.arGeoObject.node
@@ -40,7 +40,10 @@ class PlacedAirState: ArPlacementState {
     }
 
     companion object {
-        fun create(parameters: PlacementParameters, relativeBearingRadians: Double): PlacedAirState {
+        fun create(
+            parameters: PlacementParameters,
+            relativeBearingRadians: Double
+        ): PlacedAirState {
             val position = ArMath.airPosition(
                 anchorPose = parameters.initialPose,
                 cameraPose = parameters.cameraPose,

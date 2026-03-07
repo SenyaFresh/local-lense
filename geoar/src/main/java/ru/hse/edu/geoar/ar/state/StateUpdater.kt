@@ -2,7 +2,6 @@ package ru.hse.edu.geoar.ar.state
 
 import ru.hse.edu.geoar.ar.ArGeoWallFinder
 import ru.hse.edu.geoar.math.ArMath
-import ru.hse.edu.geoar.math.GeoMath
 import ru.hse.edu.geoar.math.GeoMath.relativeBearingRadians
 
 object StateUpdater {

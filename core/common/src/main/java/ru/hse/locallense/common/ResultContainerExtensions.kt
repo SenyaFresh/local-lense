@@ -8,7 +8,7 @@ import kotlinx.coroutines.withTimeout
 /**
  * Try to get first not pending value flow during [remoteTimeoutMillis].
  */
-suspend fun <T> Flow<ResultContainer<T>>.unwrapFirstNotPending(remoteTimeoutMillis: Long = Core.remoteTimeoutMillis) : T {
+suspend fun <T> Flow<ResultContainer<T>>.unwrapFirstNotPending(remoteTimeoutMillis: Long = Core.remoteTimeoutMillis): T {
     return withTimeout(remoteTimeoutMillis) {
         filterNot { it is ResultContainer.Loading }
             .first()

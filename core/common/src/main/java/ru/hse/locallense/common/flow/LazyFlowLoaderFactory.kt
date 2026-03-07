@@ -8,5 +8,5 @@ interface LazyFlowLoaderFactory {
     /**
      * Create a new instance of [LazyFlowLoader].
      */
-    fun <T> create(loader: ValueLoader<T>) : LazyFlowLoader<T>
+    fun <T> create(loader: ValueLoader<T>): LazyFlowLoader<T>
 }

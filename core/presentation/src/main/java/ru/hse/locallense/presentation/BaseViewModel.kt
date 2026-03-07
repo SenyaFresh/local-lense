@@ -21,7 +21,7 @@ typealias Action = () -> Unit
  * and accessing global resources like resources and toasts.
  */
 @OptIn(FlowPreview::class)
-open class BaseViewModel: ViewModel() {
+open class BaseViewModel : ViewModel() {
 
     /** The coroutine scope associated with this ViewModel. */
     protected val viewModelScope: CoroutineScope by lazy {

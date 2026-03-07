@@ -65,8 +65,7 @@ fun ActionableItemsFlowRow(
                 modifier = errorModifier
             )
         }
-    }
-    else{
+    } else {
         ResultContainerComposable(
             container = items,
             onTryAgain = onReloadItems,
@@ -114,7 +113,8 @@ fun ActionableItemsFlowRow(
 fun CategoriesRowPreview() {
     Box(modifier = Modifier.fillMaxSize()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            ActionableItemsFlowRow(items = ResultContainer.Done(
+            ActionableItemsFlowRow(
+                items = ResultContainer.Done(
                 (1..5).map {
                     ActionableItem(it.toLong(), "Category $it")
                 }

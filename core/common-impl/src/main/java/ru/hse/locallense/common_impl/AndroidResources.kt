@@ -8,7 +8,7 @@ import ru.hse.locallense.common.Resources
  */
 class AndroidResources(
     private val appContext: Context
-): Resources {
+) : Resources {
 
     /**
      * Get string resource from [appContext].

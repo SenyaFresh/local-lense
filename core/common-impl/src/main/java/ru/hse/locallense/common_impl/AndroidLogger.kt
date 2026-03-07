@@ -6,7 +6,7 @@ import ru.hse.locallense.common.Logger
 /**
  * Android implementation of [Logger].
  */
-class AndroidLogger: Logger {
+class AndroidLogger : Logger {
 
     /**
      * Log message to logcat.

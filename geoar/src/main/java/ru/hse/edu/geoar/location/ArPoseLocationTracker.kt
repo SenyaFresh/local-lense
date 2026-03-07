@@ -1,6 +1,5 @@
 package ru.hse.edu.geoar.location
 
-import android.util.Log
 import com.google.ar.core.Frame
 import com.google.ar.core.Pose
 import com.google.ar.core.TrackingState

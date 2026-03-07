@@ -6,12 +6,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import ru.hse.edu.geoar.ar.state.ArPlacementState
-import ru.hse.edu.geoar.ar.state.PlacementParameters
 import ru.hse.edu.geoar.ar.state.InitialState
+import ru.hse.edu.geoar.ar.state.PlacementParameters
 import ru.hse.edu.geoar.ar.state.StateUpdater
-import ru.hse.edu.geoar.math.GeoMath
 import ru.hse.edu.geoar.location.LocationData
 import ru.hse.edu.geoar.math.ArMath
+import ru.hse.edu.geoar.math.GeoMath
 import ru.hse.edu.geoar.math.GeoMath.distanceMeters
 import kotlin.math.roundToInt
 

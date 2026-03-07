@@ -37,6 +37,7 @@ object ArMath {
             cameraPose.tz() + dirZ * arDistance
         )
     }
+
     fun wallPosition(
         anchorPose: Pose,
         normal: FloatArray,
