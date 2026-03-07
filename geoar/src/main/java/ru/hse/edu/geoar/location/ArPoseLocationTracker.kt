@@ -118,6 +118,16 @@ class ArPoseLocationTracker(
         lastLocation = null
     }
 
+    fun computeLocation(pose: Pose): LocationData? {
+        val initPose = initialPose
+        val initHeading = initialHeading
+        val initLocation = initialLocation
+        if (initPose == null || initHeading == null || initLocation == null) {
+            return null
+        }
+        return computeLocation(pose, initPose, initHeading, initLocation)
+    }
+
     private fun computeLocation(
         pose: Pose,
         initialPose: Pose,

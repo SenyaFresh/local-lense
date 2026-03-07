@@ -1,5 +1,6 @@
 package ru.hse.edu.locallense
 
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -56,15 +57,27 @@ fun ArScreen(
                         CounterButton()
                     }
 
-                    val arGeoObject = ArGeoObject(
-                        latitude = 55.6068317,
-                        longitude = 37.41446,
-                        node = viewNode,
-                        isWallAnchor = true,
-                    )
-                    engine.place(arGeoObject).collect {
-                        placementState = it
+                    engine.onTap = { location ->
+                        if (location != null) {
+                            val arGeoObject = ArGeoObject(
+                                latitude = location.latitude,
+                                longitude = location.longitude,
+                                node = viewNode,
+                                isWallAnchor = true,
+                            )
+                            engine.place(arGeoObject)
+                        }
                     }
+
+//                    val arGeoObject = ArGeoObject(
+//                        latitude = 55.6068317,
+//                        longitude = 37.41446,
+//                        node = viewNode,
+//                        isWallAnchor = true,
+//                    )
+//                    engine.place(arGeoObject).collect {
+//                        placementState = it
+//                    }
                 }
             }
         },

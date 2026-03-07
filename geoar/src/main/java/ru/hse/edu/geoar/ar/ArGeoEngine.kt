@@ -1,11 +1,13 @@
 package ru.hse.edu.geoar.ar
 
 import android.content.Context
+import android.util.Log
 import io.github.sceneview.ar.ARSceneView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 import ru.hse.edu.geoar.location.ArFrameData
 import ru.hse.edu.geoar.location.ArPoseLocationTracker
+import ru.hse.edu.geoar.location.LocationData
 import ru.hse.edu.geoar.location.LocationTracker
 import ru.hse.edu.geoar.sensors.HeadingProvider
 import ru.hse.edu.geoar.sensors.LinearAccelerationProvider
@@ -18,6 +20,8 @@ class ArGeoEngine(
     private val scope: CoroutineScope,
     context: Context
 ) {
+    var onTap: ((LocationData?) -> Unit)? = null
+
     private val headingProvider = HeadingProvider(context)
     private val sensorsManager = SensorsManager(
         headingProvider = headingProvider,
@@ -37,6 +41,44 @@ class ArGeoEngine(
     )
     private val controllers = CopyOnWriteArrayList<ArGeoObjectController>()
     private var isRunning = false
+
+    init {
+        sceneView.planeRenderer.isEnabled = true
+        sceneView.planeRenderer.isVisible = true
+
+        ensureRunning()
+
+        sceneView.setOnGestureListener(
+            onSingleTapConfirmed = { e, _ ->
+                val frame = sceneView.frame ?: return@setOnGestureListener
+                val camera = frame.camera
+
+                if (camera.trackingState != com.google.ar.core.TrackingState.TRACKING) {
+                    onTap?.invoke(null)
+                    return@setOnGestureListener
+                }
+
+                val hitPose = sceneView.hitTestAR(
+                    xPx = e.x,
+                    yPx = e.y,
+                    planeTypes = setOf(
+                        com.google.ar.core.Plane.Type.HORIZONTAL_UPWARD_FACING,
+                        com.google.ar.core.Plane.Type.HORIZONTAL_DOWNWARD_FACING,
+                        com.google.ar.core.Plane.Type.VERTICAL
+                    )
+                )?.hitPose
+
+                if (hitPose == null) {
+                    onTap?.invoke(null)
+                    return@setOnGestureListener
+                }
+
+                arPoseLocationTracker.computeLocation(hitPose)?.let { location ->
+                    onTap?.invoke(location)
+                }
+            }
+        )
+    }
 
     fun place(arGeoObject: ArGeoObject): StateFlow<ArGeoObjectPlacementResult?> {
         val controller = ArGeoObjectController(arGeoObject)
