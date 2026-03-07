@@ -7,7 +7,6 @@ import io.github.sceneview.math.Scale
 import ru.hse.edu.geoar.ar.ArGeoConfig
 import kotlin.math.atan2
 import kotlin.math.cos
-import kotlin.math.floor
 import kotlin.math.ln
 import kotlin.math.sin
 
@@ -24,7 +23,7 @@ object ArMath {
 
     fun airPosition(
         cameraPose: Pose,
-        anchorPose: Pose,
+        initialPose: Pose,
         relativeBearingRadians: Double,
         realDistanceMeters: Double
     ): Position {
@@ -33,18 +32,19 @@ object ArMath {
         val dirZ = -cos(relativeBearingRadians).toFloat()
         return Position(
             cameraPose.tx() + dirX * arDistance,
-            floor(anchorPose.ty()),
+            initialPose.ty(),
             cameraPose.tz() + dirZ * arDistance
         )
     }
 
     fun wallPosition(
+        initialPose: Pose,
         anchorPose: Pose,
         normal: FloatArray,
         offset: Float
     ): Position = Position(
         anchorPose.tx() + normal[0] * offset,
-        anchorPose.ty(),
+        initialPose.ty(),
         anchorPose.tz() + normal[2] * offset
     )
 

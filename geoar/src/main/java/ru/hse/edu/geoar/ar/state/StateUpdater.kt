@@ -45,7 +45,7 @@ object StateUpdater {
         if (!parameters.arGeoObject.isWallAnchor) return null
 
         val objectPosition = ArMath.airPosition(
-            anchorPose = parameters.initialPose,
+            initialPose = parameters.initialPose,
             cameraPose = parameters.cameraPose,
             relativeBearingRadians = relativeBearingRadians,
             realDistanceMeters = parameters.distance

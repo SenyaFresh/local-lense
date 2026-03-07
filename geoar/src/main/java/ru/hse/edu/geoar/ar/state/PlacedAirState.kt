@@ -23,7 +23,7 @@ class PlacedAirState : ArPlacementState {
 
         val newPosition = ArMath.airPosition(
             cameraPose = parameters.cameraPose,
-            anchorPose = parameters.initialPose,
+            initialPose = parameters.initialPose,
             relativeBearingRadians = relativeBearingRadians,
             realDistanceMeters = parameters.distance
         )
@@ -45,7 +45,7 @@ class PlacedAirState : ArPlacementState {
             relativeBearingRadians: Double
         ): PlacedAirState {
             val position = ArMath.airPosition(
-                anchorPose = parameters.initialPose,
+                initialPose = parameters.initialPose,
                 cameraPose = parameters.cameraPose,
                 relativeBearingRadians = relativeBearingRadians,
                 realDistanceMeters = parameters.distance

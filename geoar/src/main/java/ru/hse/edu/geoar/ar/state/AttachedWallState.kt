@@ -40,7 +40,10 @@ class AttachedWallState(
 
             val node = parameters.arGeoObject.node
             node.worldPosition = ArMath.wallPosition(
-                anchor.pose, normal, ArGeoConfig.WALL_OFFSET
+                initialPose = parameters.initialPose,
+                anchorPose = anchor.pose,
+                normal = normal,
+                offset = ArGeoConfig.WALL_OFFSET
             )
             node.worldRotation = ArMath.wallRotation(normal)
 
