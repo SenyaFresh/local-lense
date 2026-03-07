@@ -13,7 +13,7 @@ import kotlin.math.sin
 object ArMath {
 
     fun yawDegrees(deltaX: Float, deltaZ: Float): Float =
-        Math.toDegrees(atan2(deltaX.toDouble(), deltaZ.toDouble())).toFloat()
+        Math.toDegrees(atan2(deltaX, deltaZ).toDouble()).toFloat()
 
     fun yawRotation(deltaX: Float, deltaZ: Float): Rotation =
         Rotation(0f, yawDegrees(deltaX, deltaZ), 0f)
@@ -27,13 +27,11 @@ object ArMath {
         relativeBearingRadians: Double,
         realDistanceMeters: Double
     ): Position {
-        val arDistance = compressDistance(realDistanceMeters)
-        val dirX = sin(relativeBearingRadians).toFloat()
-        val dirZ = -cos(relativeBearingRadians).toFloat()
+        val d = compressDistance(realDistanceMeters)
         return Position(
-            cameraPose.tx() + dirX * arDistance,
+            cameraPose.tx() + sin(relativeBearingRadians).toFloat() * d,
             initialPose.ty(),
-            cameraPose.tz() + dirZ * arDistance
+            cameraPose.tz() - cos(relativeBearingRadians).toFloat() * d
         )
     }
 
@@ -51,22 +49,15 @@ object ArMath {
     fun wallRotation(normal: FloatArray): Rotation =
         yawRotation(normal[0], normal[2])
 
-
     fun compressDistance(meters: Double): Float {
-        if (meters <= ArGeoConfig.AR_RADIUS) {
-            return meters.toFloat()
-        }
-
-        val excess = meters - ArGeoConfig.AR_RADIUS
-        val k = ArGeoConfig.AR_RADIUS
-        val compressed = ArGeoConfig.AR_RADIUS + k * ln(1.0 + excess / k)
-        return compressed.toFloat()
+        val r = ArGeoConfig.AR_RADIUS
+        if (meters <= r) return meters.toFloat()
+        return (r + r * ln(1.0 + (meters - r) / r)).toFloat()
     }
 
     fun calculateScale(meters: Double): Scale {
         if (meters <= ArGeoConfig.AR_RADIUS) {
-            val s = ArGeoConfig.BASE_SCALE
-            return Scale(s, s, s)
+            return uniformScale(ArGeoConfig.BASE_SCALE)
         }
 
         val t = ((meters - ArGeoConfig.AR_RADIUS) /
@@ -75,7 +66,8 @@ object ArMath {
 
         val smooth = t * t * (3.0 - 2.0 * t)
         val factor = (1.0 - smooth * (1.0 - ArGeoConfig.MIN_SCALE_FACTOR)).toFloat()
-        val s = factor * ArGeoConfig.BASE_SCALE
-        return Scale(s, s, s)
+        return uniformScale(factor * ArGeoConfig.BASE_SCALE)
     }
+
+    private fun uniformScale(s: Float) = Scale(s, s, s)
 }

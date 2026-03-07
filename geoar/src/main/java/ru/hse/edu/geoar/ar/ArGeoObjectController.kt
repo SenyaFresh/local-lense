@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import ru.hse.edu.geoar.ar.state.ArPlacementState
+import ru.hse.edu.geoar.ar.state.AttachedWallState
 import ru.hse.edu.geoar.ar.state.InitialState
 import ru.hse.edu.geoar.ar.state.PlacementParameters
 import ru.hse.edu.geoar.ar.state.StateUpdater
@@ -13,7 +14,7 @@ import ru.hse.edu.geoar.location.LocationData
 import ru.hse.edu.geoar.math.ArMath
 import ru.hse.edu.geoar.math.GeoMath
 import ru.hse.edu.geoar.math.GeoMath.distanceMeters
-import kotlin.math.roundToInt
+import ru.hse.edu.geoar.math.round
 
 class ArGeoObjectController(val arGeoObject: ArGeoObject) {
 
@@ -51,9 +52,25 @@ class ArGeoObjectController(val arGeoObject: ArGeoObject) {
                 to = arGeoObject
             )
         )
-        _info.value = ArGeoObjectPlacementResult(
-            distanceMeters = (distance * 100).roundToInt() / 100.0,
-            bearing = ((userHeading - bearing - initialCameraHeading + 360) % 360 * 100).roundToInt() / 100.0,
+        _info.value = buildInfo(parameters)
+    }
+
+    private fun buildInfo(parameters: PlacementParameters): ArGeoObjectPlacementResult {
+        val relativeBearing = GeoMath.relativeBearing(
+            cameraPose = parameters.cameraPose,
+            node = parameters.arGeoObject.node
+        )
+        val distance = if (state is AttachedWallState) {
+            distanceMeters(
+                cameraPose = parameters.cameraPose,
+                node = parameters.arGeoObject.node
+            )
+        } else {
+            parameters.distance
+        }
+        return ArGeoObjectPlacementResult(
+            distanceMeters = distance.round(2),
+            bearing = relativeBearing.round(2),
             state = state,
         )
     }
