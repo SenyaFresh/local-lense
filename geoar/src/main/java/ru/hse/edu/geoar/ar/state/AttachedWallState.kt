@@ -12,7 +12,7 @@ class AttachedWallState(
 ) : ArPlacementState() {
 
     override fun isValid(parameters: PlacementParameters): Boolean {
-        return anchor.trackingState == TrackingState.TRACKING
+        return anchor.trackingState != TrackingState.STOPPED
     }
 
     override fun update(parameters: PlacementParameters) {

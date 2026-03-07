@@ -25,7 +25,7 @@ abstract class SensorProvider(
     private val _smoothedValue = MutableStateFlow(0f)
     val smoothedValue: StateFlow<Float> = _smoothedValue.asStateFlow()
 
-    private val _accuracy = MutableStateFlow(SensorManager.SENSOR_STATUS_ACCURACY_HIGH)
+    private val _accuracy = MutableStateFlow(SensorManager.SENSOR_STATUS_ACCURACY_LOW)
     val accuracy: StateFlow<Int> = _accuracy.asStateFlow()
 
     private var emaValue = 0f

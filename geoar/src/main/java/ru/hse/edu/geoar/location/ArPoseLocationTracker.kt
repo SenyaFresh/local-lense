@@ -1,5 +1,6 @@
 package ru.hse.edu.geoar.location
 
+import android.util.Log
 import com.google.ar.core.Frame
 import com.google.ar.core.Pose
 import com.google.ar.core.TrackingState
@@ -10,6 +11,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import ru.hse.edu.geoar.math.Dimens
 import ru.hse.edu.geoar.sensors.HeadingProvider
+import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -33,7 +35,7 @@ class ArPoseLocationTracker(
     private var initialPose: Pose? = null
     private var initialHeading: Float? = null
     private var initialLocation: LocationData? = null
-    private var cameraTracking = false
+    private var initialYaw: Float = 0f
     private var lastHeading: Float? = null
     private var lastLocation: LocationData? = null
 
@@ -55,26 +57,35 @@ class ArPoseLocationTracker(
         sceneView.onSessionUpdated = { _, frame ->
             val camera = frame.camera
             val pose = camera.pose
-            val isTracking = camera.trackingState == TrackingState.TRACKING
+            val trackingState = camera.trackingState
 
-            when {
-                isTracking && !cameraTracking -> {
-                    cameraTracking = true
-                    initialPose = pose
-                    initialHeading = lastHeading
-                    initialLocation = lastLocation
+            when (trackingState) {
+                TrackingState.TRACKING -> {
+                    if (initialPose == null) {
+                        initialPose = pose
+                        initialHeading = lastHeading
+                        initialLocation = lastLocation
+                        initialYaw = extractYawDegrees(pose)
+                    } else {
+                        if (initialHeading == null) initialHeading = lastHeading
+                        if (initialLocation == null) initialLocation = lastLocation
+
+                        val currentHeading = lastHeading
+                        if (currentHeading != null) {
+                            val currentYaw = extractYawDegrees(pose)
+                            val yawDelta = currentYaw - initialYaw
+                            initialHeading = (currentHeading + yawDelta).mod(360f)
+                        }
+                    }
                 }
 
-                isTracking && cameraTracking -> {
-                    if (initialHeading == null) initialHeading = lastHeading
-                    if (initialLocation == null) initialLocation = lastLocation
-                }
+                TrackingState.PAUSED -> {}
 
-                !isTracking && cameraTracking -> {
-                    cameraTracking = false
+                TrackingState.STOPPED -> {
                     initialPose = null
                     initialHeading = null
                     initialLocation = null
+                    initialYaw = 0f
                 }
             }
 
@@ -82,7 +93,7 @@ class ArPoseLocationTracker(
             val initHeading = initialHeading
             val initLocation = initialLocation
 
-            if (cameraTracking && initPose != null && initHeading != null && initLocation != null) {
+            if (trackingState == TrackingState.TRACKING && initPose != null && initHeading != null && initLocation != null) {
                 val location = computeLocation(
                     pose = pose,
                     initialPose = initPose,
@@ -108,10 +119,10 @@ class ArPoseLocationTracker(
         updateJob = null
         locationTracker.stop()
         sceneView.onSessionUpdated = null
-        cameraTracking = false
         initialPose = null
         initialHeading = null
         initialLocation = null
+        initialYaw = 0f
         lastHeading = null
         lastLocation = null
     }
@@ -152,6 +163,16 @@ class ArPoseLocationTracker(
             accuracy = AR_ACCURACY_METERS,
             timestamp = System.currentTimeMillis(),
         )
+    }
+
+    private fun extractYawDegrees(pose: Pose): Float {
+        val qx = pose.qx().toDouble()
+        val qy = pose.qy().toDouble()
+        val qz = pose.qz().toDouble()
+        val qw = pose.qw().toDouble()
+        val sinYaw = 2.0 * (qx * qz + qw * qy)
+        val cosYaw = 1.0 - 2.0 * (qx * qx + qy * qy)
+        return Math.toDegrees(atan2(sinYaw, cosYaw)).toFloat()
     }
 
     companion object {

@@ -65,7 +65,11 @@ fun ArScreen(
 //                                node = viewNode,
 //                                isWallAnchor = true,
 //                            )
-//                            engine.place(arGeoObject)
+//                            activity.lifecycleScope.launch {
+//                                engine.place(arGeoObject).collect {
+//                                    placementState = it
+//                                }
+//                            }
 //                        }
 //                    }
 

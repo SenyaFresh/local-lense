@@ -9,6 +9,8 @@ class PlacedAirState : ArPlacementState() {
     override fun isValid(parameters: PlacementParameters) =
         parameters.distance > ArGeoConfig.AR_RADIUS
 
+    private var isInitialized = false
+
     override fun update(parameters: PlacementParameters) {
         val node = parameters.arGeoObject.node
 
@@ -25,7 +27,10 @@ class PlacedAirState : ArPlacementState() {
             altitudeDifference = parameters.arGeoObject.altitude - parameters.userLocation.altitude
         )
 
-        node.worldPosition = newPosition
+        if (!isInitialized || parameters.distance > ArGeoConfig.AR_RADIUS) {
+            node.worldPosition = newPosition
+            return
+        }
 
         applyBillboardRotation(parameters.cameraPose, node)
     }
@@ -36,6 +41,7 @@ class PlacedAirState : ArPlacementState() {
         ): PlacedAirState {
             val state = PlacedAirState()
             state.update(parameters)
+            state.isInitialized = true
             return state
         }
     }

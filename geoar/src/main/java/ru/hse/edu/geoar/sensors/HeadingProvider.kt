@@ -38,22 +38,7 @@ class HeadingProvider(
             rotationMatrix, SensorManager.AXIS_X, SensorManager.AXIS_Z, remappedRotationMatrix
         )
         SensorManager.getOrientation(remappedRotationMatrix, orientationAngles)
-        return ((Math.toDegrees(orientationAngles[0].toDouble()) + declination + 360) % 360).toFloat()
+        return ((Math.toDegrees(orientationAngles[0].toDouble()) + declination).mod(360.0)).toFloat()
     }
 
-    override fun smooth(newValue: Float, previousValue: Float): Float {
-        var difference = newValue - previousValue
-        if (difference > 180f) difference -= 360f
-        if (difference < -180f) difference += 360f
-
-        val adaptiveAlpha = when {
-            abs(difference) < 1f -> 0.02f
-            abs(difference) < 3f -> 0.05f
-            abs(difference) < 10f -> 0.1f
-            abs(difference) < 30f -> 0.25f
-            else -> 0.5f
-        }
-
-        return (previousValue + adaptiveAlpha * difference + 360f) % 360f
-    }
 }
