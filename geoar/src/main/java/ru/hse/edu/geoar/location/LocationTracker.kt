@@ -96,6 +96,7 @@ class LocationTracker(
     private fun Location.toLocationData() = LocationData(
         latitude = latitude,
         longitude = longitude,
+        altitude = altitude,
         accuracy = accuracy,
         timestamp = time
     )

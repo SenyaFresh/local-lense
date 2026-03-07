@@ -5,8 +5,6 @@ object ArGeoConfig {
     const val WALL_OFFSET = 0.1f
 
     const val AR_RADIUS = 10f
-    const val LOG_BASE = 10.0
-    const val LOG_RANGE = 9.0
 
     const val BASE_SCALE = 0.2f
     const val MIN_SCALE_FACTOR = 0.3

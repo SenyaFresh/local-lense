@@ -23,6 +23,7 @@ class LocationKalmanFilter(
 
     private var originLatitudeDegrees = 0.0
     private var originLongitudeDegrees = 0.0
+    private var altitude = 0.0
 
     private var varianceEastMeters2 = 0.0
     private var varianceNorthMeters2 = 0.0
@@ -48,6 +49,7 @@ class LocationKalmanFilter(
 
     fun process(measurement: LocationData): LocationData? {
         if (!isInitialized) return initialize(measurement)
+        altitude = measurement.altitude
 
         val isMeasurementTooInaccurate = measurement.accuracy > maxAllowedAccuracyMeters
         if (isMeasurementTooInaccurate) return null
@@ -88,6 +90,7 @@ class LocationKalmanFilter(
         return LocationData(
             latitude = latitudeDegrees,
             longitude = longitudeDegrees,
+            altitude = altitude,
             accuracy = accuracyMeters,
             timestamp = timestampMs
         )
@@ -105,6 +108,7 @@ class LocationKalmanFilter(
     private fun initialize(firstMeasurement: LocationData): LocationData {
         originLatitudeDegrees = firstMeasurement.latitude
         originLongitudeDegrees = firstMeasurement.longitude
+        altitude = firstMeasurement.altitude
 
         estimatedEastMeters = 0.0
         estimatedNorthMeters = 0.0

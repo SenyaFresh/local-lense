@@ -126,6 +126,7 @@ class ArPoseLocationTracker(
         initialLocation: LocationData,
     ): LocationData {
         val dx = (pose.tx() - initialPose.tx()).toDouble()
+        val dy = (pose.ty() - initialPose.ty()).toDouble()
         val dz = (pose.tz() - initialPose.tz()).toDouble()
         val forward = -dz
         val right = dx
@@ -140,6 +141,7 @@ class ArPoseLocationTracker(
         return LocationData(
             latitude = initialLocation.latitude + deltaLat,
             longitude = initialLocation.longitude + deltaLon,
+            altitude = initialLocation.altitude + dy,
             accuracy = AR_ACCURACY_METERS,
             timestamp = System.currentTimeMillis(),
         )
