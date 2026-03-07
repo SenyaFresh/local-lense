@@ -1,7 +1,8 @@
 package ru.hse.edu.geoar.ar
 
 import android.content.Context
-import android.util.Log
+import com.google.ar.core.Plane
+import com.google.ar.core.TrackingState
 import io.github.sceneview.ar.ARSceneView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
@@ -53,7 +54,7 @@ class ArGeoEngine(
                 val frame = sceneView.frame ?: return@setOnGestureListener
                 val camera = frame.camera
 
-                if (camera.trackingState != com.google.ar.core.TrackingState.TRACKING) {
+                if (camera.trackingState != TrackingState.TRACKING) {
                     onTap?.invoke(null)
                     return@setOnGestureListener
                 }
@@ -62,9 +63,9 @@ class ArGeoEngine(
                     xPx = e.x,
                     yPx = e.y,
                     planeTypes = setOf(
-                        com.google.ar.core.Plane.Type.HORIZONTAL_UPWARD_FACING,
-                        com.google.ar.core.Plane.Type.HORIZONTAL_DOWNWARD_FACING,
-                        com.google.ar.core.Plane.Type.VERTICAL
+                        Plane.Type.HORIZONTAL_UPWARD_FACING,
+                        Plane.Type.HORIZONTAL_DOWNWARD_FACING,
+                        Plane.Type.VERTICAL
                     )
                 )?.hitPose
 
