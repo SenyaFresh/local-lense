@@ -5,13 +5,17 @@ import com.google.ar.core.TrackingState
 import io.github.sceneview.ar.ARSceneView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
+import ru.hse.edu.geoar.location.ArFrameData
+import ru.hse.edu.geoar.location.ArPoseLocationTracker
 import ru.hse.edu.geoar.location.LocationData
 import ru.hse.edu.geoar.location.LocationTracker
 import ru.hse.edu.geoar.sensors.HeadingProvider
 import ru.hse.edu.geoar.sensors.LinearAccelerationProvider
+import ru.hse.edu.geoar.sensors.SensorsManager
 import ru.hse.edu.geoar.sensors.StepDetectorProvider
 import ru.hse.locallense.common.ResultContainer
 import java.util.concurrent.CopyOnWriteArrayList
@@ -22,17 +26,31 @@ class ArGeoEngine(
     context: Context
 ) {
     private val headingProvider = HeadingProvider(context)
-    private val linearAccelerationProvider = LinearAccelerationProvider(context)
-    private val stepDetectorProvider = StepDetectorProvider(context)
-    private val locationTracker = LocationTracker(headingProvider, stepDetectorProvider, linearAccelerationProvider, scope, context)
+    private val sensorsManager = SensorsManager(
+        headingProvider = headingProvider,
+        stepDetectorProvider = StepDetectorProvider(context),
+        linearAccelerationProvider = LinearAccelerationProvider(context),
+    )
+    private val locationTracker = LocationTracker(
+        sensorsManager = sensorsManager,
+        scope = scope,
+        context = context
+    )
+    private val arPoseLocationTracker = ArPoseLocationTracker(
+        headingProvider = headingProvider,
+        sceneView = sceneView,
+        locationTracker = locationTracker,
+        scope = scope
+    )
     private val controllers = CopyOnWriteArrayList<ArGeoObjectController>()
-    private var updateJob: Job? = null
+    private var isRunning = false
 
-    fun place(arGeoObject: ArGeoObject) {
+    fun place(arGeoObject: ArGeoObject): StateFlow<ArGeoObjectPlacementResult?> {
         val controller = ArGeoObjectController(arGeoObject)
         controllers.add(controller)
         sceneView.addChildNode(arGeoObject.node)
         ensureRunning()
+        return controller.info
     }
 
     fun remove(arGeoObject: ArGeoObject) {
@@ -40,7 +58,6 @@ class ArGeoEngine(
         controller.detach()
         sceneView.removeChildNode(controller.arGeoObject.node)
         controllers.remove(controller)
-
         if (controllers.isEmpty()) stop()
     }
 
@@ -54,42 +71,28 @@ class ArGeoEngine(
     }
 
     private fun ensureRunning() {
-        if (updateJob != null) return
-        headingProvider.start()
-        locationTracker.start()
-
-        updateJob = scope.launch {
-            combine(
-                locationTracker.locationState.filterNotNull(),
-                headingProvider.smoothedValue
-            ) { location, heading -> location to heading }
-                .collect { (locationResult, heading) ->
-                    processFrame(locationResult, heading)
-                }
-        }
+        if (isRunning) return
+        isRunning = true
+        arPoseLocationTracker.onFrameUpdate = { frameData -> processFrame(frameData) }
+        arPoseLocationTracker.start()
     }
 
-    private fun processFrame(locationResult: ResultContainer<LocationData>, heading: Float) {
-        val frame = sceneView.frame ?: return
-        val location = locationResult.unwrapOrNull() ?: return
-        val camera = frame.camera
-
-        if (camera.trackingState != TrackingState.TRACKING) return
-
+    private fun processFrame(frameData: ArFrameData) {
         for (controller in controllers) {
             controller.update(
-                userLocation = location,
-                userHeading = heading,
-                frame = frame,
-                cameraPose = camera.pose,
+                userLocation = frameData.userLocation,
+                userHeading = frameData.userHeading,
+                frame = frameData.frame,
+                cameraPose = frameData.cameraPose,
+                initialCameraHeading = frameData.initialCameraHeading,
+                initialPose = frameData.initialPose,
             )
         }
     }
 
     private fun stop() {
-        updateJob?.cancel()
-        updateJob = null
-        headingProvider.stop()
-        locationTracker.stop()
+        isRunning = false
+        arPoseLocationTracker.onFrameUpdate = null
+        arPoseLocationTracker.stop()
     }
 }

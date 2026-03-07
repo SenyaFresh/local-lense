@@ -11,10 +11,13 @@ data class PlacementParameters(
     val userHeading: Float,
     val frame: Frame,
     val cameraPose: Pose,
-    val distance: Double
+    val distance: Double,
+    val initialCameraHeading: Float,
+    val initialPose: Pose,
 )
 
 sealed interface ArPlacementState {
-    fun update(parameters: PlacementParameters): ArPlacementState
-    fun release() {}
+    fun isValid(parameters: PlacementParameters): Boolean = false
+    fun update(parameters: PlacementParameters) = Unit
+    fun release() = Unit
 }

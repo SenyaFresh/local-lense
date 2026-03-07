@@ -4,6 +4,7 @@ import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorManager
+import android.util.Log
 
 class HeadingProvider(
     context: Context,
@@ -26,6 +27,8 @@ class HeadingProvider(
         var difference = newValue - previousValue
         if (difference > 180f) difference -= 360f
         if (difference < -180f) difference += 360f
-        return (previousValue + alpha * difference + 360f) % 360f
+        val result = (previousValue + alpha * difference + 360f) % 360f
+        Log.d("HeadingProvider", "smooth: $result")
+        return result
     }
 }

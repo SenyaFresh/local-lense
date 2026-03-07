@@ -13,26 +13,20 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import ru.hse.edu.geoar.sensors.HeadingProvider
-import ru.hse.edu.geoar.sensors.LinearAccelerationProvider
 import ru.hse.edu.geoar.sensors.SensorsManager
-import ru.hse.edu.geoar.sensors.StepDetectorProvider
 import ru.hse.locallense.common.ResultContainer
 
 @SuppressLint("MissingPermission")
 class LocationTracker(
-    headingProvider: HeadingProvider,
-    stepDetectorProvider: StepDetectorProvider,
-    linearAccelerationProvider: LinearAccelerationProvider,
+    private val sensorsManager: SensorsManager,
     private val scope: CoroutineScope,
     context: Context
 ) {
-
     private val applicationContext = context.applicationContext
-    private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(applicationContext)
+    private val fusedLocationClient =
+        LocationServices.getFusedLocationProviderClient(applicationContext)
 
     private val locationKalmanFilter = LocationKalmanFilter()
-    private val sensorsManager = SensorsManager(headingProvider, stepDetectorProvider, linearAccelerationProvider)
 
     private val _locationState =
         MutableStateFlow<ResultContainer<LocationData>>(ResultContainer.Loading)

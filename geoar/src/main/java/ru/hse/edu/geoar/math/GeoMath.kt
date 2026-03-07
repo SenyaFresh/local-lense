@@ -1,5 +1,6 @@
 package ru.hse.edu.geoar.math
 
+import android.util.Log
 import ru.hse.edu.geoar.ar.ArGeoObject
 import ru.hse.edu.geoar.location.LocationData
 import ru.hse.edu.geoar.math.Dimens.EARTH_RADIUS_METERS

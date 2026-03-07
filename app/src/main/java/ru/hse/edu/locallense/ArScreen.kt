@@ -25,6 +25,7 @@ import io.github.sceneview.ar.ARSceneView
 import kotlinx.coroutines.launch
 import ru.hse.edu.geoar.ar.ArGeoEngine
 import ru.hse.edu.geoar.ar.ArGeoObject
+import ru.hse.edu.geoar.ar.ArGeoObjectPlacementResult
 import ru.hse.edu.locallense.compose.extensions.createComposeViewNode
 
 @Composable
@@ -32,6 +33,7 @@ fun ArScreen(
     activity: ComponentActivity,
 ) {
     var arGeoEngine by remember { mutableStateOf<ArGeoEngine?>(null) }
+    var placementState by remember { mutableStateOf<ArGeoObjectPlacementResult?>(null) }
 
     DisposableEffect(Unit) {
         onDispose {
@@ -60,7 +62,9 @@ fun ArScreen(
                         node = viewNode,
                         isWallAnchor = true,
                     )
-                    engine.place(arGeoObject)
+                    engine.place(arGeoObject).collect {
+                        placementState = it
+                    }
                 }
             }
         },
@@ -70,6 +74,8 @@ fun ArScreen(
             sceneView.destroy()
         }
     )
+
+    Text(placementState.toString())
 }
 
 @Composable
