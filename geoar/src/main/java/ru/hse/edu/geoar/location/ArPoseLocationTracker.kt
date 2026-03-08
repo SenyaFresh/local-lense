@@ -1,6 +1,5 @@
 package ru.hse.edu.geoar.location
 
-import android.util.Log
 import com.google.ar.core.Frame
 import com.google.ar.core.Pose
 import com.google.ar.core.TrackingState
@@ -11,6 +10,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import ru.hse.edu.geoar.math.Dimens
 import ru.hse.edu.geoar.sensors.HeadingProvider
+import ru.hse.locallense.common.entities.LocationData
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -49,9 +49,9 @@ class ArPoseLocationTracker(
                 locationTracker.locationState
             ) { heading, locationResult ->
                 heading to locationResult
-            }.collect { (heading, locationResult) ->
+            }.collect { (heading, location) ->
                 lastHeading = heading
-                lastLocation = locationResult.unwrapOrNull()
+                lastLocation = location
             }
         }
         sceneView.onSessionUpdated = { _, frame ->
@@ -160,8 +160,6 @@ class ArPoseLocationTracker(
             latitude = initialLocation.latitude + deltaLat,
             longitude = initialLocation.longitude + deltaLon,
             altitude = initialLocation.altitude + dy,
-            accuracy = AR_ACCURACY_METERS,
-            timestamp = System.currentTimeMillis(),
         )
     }
 
@@ -173,10 +171,6 @@ class ArPoseLocationTracker(
         val sinYaw = 2.0 * (qx * qz + qw * qy)
         val cosYaw = 1.0 - 2.0 * (qx * qx + qy * qy)
         return Math.toDegrees(atan2(sinYaw, cosYaw)).toFloat()
-    }
-
-    companion object {
-        private const val AR_ACCURACY_METERS = 0.5f
     }
 }
 

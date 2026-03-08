@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import ru.hse.edu.geoar.sensors.SensorsManager
 import ru.hse.locallense.common.ResultContainer
+import ru.hse.locallense.common.entities.LocationData
 
 @SuppressLint("MissingPermission")
 class LocationTracker(
@@ -29,15 +30,13 @@ class LocationTracker(
     private val locationKalmanFilter = LocationKalmanFilter()
 
     private val _locationState =
-        MutableStateFlow<ResultContainer<LocationData>>(ResultContainer.Loading)
-    val locationState: StateFlow<ResultContainer<LocationData>> = _locationState.asStateFlow()
+        MutableStateFlow<LocationData?>(null)
+    val locationState: StateFlow<LocationData?> = _locationState.asStateFlow()
 
     private var locationCallback: LocationCallback? = null
 
     fun start() {
         if (locationCallback != null) return
-
-        _locationState.value = ResultContainer.Loading
         locationKalmanFilter.reset()
 
         sensorsManager.start(
@@ -54,23 +53,18 @@ class LocationTracker(
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 result.lastLocation?.let { rawLocation ->
-                    val measurement = rawLocation.toLocationData()
+                    val measurement = rawLocation.toLocationFix()
                     val filteredLocation = locationKalmanFilter.process(measurement)
                     if (filteredLocation != null) {
-                        _locationState.value = ResultContainer.Done(filteredLocation)
+                        _locationState.value = filteredLocation
                     }
                 }
             }
         }
 
-        try {
-            fusedLocationClient.requestLocationUpdates(
-                buildLocationRequest(), locationCallback!!, Looper.getMainLooper()
-            )
-        } catch (exception: Exception) {
-            _locationState.value = ResultContainer.Error(exception)
-            locationCallback = null
-        }
+        fusedLocationClient.requestLocationUpdates(
+            buildLocationRequest(), locationCallback!!, Looper.getMainLooper()
+        )
     }
 
     fun stop() {
@@ -83,7 +77,7 @@ class LocationTracker(
 
     private fun emitCurrentEstimate() {
         val estimate = locationKalmanFilter.buildEstimateNow() ?: return
-        _locationState.value = ResultContainer.Done(estimate)
+        _locationState.value = estimate
     }
 
     private fun buildLocationRequest() =
@@ -92,12 +86,4 @@ class LocationTracker(
             .setMinUpdateDistanceMeters(0f)
             .setWaitForAccurateLocation(true)
             .build()
-
-    private fun Location.toLocationData() = LocationData(
-        latitude = latitude,
-        longitude = longitude,
-        altitude = altitude,
-        accuracy = accuracy,
-        timestamp = time
-    )
 }

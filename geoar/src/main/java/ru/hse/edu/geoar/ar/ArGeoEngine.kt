@@ -8,7 +8,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 import ru.hse.edu.geoar.location.ArFrameData
 import ru.hse.edu.geoar.location.ArPoseLocationTracker
-import ru.hse.edu.geoar.location.LocationData
 import ru.hse.edu.geoar.location.LocationTracker
 import ru.hse.edu.geoar.sensors.HeadingProvider
 import ru.hse.edu.geoar.sensors.LinearAccelerationProvider
@@ -21,7 +20,7 @@ class ArGeoEngine(
     private val scope: CoroutineScope,
     context: Context
 ) {
-    var onTap: ((LocationData?, Boolean) -> Unit)? = null
+    var onTap: ((ArTapResult?) -> Unit)? = null
 
     private val headingProvider = HeadingProvider(context)
     private val sensorsManager = SensorsManager(
@@ -55,7 +54,7 @@ class ArGeoEngine(
                 val camera = frame.camera
 
                 if (camera.trackingState != TrackingState.TRACKING) {
-                    onTap?.invoke(null, false)
+                    onTap?.invoke(null)
                     return@setOnGestureListener
                 }
 
@@ -70,7 +69,7 @@ class ArGeoEngine(
                 )
 
                 if (hitResult == null) {
-                    onTap?.invoke(null, false)
+                    onTap?.invoke(null)
                     return@setOnGestureListener
                 }
 
@@ -78,7 +77,7 @@ class ArGeoEngine(
 
                 arPoseLocationTracker.computeLocation(hitPose)?.let { location ->
                     val isWall = (hitResult.trackable as? Plane)?.type == Plane.Type.VERTICAL
-                    onTap?.invoke(location, isWall)
+                    onTap?.invoke(ArTapResult(location, isWall))
                 }
             }
         )

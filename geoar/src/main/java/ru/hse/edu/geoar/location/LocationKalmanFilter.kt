@@ -3,6 +3,7 @@ package ru.hse.edu.geoar.location
 import ru.hse.edu.geoar.math.Dimens.STEP_LENGTH_METERS
 import ru.hse.edu.geoar.math.Dimens.metersPerDegreeLatitude
 import ru.hse.edu.geoar.math.Dimens.metersPerDegreeLongitude
+import ru.hse.locallense.common.entities.LocationData
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
@@ -47,15 +48,15 @@ class LocationKalmanFilter(
         varianceNorthMeters2 += stepVarianceMeters2
     }
 
-    fun process(measurement: LocationData): LocationData? {
+    fun process(measurement: LocationFix): LocationData? {
         if (!isInitialized) return initialize(measurement)
-        altitude = measurement.altitude
+        altitude = measurement.locationData.altitude
 
         val isMeasurementTooInaccurate = measurement.accuracy > maxAllowedAccuracyMeters
         if (isMeasurementTooInaccurate) return null
 
-        val measuredEastMeters = longitudeToEastMeters(measurement.longitude)
-        val measuredNorthMeters = latitudeToNorthMeters(measurement.latitude)
+        val measuredEastMeters = longitudeToEastMeters(measurement.locationData.longitude)
+        val measuredNorthMeters = latitudeToNorthMeters(measurement.locationData.latitude)
 
         val isOutlier = checkForOutlier(
             measuredEastMeters = measuredEastMeters,
@@ -74,41 +75,37 @@ class LocationKalmanFilter(
             measurementVarianceMeters2 = measurementVarianceMeters2
         )
 
-        return buildEstimate(measurement.timestamp)
+        return buildEstimate()
     }
 
     fun setMoving(moving: Boolean) {
         isMoving = moving
     }
 
-    fun buildEstimate(timestampMs: Long): LocationData {
+    fun buildEstimateNow(): LocationData? {
+        if (!isInitialized) return null
+        return buildEstimate()
+    }
+
+    private fun buildEstimate(): LocationData {
         val latitudeDegrees = estimatedLatitudeDegrees()
         val longitudeDegrees = estimatedLongitudeDegrees()
-        val worstVarianceMeters2 = maxOf(varianceEastMeters2, varianceNorthMeters2)
-        val accuracyMeters = sqrt(worstVarianceMeters2).toFloat()
 
         return LocationData(
             latitude = latitudeDegrees,
             longitude = longitudeDegrees,
             altitude = altitude,
-            accuracy = accuracyMeters,
-            timestamp = timestampMs
         )
-    }
-
-    fun buildEstimateNow(): LocationData? {
-        if (!isInitialized) return null
-        return buildEstimate(System.currentTimeMillis())
     }
 
     fun reset() {
         isInitialized = false
     }
 
-    private fun initialize(firstMeasurement: LocationData): LocationData {
-        originLatitudeDegrees = firstMeasurement.latitude
-        originLongitudeDegrees = firstMeasurement.longitude
-        altitude = firstMeasurement.altitude
+    private fun initialize(firstMeasurement: LocationFix): LocationData {
+        originLatitudeDegrees = firstMeasurement.locationData.latitude
+        originLongitudeDegrees = firstMeasurement.locationData.longitude
+        altitude = firstMeasurement.locationData.altitude
 
         estimatedEastMeters = 0.0
         estimatedNorthMeters = 0.0
@@ -120,7 +117,7 @@ class LocationKalmanFilter(
         lastUpdateTimestampMs = firstMeasurement.timestamp
         isInitialized = true
 
-        return firstMeasurement
+        return firstMeasurement.locationData
     }
 
     private fun checkForOutlier(

@@ -24,7 +24,7 @@ class PlacedAirState : ArPlacementState() {
             cameraPose = parameters.cameraPose,
             relativeBearingRadians = relativeBearingRadians,
             realDistanceMeters = parameters.distance,
-            altitudeDifference = parameters.arGeoObject.altitude - parameters.userLocation.altitude
+            altitudeDifference = parameters.arGeoObject.locationData.altitude - parameters.userLocation.altitude
         )
 
         if (!isInitialized || parameters.distance > ArGeoConfig.AR_RADIUS) {

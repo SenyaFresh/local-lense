@@ -5,8 +5,7 @@ import android.hardware.GeomagneticField
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorManager
-import ru.hse.edu.geoar.location.LocationData
-import kotlin.math.abs
+import ru.hse.locallense.common.entities.LocationData
 
 class HeadingProvider(
     context: Context,

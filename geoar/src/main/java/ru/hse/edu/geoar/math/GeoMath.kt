@@ -3,8 +3,8 @@ package ru.hse.edu.geoar.math
 import com.google.ar.core.Pose
 import io.github.sceneview.node.Node
 import ru.hse.edu.geoar.ar.ArGeoObject
-import ru.hse.edu.geoar.location.LocationData
 import ru.hse.edu.geoar.math.Dimens.EARTH_RADIUS_METERS
+import ru.hse.locallense.common.entities.LocationData
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.pow
@@ -13,11 +13,13 @@ import kotlin.math.sqrt
 
 object GeoMath {
 
-    fun distanceMeters(from: LocationData, to: ArGeoObject): Double =
-        haversine(
+    fun distanceMeters(from: LocationData, to: ArGeoObject): Double {
+        val to = to.locationData
+        return haversine(
             latitude1 = from.latitude, longitude1 = from.longitude,
             latitude2 = to.latitude, longitude2 = to.longitude
         )
+    }
 
     fun distanceMeters(cameraPose: Pose, node: Node): Double {
         val targetPosition = node.worldPosition
@@ -32,6 +34,7 @@ object GeoMath {
         from: LocationData,
         to: ArGeoObject
     ): Double {
+        val to = to.locationData
         val bearingToTarget = calculateBearingDegrees(
             latitude1 = from.latitude, longitude1 = from.longitude,
             latitude2 = to.latitude, longitude2 = to.longitude

@@ -4,8 +4,9 @@ import com.google.ar.core.Frame
 import com.google.ar.core.Pose
 import io.github.sceneview.node.Node
 import ru.hse.edu.geoar.ar.ArGeoObject
-import ru.hse.edu.geoar.location.LocationData
+import ru.hse.edu.geoar.location.LocationFix
 import ru.hse.edu.geoar.math.ArMath
+import ru.hse.locallense.common.entities.LocationData
 
 data class PlacementParameters(
     val arGeoObject: ArGeoObject,
