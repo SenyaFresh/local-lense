@@ -4,41 +4,32 @@ import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import com.google.ar.sceneform.rendering.ViewAttachmentManager
-import com.google.ar.sceneform.rendering.ViewRenderable
 import io.github.sceneview.ar.ARSceneView
-import io.github.sceneview.node.ViewNode
-import kotlinx.coroutines.future.await
+import io.github.sceneview.node.ViewNode2
 
-suspend fun ARSceneView.createComposeViewNode(
+fun ARSceneView.createComposeViewNode(
     activity: ComponentActivity,
     content: @Composable () -> Unit
-): ViewNode {
-    val wrapper = SceneviewComposeWrapper(activity, content)
+): ViewNode2 {
+    val sceneView = this
+    val windowManager = ViewNode2.WindowManager(activity)
 
-    val viewAttachmentManager = ViewAttachmentManager(activity, this)
-    viewAttachmentManager.bindToLifecycle(activity)
+    val node = ViewNode2(
+        engine = sceneView.engine,
+        windowManager = windowManager,
+        materialLoader = sceneView.materialLoader,
+        unlit = true,
 
-    val node = ViewNode(this.engine, this.modelLoader, viewAttachmentManager)
+        content = content
+    )
 
-    val renderable = ViewRenderable.builder()
-        .setView(activity, wrapper)
-        .build(this.engine)
-        .await()
-        .apply {
-            isShadowCaster = false
-            isShadowReceiver = false
-        }
+    activity.lifecycle.addObserver(object : DefaultLifecycleObserver {
+        override fun onResume(owner: LifecycleOwner) = windowManager.resume(sceneView)
 
-    node.setRenderable(renderable)
+        override fun onPause(owner: LifecycleOwner) = windowManager.pause()
+
+        override fun onDestroy(owner: LifecycleOwner) = windowManager.destroy()
+    })
 
     return node
-}
-
-private fun ViewAttachmentManager.bindToLifecycle(activity: ComponentActivity) {
-    activity.lifecycle.addObserver(object : DefaultLifecycleObserver {
-        override fun onResume(owner: LifecycleOwner) = onResume()
-        override fun onPause(owner: LifecycleOwner) = onPause()
-        override fun onDestroy(owner: LifecycleOwner) = owner.lifecycle.removeObserver(this)
-    })
 }

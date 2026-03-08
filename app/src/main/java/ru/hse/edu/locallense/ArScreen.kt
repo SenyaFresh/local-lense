@@ -10,7 +10,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -31,65 +30,58 @@ import ru.hse.locallense.components.composables.sceneview.createComposeViewNode
 
 @Composable
 fun ArScreen() {
-    var arGeoEngine by remember { mutableStateOf<ArGeoEngine?>(null) }
     var placementState by remember { mutableStateOf<ArGeoObjectPlacementResult?>(null) }
     val scope = rememberCoroutineScope()
     val activity = (LocalActivity.current as ComponentActivity)
 
-    DisposableEffect(Unit) {
-        onDispose {
-            arGeoEngine?.clear()
-        }
-    }
-
     AndroidView(
         factory = { context ->
-            ARSceneView(context).also { sceneView ->
-                val engine = ArGeoEngine(
+            ARSceneView(
+                context = context,
+            ).also { sceneView ->
+                val arGeoEngine = ArGeoEngine(
                     sceneView = sceneView,
                     context = context,
                     scope = scope,
                 )
-                arGeoEngine = engine
+                val viewNode = sceneView.createComposeViewNode(activity) {
+                    CounterButton()
+                }
+
+                val arGeoObject = ArGeoObject(
+                    latitude = 55.6064317,
+                    longitude = 37.41246,
+                    altitude = 200.0,
+                    node = viewNode,
+                    isWallAnchor = true,
+                )
 
                 scope.launch {
-                    val viewNode = sceneView.createComposeViewNode(activity) {
-                        CounterButton()
-                    }
-
-//                    engine.onTap = { location, isWall ->
-//                        if (location != null) {
-//                            val arGeoObject = ArGeoObject(
-//                                latitude = location.latitude,
-//                                longitude = location.longitude,
-//                                altitude = location.altitude,
-//                                node = viewNode,
-//                                isWallAnchor = isWall,
-//                            )
-//                            scope.launch {
-//                                engine.place(arGeoObject).collect {
-//                                    placementState = it
-//                                }
-//                            }
-//                        }
-//                    }
-
-                    val arGeoObject = ArGeoObject(
-                        latitude = 55.6064317,
-                        longitude = 37.41246,
-                        altitude = 200.0,
-                        node = viewNode,
-                        isWallAnchor = true,
-                    )
-                    engine.place(arGeoObject).collect {
+                    arGeoEngine.place(arGeoObject).collect {
                         placementState = it
                     }
                 }
+
+//                arGeoEngine.onTap = { location, isWall ->
+//                    if (location != null) {
+//                        val arGeoObject = ArGeoObject(
+//                            latitude = location.latitude,
+//                            longitude = location.longitude,
+//                            altitude = location.altitude,
+//                            node = viewNode,
+//                            isWallAnchor = isWall,
+//                        )
+//                        scope.launch {
+//                            arGeoEngine.place(arGeoObject).collect {
+//                                placementState = it
+//                            }
+//                        }
+//                    }
+//                }
             }
         },
         modifier = Modifier.fillMaxSize(),
         onRelease = { sceneView ->
-            arGeoEngine?.clear()
             sceneView.destroy()
         }
     )
