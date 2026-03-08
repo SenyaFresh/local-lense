@@ -21,7 +21,7 @@ class ArGeoEngine(
     private val scope: CoroutineScope,
     context: Context
 ) {
-    var onTap: ((LocationData?) -> Unit)? = null
+    var onTap: ((LocationData?, Boolean) -> Unit)? = null
 
     private val headingProvider = HeadingProvider(context)
     private val sensorsManager = SensorsManager(
@@ -55,11 +55,11 @@ class ArGeoEngine(
                 val camera = frame.camera
 
                 if (camera.trackingState != TrackingState.TRACKING) {
-                    onTap?.invoke(null)
+                    onTap?.invoke(null, false)
                     return@setOnGestureListener
                 }
 
-                val hitPose = sceneView.hitTestAR(
+                val hitResult = sceneView.hitTestAR(
                     xPx = e.x,
                     yPx = e.y,
                     planeTypes = setOf(
@@ -67,15 +67,18 @@ class ArGeoEngine(
                         Plane.Type.HORIZONTAL_DOWNWARD_FACING,
                         Plane.Type.VERTICAL
                     )
-                )?.hitPose
+                )
 
-                if (hitPose == null) {
-                    onTap?.invoke(null)
+                if (hitResult == null) {
+                    onTap?.invoke(null, false)
                     return@setOnGestureListener
                 }
 
+                val hitPose = hitResult.hitPose
+
                 arPoseLocationTracker.computeLocation(hitPose)?.let { location ->
-                    onTap?.invoke(location)
+                    val isWall = (hitResult.trackable as? Plane)?.type == Plane.Type.VERTICAL
+                    onTap?.invoke(location, isWall)
                 }
             }
         )
