@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 import ru.hse.edu.geoar.ar.ArGeoEngine
 import ru.hse.edu.geoar.ar.ArGeoObject
 import ru.hse.edu.geoar.ar.ArGeoObjectPlacementResult
-import ru.hse.edu.locallense.compose.extensions.createComposeViewNode
+import ru.hse.locallense.components.composables.sceneview.createComposeViewNode
 
 @Composable
 fun ArScreen(

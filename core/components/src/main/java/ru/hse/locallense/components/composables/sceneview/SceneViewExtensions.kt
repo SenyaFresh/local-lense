@@ -1,4 +1,4 @@
-package ru.hse.edu.locallense.compose.extensions
+package ru.hse.locallense.components.composables.sceneview
 
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable

@@ -1,4 +1,4 @@
-package ru.hse.edu.locallense.compose.extensions
+package ru.hse.locallense.components.composables.sceneview
 
 import android.view.View
 import android.widget.FrameLayout
@@ -8,7 +8,6 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import ru.hse.edu.locallense.ui.theme.LocalLenseTheme
 
 class SceneviewComposeWrapper(
     private val activity: ComponentActivity,
@@ -18,7 +17,7 @@ class SceneviewComposeWrapper(
     init {
         addView(
             ComposeView(activity).apply {
-                setContent { LocalLenseTheme { content() } }
+                setContent { content() }
             }.apply {
                 scaleX = -1f
             }

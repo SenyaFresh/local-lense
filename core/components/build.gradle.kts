@@ -43,5 +43,11 @@ dependencies {
     implementation(libs.material)
     implementation(libs.material.icons.core)
     implementation(libs.material.icons.extended)
+
+    api(libs.kotlinx.coroutines.core)
+    api(libs.play.services.location)
+    api(libs.ar.core)
+    api(libs.arsceneview)
+
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
