@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import io.github.sceneview.ar.ARSceneView
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import ru.hse.edu.geoar.ar.ArGeoEngine
 import ru.hse.edu.geoar.ar.ArGeoObject
@@ -36,9 +37,17 @@ fun ArScreen() {
             ),
             ArGeoMarker(
                 locationData = LocationData(
-                    latitude = 55.6024317,
-                    longitude = 37.41046,
+                    latitude = 55.6068951,
+                    longitude = 37.4144355,
                     altitude = 200.0,
+                ),
+                isWallAnchor = false,
+            ),
+            ArGeoMarker(
+                locationData = LocationData(
+                    latitude = 55.6066951,
+                    longitude = 37.4141355,
+                    altitude = 210.0,
                 ),
                 isWallAnchor = true,
             ),
@@ -82,6 +91,9 @@ fun ArSceneViewComposable(
     val activity = LocalActivity.current as ComponentActivity
     var arGeoEngine by remember { mutableStateOf<ArGeoEngine?>(null) }
 
+    var placedMarkers by remember { mutableStateOf(emptyList<ArGeoMarker>()) }
+
+
     AndroidView(
         factory = { context ->
             ARSceneView(context).also { sceneView ->
@@ -96,8 +108,13 @@ fun ArSceneViewComposable(
             val engine = arGeoEngine ?: return@AndroidView
             engine.onTap = { tapResult -> onArTap(tapResult) }
 
-            engine.clear()
-            markers.forEach { marker ->
+            val markerksToPlace = markers.filter { marker ->
+                !placedMarkers.contains(marker)
+            }
+            val markerksToRemove = placedMarkers.filter { marker ->
+                !markers.contains(marker)
+            }
+            markerksToPlace.forEach { marker ->
                 placeMarker(sceneView, activity, coroutineScope, engine, marker)
             }
         },
