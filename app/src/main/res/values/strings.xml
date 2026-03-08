@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Local Lense</string>
+    <string name="ar">Дополненная реальность</string>
+    <string name="placemarks">Метки</string>
 </resources>

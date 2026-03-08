@@ -1,6 +1,7 @@
 package ru.hse.edu.locallense
 
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -14,13 +15,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.lifecycleScope
 import io.github.sceneview.ar.ARSceneView
 import kotlinx.coroutines.launch
 import ru.hse.edu.geoar.ar.ArGeoEngine
@@ -29,11 +30,11 @@ import ru.hse.edu.geoar.ar.ArGeoObjectPlacementResult
 import ru.hse.locallense.components.composables.sceneview.createComposeViewNode
 
 @Composable
-fun ArScreen(
-    activity: ComponentActivity,
-) {
+fun ArScreen() {
     var arGeoEngine by remember { mutableStateOf<ArGeoEngine?>(null) }
     var placementState by remember { mutableStateOf<ArGeoObjectPlacementResult?>(null) }
+    val scope = rememberCoroutineScope()
+    val activity = (LocalActivity.current as ComponentActivity)
 
     DisposableEffect(Unit) {
         onDispose {
@@ -47,11 +48,11 @@ fun ArScreen(
                 val engine = ArGeoEngine(
                     sceneView = sceneView,
                     context = context,
-                    scope = activity.lifecycleScope,
+                    scope = scope,
                 )
                 arGeoEngine = engine
 
-                activity.lifecycleScope.launch {
+                scope.launch {
                     val viewNode = sceneView.createComposeViewNode(activity) {
                         CounterButton()
                     }
@@ -65,7 +66,7 @@ fun ArScreen(
 //                                node = viewNode,
 //                                isWallAnchor = isWall,
 //                            )
-//                            activity.lifecycleScope.launch {
+//                            scope.launch {
 //                                engine.place(arGeoObject).collect {
 //                                    placementState = it
 //                                }

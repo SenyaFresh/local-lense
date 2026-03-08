@@ -27,6 +27,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.kotlinx.collections.immutable)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -35,7 +37,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-
+    implementation(libs.androidx.compose.navigation)
     implementation(libs.androidx.compose.ui.text.google.fonts)
 
     implementation(libs.dagger)
@@ -48,5 +50,9 @@ dependencies {
     implementation(project(":core:common-impl"))
     implementation(project(":core:components"))
     implementation(project(":core:presentation"))
+
     implementation(project(":geoar"))
+
+    implementation(project(":features:placemarks"))
+
 }

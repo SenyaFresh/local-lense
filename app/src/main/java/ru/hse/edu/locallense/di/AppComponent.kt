@@ -5,6 +5,8 @@ import dagger.BindsInstance
 import dagger.Component
 import ru.hse.edu.locallense.CoreModule
 import ru.hse.edu.locallense.MainActivity
+import ru.hse.edu.placemarks.di.PlacemarksDeps
+import ru.hse.edu.placemarks.domain.repositories.PlacemarksRepository
 import ru.hse.locallense.common.CoreProvider
 import ru.hse.locallense.common.di.AppScope
 
@@ -15,7 +17,9 @@ import ru.hse.locallense.common.di.AppScope
         CoreModule::class,
     ]
 )
-interface AppComponent {
+interface AppComponent: PlacemarksDeps {
+
+    override val placemarksRepository: PlacemarksRepository
 
     fun inject(mainActivity: MainActivity)
 
