@@ -59,8 +59,8 @@ fun ArScreen(
             ),
             ArPlacemark(
                 id = 2,
-                name = "Photo Marker",
-                type = ArPlacemark.Type.Photo(filepath = ""),
+                name = "Other Text Marker",
+                type = ArPlacemark.Type.Text("Some other marker text"),
                 locationData = LocationData(
                     latitude = 55.6066951,
                     longitude = 37.4141355,

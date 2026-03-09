@@ -56,4 +56,6 @@ dependencies {
     implementation(project(":features:placemarks"))
     implementation(project(":features:ar"))
 
+    implementation(project(":data:placemarks"))
+
 }

@@ -6,12 +6,14 @@ import dagger.Module
 import dagger.Provides
 import ru.hse.edu.locallense.glue.ar.di.ArPlacemarksRepositoryModule
 import ru.hse.edu.locallense.glue.placemarks.di.PlacemarksRepositoryModule
+import ru.hse.edu.placemarks.di.PlacemarksDataRepositoryModule
 
 /**
  * Dagger module that provides dependencies for the app.
  */
 @Module(
     includes = [
+        PlacemarksDataRepositoryModule::class,
         PlacemarksRepositoryModule::class,
         ArPlacemarksRepositoryModule::class,
     ]
