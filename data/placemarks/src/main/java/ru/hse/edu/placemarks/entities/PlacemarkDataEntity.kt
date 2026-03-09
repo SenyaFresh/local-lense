@@ -12,6 +12,7 @@ data class PlacemarkDataEntity(
     val longitude: Double,
     val latitude: Double,
     val altitude: Double,
+    val isWallAnchor: Boolean,
     val type: PlacemarkType,
     val content: String?,
 )
