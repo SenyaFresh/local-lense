@@ -1,9 +1,13 @@
-package ru.hse.edu.placemarks.domain.entities
+package ru.hse.edu.ar.domain.entities
 
-data class Placemark(
+import ru.hse.locallense.common.entities.LocationData
+
+data class ArPlacemark(
     val id: Long,
     val name: String,
     val type: Type,
+    val locationData: LocationData,
+    val isWallAnchor: Boolean,
 ) {
     sealed interface Type {
         data object Simple : Type

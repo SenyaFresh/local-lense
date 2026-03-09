@@ -16,6 +16,7 @@
             <option value="$PROJECT_DIR$/core/components" />
             <option value="$PROJECT_DIR$/core/presentation" />
             <option value="$PROJECT_DIR$/features" />
+            <option value="$PROJECT_DIR$/features/ar" />
             <option value="$PROJECT_DIR$/features/placemarks" />
             <option value="$PROJECT_DIR$/geoar" />
           </set>

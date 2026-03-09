@@ -1,6 +1,7 @@
 package ru.hse.edu.locallense
 
 import android.app.Application
+import ru.hse.edu.ar.di.ArDepsStore
 import ru.hse.edu.locallense.di.AppComponent
 import ru.hse.edu.locallense.di.DaggerAppComponent
 import ru.hse.edu.placemarks.di.PlacemarksDepsStore
@@ -21,6 +22,7 @@ class BaseApplication : Application() {
         Core.init(appComponent.coreProvider)
 
         PlacemarksDepsStore.deps = appComponent
+        ArDepsStore.deps = appComponent
 
     }
 }

@@ -1,35 +1,34 @@
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.ksp)
-    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
-    namespace = "ru.hse.edu.locallense"
+    namespace = "ru.hse.edu.ar"
     compileSdk = 36
-
-    defaultConfig {
-        applicationId = "ru.hse.edu.locallense"
-        minSdk = 26
-        targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
-    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     buildFeatures {
         compose = true
     }
 }
 
+
 dependencies {
-    implementation(libs.kotlinx.collections.immutable)
+    implementation(project(":core:common"))
+    implementation(project(":core:presentation"))
+    implementation(project(":core:components"))
+    implementation(project(":geoar"))
 
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
@@ -39,21 +38,11 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.navigation)
     implementation(libs.androidx.compose.ui.text.google.fonts)
-
-    implementation(libs.dagger)
-    ksp(libs.dagger.compiler)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-    implementation(project(":core:common"))
-    implementation(project(":core:common-impl"))
-    implementation(project(":core:components"))
-    implementation(project(":core:presentation"))
-
-    implementation(project(":geoar"))
-
-    implementation(project(":features:placemarks"))
-    implementation(project(":features:ar"))
-
+    implementation(libs.dagger)
+    ksp(libs.dagger.compiler)
 }

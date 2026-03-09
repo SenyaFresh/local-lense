@@ -24,7 +24,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import kotlinx.coroutines.delay
-import ru.hse.edu.locallense.ar.ArScreen
+import ru.hse.edu.ar.presentation.screens.ArScreen
 import ru.hse.edu.locallense.R
 import ru.hse.edu.placemarks.presentation.screens.PlacemarksScreen
 import ru.hse.locallense.common.Core

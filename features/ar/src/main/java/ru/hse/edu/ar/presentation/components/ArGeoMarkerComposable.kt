@@ -1,4 +1,4 @@
-package ru.hse.edu.locallense.ar
+package ru.hse.edu.ar.presentation.components
 
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width

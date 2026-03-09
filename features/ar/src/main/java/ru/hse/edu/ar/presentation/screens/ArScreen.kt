@@ -1,4 +1,4 @@
-package ru.hse.edu.locallense.ar
+package ru.hse.edu.ar.presentation.screens
 
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivity
@@ -12,10 +12,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.sceneview.ar.ARSceneView
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import ru.hse.edu.ar.di.ArDiContainer
+import ru.hse.edu.ar.di.rememberArDiContainer
+import ru.hse.edu.ar.domain.entities.ArPlacemark
+import ru.hse.edu.ar.presentation.components.ArGeoMarkerComposable
+import ru.hse.edu.ar.presentation.viewmodels.ArViewModel
 import ru.hse.edu.geoar.ar.ArGeoEngine
 import ru.hse.edu.geoar.ar.ArGeoObject
 import ru.hse.edu.geoar.ar.ArGeoObjectPlacementResult
@@ -24,10 +29,16 @@ import ru.hse.locallense.common.entities.LocationData
 import ru.hse.locallense.components.composables.sceneview.createComposeViewNode
 
 @Composable
-fun ArScreen() {
+fun ArScreen(
+    diContainer: ArDiContainer = rememberArDiContainer(),
+    viewModel: ArViewModel = viewModel(factory = diContainer.viewModelFactory),
+) {
     val markers = remember {
         mutableStateListOf(
-            ArGeoMarker(
+            ArPlacemark(
+                id = 0,
+                name = "Simple Marker",
+                type = ArPlacemark.Type.Simple,
                 locationData = LocationData(
                     latitude = 55.6064317,
                     longitude = 37.41246,
@@ -35,7 +46,10 @@ fun ArScreen() {
                 ),
                 isWallAnchor = true,
             ),
-            ArGeoMarker(
+            ArPlacemark(
+                id = 1,
+                name = "Text Marker",
+                type = ArPlacemark.Type.Text("Some marker text"),
                 locationData = LocationData(
                     latitude = 55.6068951,
                     longitude = 37.4144355,
@@ -43,7 +57,10 @@ fun ArScreen() {
                 ),
                 isWallAnchor = false,
             ),
-            ArGeoMarker(
+            ArPlacemark(
+                id = 2,
+                name = "Photo Marker",
+                type = ArPlacemark.Type.Photo(filepath = ""),
                 locationData = LocationData(
                     latitude = 55.6066951,
                     longitude = 37.4141355,
@@ -55,44 +72,20 @@ fun ArScreen() {
     }
     ArContent(
         markers = markers,
-        onNewArGeoMarker = { marker ->
-            markers.add(marker)
-        }
+        onArTap = { }
     )
 }
 
 @Composable
 fun ArContent(
-    markers: List<ArGeoMarker>,
-    onNewArGeoMarker: (ArGeoMarker) -> Unit,
-) {
-    ArSceneViewComposable(
-        markers = markers,
-        onArTap = { tapResult ->
-            if (tapResult == null) {
-                return@ArSceneViewComposable
-            }
-            onNewArGeoMarker(
-                ArGeoMarker(
-                    locationData = tapResult.locationData,
-                    isWallAnchor = tapResult.isWall
-                )
-            )
-        }
-    )
-}
-
-@Composable
-fun ArSceneViewComposable(
-    markers: List<ArGeoMarker>,
+    markers: List<ArPlacemark>,
     onArTap: (ArTapResult?) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val activity = LocalActivity.current as ComponentActivity
     var arGeoEngine by remember { mutableStateOf<ArGeoEngine?>(null) }
 
-    var placedMarkers by remember { mutableStateOf(emptyList<ArGeoMarker>()) }
-
+    var placedMarkers by remember { mutableStateOf(emptyList<ArPlacemark>()) }
 
     AndroidView(
         factory = { context ->
@@ -108,13 +101,13 @@ fun ArSceneViewComposable(
             val engine = arGeoEngine ?: return@AndroidView
             engine.onTap = { tapResult -> onArTap(tapResult) }
 
-            val markerksToPlace = markers.filter { marker ->
+            val markersToPlace = markers.filter { marker ->
                 !placedMarkers.contains(marker)
             }
-            val markerksToRemove = placedMarkers.filter { marker ->
+            val markersToRemove = placedMarkers.filter { marker ->
                 !markers.contains(marker)
             }
-            markerksToPlace.forEach { marker ->
+            markersToPlace.forEach { marker ->
                 placeMarker(sceneView, activity, coroutineScope, engine, marker)
             }
         },
@@ -127,7 +120,7 @@ private fun placeMarker(
     activity: ComponentActivity,
     coroutineScope: CoroutineScope,
     arGeoEngine: ArGeoEngine,
-    marker: ArGeoMarker,
+    marker: ArPlacemark,
 ) {
     val placementResult = mutableStateOf<ArGeoObjectPlacementResult?>(null)
 

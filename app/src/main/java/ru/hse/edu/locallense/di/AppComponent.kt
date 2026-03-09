@@ -3,6 +3,8 @@ package ru.hse.edu.locallense.di
 import android.content.Context
 import dagger.BindsInstance
 import dagger.Component
+import ru.hse.edu.ar.di.ArDeps
+import ru.hse.edu.ar.domain.repositories.ArPlacemarksRepository
 import ru.hse.edu.locallense.CoreModule
 import ru.hse.edu.locallense.MainActivity
 import ru.hse.edu.placemarks.di.PlacemarksDeps
@@ -17,9 +19,11 @@ import ru.hse.locallense.common.di.AppScope
         CoreModule::class,
     ]
 )
-interface AppComponent: PlacemarksDeps {
+interface AppComponent: PlacemarksDeps, ArDeps {
 
     override val placemarksRepository: PlacemarksRepository
+
+    override val arPlacemarksRepository: ArPlacemarksRepository
 
     fun inject(mainActivity: MainActivity)
 

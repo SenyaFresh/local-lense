@@ -35,3 +35,4 @@ include(":geoar")
 
 include(":features")
 include(":features:placemarks")
+include(":features:ar")

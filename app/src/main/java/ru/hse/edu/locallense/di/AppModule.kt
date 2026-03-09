@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import dagger.Module
 import dagger.Provides
+import ru.hse.edu.locallense.glue.ar.di.ArPlacemarksRepositoryModule
 import ru.hse.edu.locallense.glue.placemarks.di.PlacemarksRepositoryModule
 
 /**
@@ -11,7 +12,8 @@ import ru.hse.edu.locallense.glue.placemarks.di.PlacemarksRepositoryModule
  */
 @Module(
     includes = [
-        PlacemarksRepositoryModule::class
+        PlacemarksRepositoryModule::class,
+        ArPlacemarksRepositoryModule::class,
     ]
 )
 class AppModule {
