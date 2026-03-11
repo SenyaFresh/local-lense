@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -33,7 +34,7 @@ fun ArScreen(
     diContainer: ArDiContainer = rememberArDiContainer(),
     viewModel: ArViewModel = viewModel(factory = diContainer.viewModelFactory),
 ) {
-    val markers = remember {
+    val hardMarkers = remember {
         mutableStateListOf(
             ArPlacemark(
                 id = 0,
@@ -70,8 +71,11 @@ fun ArScreen(
             ),
         )
     }
+
+    val markers by viewModel.placemarks.collectAsState()
+
     ArContent(
-        markers = markers,
+        markers = hardMarkers,
         onArTap = { }
     )
 }
@@ -125,7 +129,7 @@ private fun placeMarker(
     val placementResult = mutableStateOf<ArGeoObjectPlacementResult?>(null)
 
     val viewNode = sceneView.createComposeViewNode(activity) {
-        ArGeoMarkerComposable(placementResult.value)
+        ArGeoMarkerComposable(marker, placementResult.value)
     }
 
     val arGeoObject = ArGeoObject(
