@@ -3,9 +3,11 @@ package ru.hse.edu.placemarks.presentation.components
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -14,11 +16,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -108,7 +114,7 @@ private fun PlacemarkCardContent(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(70.dp)
+            .height(if (placemark.tags.isEmpty()) 70.dp else 90.dp)
     ) {
         SecondaryPlacemarkActions(
             onSizeChanged = onSizeChanged,
@@ -187,57 +193,132 @@ private fun PlacemarkContent(
                 )
             }
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = modifier.fillMaxSize()
-        ) {
+        Row(modifier = modifier.fillMaxSize()) {
             Spacer(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .width(LocalSpacing.current.small)
+                    .width(4.dp)
                     .background(placemark.color)
             )
 
-            Spacer(
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .width(LocalSpacing.current.medium)
-            )
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .padding(
+                        start = 12.dp,
+                        end = 12.dp,
+                        top = 10.dp,
+                        bottom = 10.dp
+                    )
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = placemark.name,
+                        maxLines = 1,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        overflow = TextOverflow.Ellipsis,
+                    )
 
-            Column(modifier = Modifier.align(Alignment.CenterVertically)) {
-                Text(
-                    text = placemark.name,
-                    maxLines = 1,
-                    fontWeight = FontWeight.Medium,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = "Долгота: ${placemark.locationData.longitude.round(4)}, Широта: ${placemark.locationData.latitude.round(4)}",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    Spacer(modifier = Modifier.height(3.dp))
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(3.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.LocationOn,
+                            contentDescription = null,
+                            modifier = Modifier.size(13.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = "${placemark.locationData.latitude.round(4)}, ${placemark.locationData.longitude.round(4)}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
+                    if (placemark.tags.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            placemark.tags.forEach { tag ->
+                                PlacemarkTag(tag = tag.name)
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Box(
+                    modifier = Modifier
+                        .height(24.dp)
+                        .width(4.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(MaterialTheme.colorScheme.outlineVariant)
                 )
             }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Spacer(
-                modifier = Modifier
-                    .height(28.dp)
-                    .width(4.dp)
-                    .clip(MaterialTheme.shapes.small)
-                    .background(MaterialTheme.colorScheme.outline)
-            )
-
-            Spacer(
-                modifier = Modifier
-                    .width(LocalSpacing.current.small)
-            )
         }
+    }
+}
+
+@Composable
+private fun PlacemarkTag(tag: String) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(4.dp))
+            .background(
+                MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
+            )
+            .padding(horizontal = 6.dp, vertical = 2.dp)
+    ) {
+        Text(
+            text = "#$tag",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
 @Preview
 @Composable
-fun PlacemarkListItemPreview() {
+fun PlacemarkListItemWithTagsPreview() {
+    PlacemarkListItem(
+        placemark = Placemark(
+            id = 4L,
+            name = "Историческая справка",
+            type = Placemark.Type.Text(
+                "Этот дом был построен в 1893 году архитектором Ф. О. Шехтелем. " +
+                        "Является объектом культурного наследия федерального значения."
+            ),
+            locationData = LocationData(55.7558, 37.6173, altitude = 200.0),
+            color = Color(0xFF7C4DFF),
+            tags = listOf(
+                Tag(0L, "Архитектура"),
+                Tag(1L, "История"),
+            ),
+        ),
+        onPlacemarkDelete = {},
+    )
+}
+
+@Preview
+@Composable
+fun PlacemarkListItemWithoutTagsPreview() {
     PlacemarkListItem(
         placemark = Placemark(
             id = 4L,
