@@ -15,6 +15,9 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+
+        val mapkitApiKey: String by rootProject.extra
+        buildConfigField("String", "MAPKIT_API_KEY", "\"${mapkitApiKey}\"")
     }
 
     compileOptions {
@@ -23,6 +26,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -40,11 +44,13 @@ dependencies {
     implementation(libs.androidx.compose.navigation)
     implementation(libs.androidx.compose.ui.text.google.fonts)
 
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
+
     implementation(libs.dagger)
     ksp(libs.dagger.compiler)
 
-    debugImplementation(libs.androidx.compose.ui.tooling)
-    debugImplementation(libs.androidx.compose.ui.test.manifest)
+    implementation(libs.yandex.mapkit)
 
     implementation(project(":core:common"))
     implementation(project(":core:common-impl"))

@@ -19,6 +19,13 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven("https://maven.google.com")
+        maven {
+            url = uri("https://maven.pkg.github.com/yandex/mapkit-android-sdk")
+        }
+        maven {
+            url = uri("https://artifactory.yandex.net/artifactory/public")
+        }
     }
 }
 

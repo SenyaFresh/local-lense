@@ -43,6 +43,8 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
+    implementation(libs.yandex.mapkit)
+
     implementation(libs.dagger)
     ksp(libs.dagger.compiler)
 }
