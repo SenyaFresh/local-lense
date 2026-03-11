@@ -91,23 +91,6 @@ class ArGeoEngine(
         return controller.info
     }
 
-    fun remove(arGeoObject: ArGeoObject) {
-        val controller = controllers.find { it.arGeoObject == arGeoObject } ?: return
-        controller.detach()
-        sceneView.removeChildNode(controller.arGeoObject.node)
-        controllers.remove(controller)
-        if (controllers.isEmpty()) stop()
-    }
-
-    fun clear() {
-        controllers.forEach {
-            it.detach()
-            sceneView.removeChildNode(it.arGeoObject.node)
-        }
-        controllers.clear()
-        stop()
-    }
-
     private fun ensureRunning() {
         if (isRunning) return
         isRunning = true
