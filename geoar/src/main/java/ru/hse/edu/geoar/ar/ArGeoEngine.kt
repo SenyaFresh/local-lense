@@ -15,12 +15,25 @@ import ru.hse.edu.geoar.sensors.SensorsManager
 import ru.hse.edu.geoar.sensors.StepDetectorProvider
 import java.util.concurrent.CopyOnWriteArrayList
 
+enum class ArGeoEngineMode {
+    PLACEMENT,
+    VIEW
+}
+
 class ArGeoEngine(
     private val sceneView: ARSceneView,
     private val scope: CoroutineScope,
-    context: Context
+    context: Context,
+    initialMode: ArGeoEngineMode = ArGeoEngineMode.VIEW
 ) {
     var onTap: ((ArTapResult?) -> Unit)? = null
+
+    var mode: ArGeoEngineMode = initialMode
+        set(value) {
+            if (field == value) return
+            field = value
+            applyMode(value)
+        }
 
     private val headingProvider = HeadingProvider(context)
     private val sensorsManager = SensorsManager(
@@ -44,12 +57,14 @@ class ArGeoEngine(
 
     init {
         sceneView.planeRenderer.isEnabled = true
-        sceneView.planeRenderer.isVisible = true
+        applyMode(initialMode)
 
         ensureRunning()
 
         sceneView.setOnGestureListener(
             onSingleTapConfirmed = { e, _ ->
+                if (mode != ArGeoEngineMode.PLACEMENT) return@setOnGestureListener
+
                 val frame = sceneView.frame ?: return@setOnGestureListener
                 val camera = frame.camera
 
@@ -91,6 +106,17 @@ class ArGeoEngine(
         return controller.info
     }
 
+    private fun applyMode(newMode: ArGeoEngineMode) {
+        when (newMode) {
+            ArGeoEngineMode.PLACEMENT -> {
+                sceneView.planeRenderer.isVisible = true
+            }
+            ArGeoEngineMode.VIEW -> {
+                sceneView.planeRenderer.isVisible = false
+            }
+        }
+    }
+
     private fun ensureRunning() {
         if (isRunning) return
         isRunning = true
@@ -110,7 +136,7 @@ class ArGeoEngine(
         }
     }
 
-    private fun stop() {
+    fun stop() {
         isRunning = false
         arPoseLocationTracker.onFrameUpdate = null
         arPoseLocationTracker.stop()
