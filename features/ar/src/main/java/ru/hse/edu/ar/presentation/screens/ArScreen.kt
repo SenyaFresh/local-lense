@@ -20,7 +20,9 @@ import kotlinx.coroutines.launch
 import ru.hse.edu.ar.di.ArDiContainer
 import ru.hse.edu.ar.di.rememberArDiContainer
 import ru.hse.edu.ar.domain.entities.ArPlacemark
+import ru.hse.edu.ar.presentation.components.AddPlacemarkDialog
 import ru.hse.edu.ar.presentation.components.ArGeoMarkerComposable
+import ru.hse.edu.ar.presentation.events.PlacemarkEvent
 import ru.hse.edu.ar.presentation.viewmodels.ArViewModel
 import ru.hse.edu.geoar.ar.ArGeoEngine
 import ru.hse.edu.geoar.ar.ArGeoObject
@@ -28,12 +30,15 @@ import ru.hse.edu.geoar.ar.ArGeoObjectPlacementResult
 import ru.hse.edu.geoar.ar.ArTapResult
 import ru.hse.locallense.common.entities.LocationData
 import ru.hse.locallense.components.composables.sceneview.createComposeViewNode
+import ru.hse.locallense.presentation.ResultContainerComposable
 
 @Composable
 fun ArScreen(
     diContainer: ArDiContainer = rememberArDiContainer(),
     viewModel: ArViewModel = viewModel(factory = diContainer.viewModelFactory),
 ) {
+    var tapResult by remember { mutableStateOf<ArTapResult?>(null) }
+
     val hardMarkers = remember {
         mutableStateListOf(
             ArPlacemark(
@@ -72,12 +77,31 @@ fun ArScreen(
         )
     }
 
-    val markers by viewModel.placemarks.collectAsState()
+    val markersResult by viewModel.placemarks.collectAsState()
 
-    ArContent(
-        markers = hardMarkers,
-        onArTap = { }
+    tapResult?.let { result ->
+        AddPlacemarkDialog(
+            tapResult = result,
+            onDismiss = { tapResult = null },
+            onConfirm = { placemark ->
+                viewModel.onEvent(PlacemarkEvent.AddPlacemark(placemark))
+                tapResult = null
+            },
+        )
+    }
+
+    ResultContainerComposable(
+        container = markersResult,
+        onTryAgain = { },
+        onSuccess = {
+            ArContent(
+                markers = markersResult.unwrap() + hardMarkers,
+                onArTap = { result -> tapResult = result }
+            )
+        }
     )
+
+
 }
 
 @Composable
