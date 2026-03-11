@@ -146,9 +146,6 @@ fun ArContent(
             val markersToPlace = markers.filter { marker ->
                 !placedMarkers.contains(marker)
             }
-            val markersToRemove = placedMarkers.filter { marker ->
-                !markers.contains(marker)
-            }
             markersToPlace.forEach { marker ->
                 placeMarker(sceneView, activity, coroutineScope, engine, marker)
             }

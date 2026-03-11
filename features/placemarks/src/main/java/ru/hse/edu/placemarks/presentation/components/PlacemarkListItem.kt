@@ -84,7 +84,7 @@ fun PlacemarkListItem(
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         ),
         shape = itemShape,
         elevation = CardDefaults.cardElevation(1.dp)
@@ -168,7 +168,7 @@ private fun PlacemarkContent(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
         shape = shape,
         modifier = Modifier
             .offset { IntOffset(offset.value.roundToInt(), 0) }
@@ -238,7 +238,7 @@ private fun PlacemarkContent(
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "${placemark.locationData.latitude.round(4)}, ${placemark.locationData.longitude.round(4)}",
+                            text = "${placemark.locationData.latitude.round(6)}, ${placemark.locationData.longitude.round(6)}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,

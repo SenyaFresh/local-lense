@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,6 +45,8 @@ fun AppNavigation() {
         else -> null
     }
 
+    var placemarksScreenSearchEnabled by remember { mutableStateOf(false) }
+
     // Left icon action: handle navigation back if there is a previous screen.
     val leftIconAction: IconAction? = if (navController.previousBackStackEntry == null) {
         null
@@ -75,6 +79,12 @@ fun AppNavigation() {
 
     // Define right icon actions based on the current screen.
     val rightIconsActions: List<IconAction>? = when (currentBackStackEntry.value.routeClass()) {
+        PlacemarksGraph.PlacemarksScreen::class -> listOf(
+            IconAction(
+                imageVector = if (!placemarksScreenSearchEnabled) Icons.Default.Search else Icons.Default.SearchOff,
+                onClick = { placemarksScreenSearchEnabled = !placemarksScreenSearchEnabled }
+            ),
+        )
         else -> null
     }
 
@@ -109,7 +119,10 @@ fun AppNavigation() {
                 startDestination = PlacemarksGraph.PlacemarksScreen
             ) {
                 composable<PlacemarksGraph.PlacemarksScreen> {
-                    PlacemarksScreen()
+                    PlacemarksScreen(
+                        searchEnabled = placemarksScreenSearchEnabled,
+                        onSearchEnabledChange = { placemarksScreenSearchEnabled = it }
+                    )
                 }
             }
 
