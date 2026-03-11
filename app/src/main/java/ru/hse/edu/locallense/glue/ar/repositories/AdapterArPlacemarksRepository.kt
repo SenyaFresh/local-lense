@@ -7,6 +7,7 @@ import ru.hse.edu.ar.domain.repositories.ArPlacemarksRepository
 import ru.hse.edu.locallense.glue.ar.mappers.toArPlacemark
 import ru.hse.edu.locallense.glue.ar.mappers.toPlacemarkWithTags
 import ru.hse.edu.locallense.glue.ar.mappers.toTag
+import ru.hse.edu.locallense.glue.ar.mappers.toTagDataEntity
 import ru.hse.edu.placemarks.repositories.PlacemarksDataRepository
 import ru.hse.locallense.common.ResultContainer
 import ru.hse.locallense.common.entities.Tag
@@ -41,5 +42,13 @@ class AdapterArPlacemarksRepository @Inject constructor(
                 }
             }
         }
+    }
+
+    override suspend fun addTag(tag: Tag) {
+        placemarksDataRepository.addTag(tag.toTagDataEntity())
+    }
+
+    override suspend fun deleteTag(id: Long) {
+        placemarksDataRepository.deleteTag(id)
     }
 }

@@ -14,4 +14,8 @@ interface ArPlacemarksRepository {
     suspend fun deletePlacemark(id: Long)
 
     suspend fun getTags(): Flow<ResultContainer<List<Tag>>>
+
+    suspend fun addTag(tag: Tag)
+
+    suspend fun deleteTag(id: Long)
 }

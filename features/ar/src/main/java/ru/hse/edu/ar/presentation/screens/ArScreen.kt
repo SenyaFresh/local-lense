@@ -85,6 +85,8 @@ fun ArScreen(
     }
 
     val markersResult by viewModel.placemarks.collectAsState()
+    val tagsResult by viewModel.tags.collectAsState()
+
 
     tapResult?.let { result ->
         AddPlacemarkDialog(
@@ -94,6 +96,13 @@ fun ArScreen(
                 viewModel.onEvent(PlacemarkEvent.AddPlacemark(placemark))
                 tapResult = null
             },
+            onAddTag = { tag ->
+                viewModel.onEvent(PlacemarkEvent.AddTag(tag))
+            },
+            onDeleteTag = { id ->
+                viewModel.onEvent(PlacemarkEvent.DeleteTag(id))
+            },
+            availableTags = tagsResult.unwrapOrNull() ?: emptyList(),
         )
     }
 
