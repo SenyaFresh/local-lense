@@ -43,7 +43,7 @@ fun ArScreen(
         mutableStateListOf(
             ArPlacemark(
                 id = 0,
-                name = "Simple Marker",
+                name = "Метка",
                 type = ArPlacemark.Type.Simple,
                 locationData = LocationData(
                     latitude = 55.6064317,
@@ -54,8 +54,8 @@ fun ArScreen(
             ),
             ArPlacemark(
                 id = 1,
-                name = "Text Marker",
-                type = ArPlacemark.Type.Text("Some marker text"),
+                name = "Текстовая метка",
+                type = ArPlacemark.Type.Text("Текст какой-то метки"),
                 locationData = LocationData(
                     latitude = 55.6068951,
                     longitude = 37.4144355,
@@ -65,8 +65,8 @@ fun ArScreen(
             ),
             ArPlacemark(
                 id = 2,
-                name = "Other Text Marker",
-                type = ArPlacemark.Type.Text("Some other marker text"),
+                name = "Другая тестовая метка",
+                type = ArPlacemark.Type.Text("Другой текст другой мтетки"),
                 locationData = LocationData(
                     latitude = 55.6066951,
                     longitude = 37.4141355,
@@ -100,8 +100,6 @@ fun ArScreen(
             )
         }
     )
-
-
 }
 
 @Composable
