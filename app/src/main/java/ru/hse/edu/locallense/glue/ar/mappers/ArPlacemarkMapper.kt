@@ -1,11 +1,14 @@
 package ru.hse.edu.locallense.glue.ar.mappers
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import ru.hse.edu.ar.domain.entities.ArPlacemark
 import ru.hse.edu.placemarks.entities.PlacemarkDataEntity
 import ru.hse.edu.placemarks.entities.PlacemarkType
+import ru.hse.edu.placemarks.entities.PlacemarkWithTags
 import ru.hse.locallense.common.entities.LocationData
 
-fun ArPlacemark.toPlacemarkDataEntity(): PlacemarkDataEntity {
+fun ArPlacemark.toPlacemarkWithTags(): PlacemarkWithTags {
     val arType = type
 
     val entityType = when (arType) {
@@ -22,35 +25,43 @@ fun ArPlacemark.toPlacemarkDataEntity(): PlacemarkDataEntity {
         is ArPlacemark.Type.Simple -> null
     }
 
-    return PlacemarkDataEntity(
+    val entity = PlacemarkDataEntity(
         id = id,
         name = name,
         longitude = locationData.longitude,
         latitude = locationData.latitude,
         altitude = locationData.altitude,
         isWallAnchor = isWallAnchor,
+        color = color.toArgb(),
         type = entityType,
         content = entityContent,
     )
+
+    return PlacemarkWithTags(
+        placemark = entity,
+        tags = tags.map { it.toTagDataEntity() }
+    )
 }
 
-fun PlacemarkDataEntity.toArPlacemark(): ArPlacemark {
-    val arType = when (type) {
+fun PlacemarkWithTags.toArPlacemark(): ArPlacemark {
+    val arType = when (placemark.type) {
         PlacemarkType.SIMPLE -> ArPlacemark.Type.Simple
-        PlacemarkType.TEXT -> ArPlacemark.Type.Text(content ?: "")
-        PlacemarkType.PHOTO -> ArPlacemark.Type.Photo(content ?: "")
-        PlacemarkType.AUDIO -> ArPlacemark.Type.Audio(content ?: "")
+        PlacemarkType.TEXT -> ArPlacemark.Type.Text(placemark.content ?: "")
+        PlacemarkType.PHOTO -> ArPlacemark.Type.Photo(placemark.content ?: "")
+        PlacemarkType.AUDIO -> ArPlacemark.Type.Audio(placemark.content ?: "")
     }
 
     return ArPlacemark(
-        id = id,
-        name = name,
+        id = placemark.id,
+        name = placemark.name,
+        color = Color(placemark.color),
+        tags = tags.map { it.toTag() },
         type = arType,
         locationData = LocationData(
-            latitude = latitude,
-            longitude = longitude,
-            altitude = altitude,
+            latitude = placemark.latitude,
+            longitude = placemark.longitude,
+            altitude = placemark.altitude,
         ),
-        isWallAnchor = isWallAnchor,
+        isWallAnchor = placemark.isWallAnchor,
     )
 }

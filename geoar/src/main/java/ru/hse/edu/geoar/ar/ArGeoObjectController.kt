@@ -10,11 +10,10 @@ import ru.hse.edu.geoar.ar.state.AttachedWallState
 import ru.hse.edu.geoar.ar.state.InitialState
 import ru.hse.edu.geoar.ar.state.PlacementParameters
 import ru.hse.edu.geoar.ar.state.StateUpdater
-import ru.hse.edu.geoar.location.LocationFix
 import ru.hse.edu.geoar.math.ArMath
 import ru.hse.edu.geoar.math.GeoMath
 import ru.hse.edu.geoar.math.GeoMath.distanceMeters
-import ru.hse.edu.geoar.math.round
+import ru.hse.locallense.common.round
 import ru.hse.locallense.common.entities.LocationData
 
 class ArGeoObjectController(val arGeoObject: ArGeoObject) {

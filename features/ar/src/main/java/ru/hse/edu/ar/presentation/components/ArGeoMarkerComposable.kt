@@ -143,6 +143,8 @@ private fun PreviewPinMarker() {
             name = "Кафе «Место»",
             type = ArPlacemark.Type.Simple,
             locationData = LocationData(55.7558, 37.6173, altitude = 200.0),
+            color = Color(0xFF7C4DFF),
+            tags = emptyList(),
             isWallAnchor = false,
         ),
         placementResult = ArGeoObjectPlacementResult(
@@ -162,6 +164,8 @@ private fun PreviewContentCardShort() {
             name = "Заметка",
             type = ArPlacemark.Type.Text("Привет! Здесь был я!"),
             locationData = LocationData(55.7558, 37.6173, altitude = 200.0),
+            color = Color(0xFF7C4D00),
+            tags = emptyList(),
             isWallAnchor = false,
         ),
         placementResult = ArGeoObjectPlacementResult(
@@ -184,6 +188,8 @@ private fun PreviewContentCardLong() {
                         "Является объектом культурного наследия федерального значения."
             ),
             locationData = LocationData(55.7558, 37.6173, altitude = 200.0),
+            color = Color(0xFF7C4DFF),
+            tags = emptyList(),
             isWallAnchor = false,
         ),
         placementResult = ArGeoObjectPlacementResult(

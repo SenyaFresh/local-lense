@@ -1,0 +1,255 @@
+package ru.hse.edu.placemarks.presentation.components
+
+import androidx.compose.animation.core.Animatable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import ru.hse.edu.placemarks.domain.entities.Placemark
+import ru.hse.locallense.common.ResultContainer
+import ru.hse.locallense.common.entities.LocationData
+import ru.hse.locallense.common.entities.Tag
+import ru.hse.locallense.common.round
+import ru.hse.locallense.components.composables.ActionIcon
+import ru.hse.locallense.presentation.locals.LocalSpacing
+import kotlin.collections.emptyList
+import kotlin.math.roundToInt
+
+@Composable
+fun PlacemarkListItem(
+    placemark: Placemark,
+    onPlacemarkDelete: () -> Unit,
+    modifier: Modifier = Modifier,
+    isActionsRevealed: Boolean = false
+) {
+    var contextMenuWidth by remember { mutableFloatStateOf(0f) }
+    val offset = remember { Animatable(0f) }
+    val scope = rememberCoroutineScope()
+    val itemShape = CardDefaults.shape
+
+    LaunchedEffect(isActionsRevealed, contextMenuWidth) {
+        if (isActionsRevealed) {
+            offset.animateTo(-contextMenuWidth)
+        } else {
+            offset.animateTo(0f)
+        }
+    }
+
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        ),
+        shape = itemShape,
+        elevation = CardDefaults.cardElevation(1.dp)
+    ) {
+        PlacemarkCardContent(
+            placemark = placemark,
+            onPlacemarkDelete = onPlacemarkDelete,
+            offset = offset,
+            contextMenuWidth = contextMenuWidth,
+            onSizeChanged = { contextMenuWidth = it.width.toFloat() },
+            shape = itemShape,
+            scope = scope
+        )
+    }
+}
+
+@Composable
+private fun PlacemarkCardContent(
+    placemark: Placemark,
+    onPlacemarkDelete: () -> Unit,
+    offset: Animatable<Float, *>,
+    contextMenuWidth: Float,
+    onSizeChanged: (IntSize) -> Unit,
+    shape: Shape,
+    scope: CoroutineScope
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(70.dp)
+    ) {
+        SecondaryPlacemarkActions(
+            onSizeChanged = onSizeChanged,
+            onPlacemarkDelete = onPlacemarkDelete,
+            shape = shape
+        )
+
+        PlacemarkContent(
+            placemark = placemark,
+            offset = offset,
+            contextMenuWidth = contextMenuWidth,
+            scope = scope,
+            shape = shape,
+        )
+    }
+}
+
+@Composable
+private fun BoxScope.SecondaryPlacemarkActions(
+    onSizeChanged: (IntSize) -> Unit,
+    onPlacemarkDelete: () -> Unit,
+    shape: Shape,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .align(Alignment.CenterEnd)
+            .onSizeChanged { size -> onSizeChanged(size) }
+            .padding(1.dp)
+            .clip(shape),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        ActionIcon(
+            imageVector = Icons.Default.Delete,
+            text = "Удалить",
+            contentColor = MaterialTheme.colorScheme.onError,
+            containerColor = MaterialTheme.colorScheme.error,
+            modifier = Modifier.fillMaxHeight(),
+            onClick = onPlacemarkDelete
+        )
+    }
+}
+
+@Composable
+private fun PlacemarkContent(
+    placemark: Placemark,
+    offset: Animatable<Float, *>,
+    contextMenuWidth: Float,
+    scope: CoroutineScope,
+    shape: Shape,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = shape,
+        modifier = Modifier
+            .offset { IntOffset(offset.value.roundToInt(), 0) }
+            .pointerInput(contextMenuWidth) {
+                detectHorizontalDragGestures(
+                    onHorizontalDrag = { _, dragAmount ->
+                        scope.launch {
+                            val newOffset =
+                                (offset.value + dragAmount).coerceIn(-contextMenuWidth, 0f)
+                            offset.snapTo(newOffset)
+                        }
+                    },
+                    onDragEnd = {
+                        scope.launch {
+                            if (offset.value <= -contextMenuWidth / 2f) {
+                                offset.animateTo(-contextMenuWidth)
+                            } else {
+                                offset.animateTo(0f)
+                            }
+                        }
+                    }
+                )
+            }
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = modifier.fillMaxSize()
+        ) {
+            Spacer(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(LocalSpacing.current.small)
+                    .background(placemark.color)
+            )
+
+            Spacer(
+                modifier = Modifier
+                    .width(LocalSpacing.current.medium)
+            )
+
+            Column(modifier = Modifier.align(Alignment.CenterVertically)) {
+                Text(
+                    text = placemark.name,
+                    maxLines = 1,
+                    fontWeight = FontWeight.Medium,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = "Долгота: ${placemark.locationData.longitude.round(4)}, Широта: ${placemark.locationData.latitude.round(4)}",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Spacer(
+                modifier = Modifier
+                    .height(28.dp)
+                    .width(4.dp)
+                    .clip(MaterialTheme.shapes.small)
+                    .background(MaterialTheme.colorScheme.outline)
+            )
+
+            Spacer(
+                modifier = Modifier
+                    .width(LocalSpacing.current.small)
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun PlacemarkListItemPreview() {
+    PlacemarkListItem(
+        placemark = Placemark(
+            id = 4L,
+            name = "Историческая справка",
+            type = Placemark.Type.Text(
+                "Этот дом был построен в 1893 году архитектором Ф. О. Шехтелем. " +
+                        "Является объектом культурного наследия федерального значения."
+            ),
+            locationData = LocationData(55.7558, 37.6173, altitude = 200.0),
+            color = Color(0xFF7C4DFF),
+            tags = emptyList(),
+        ),
+        onPlacemarkDelete = {},
+    )
+}

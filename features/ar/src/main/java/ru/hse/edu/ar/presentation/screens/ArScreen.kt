@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.sceneview.ar.ARSceneView
@@ -50,6 +51,8 @@ fun ArScreen(
                     longitude = 37.41246,
                     altitude = 200.0,
                 ),
+                color = Color(0xFF7C4DFF),
+                tags = emptyList(),
                 isWallAnchor = true,
             ),
             ArPlacemark(
@@ -61,17 +64,21 @@ fun ArScreen(
                     longitude = 37.4144355,
                     altitude = 200.0,
                 ),
+                color = Color(0xFF7C4D00),
+                tags = emptyList(),
                 isWallAnchor = false,
             ),
             ArPlacemark(
                 id = 2,
                 name = "Другая тестовая метка",
-                type = ArPlacemark.Type.Text("Другой текст другой мтетки"),
+                type = ArPlacemark.Type.Text("Другой текст другой метки"),
                 locationData = LocationData(
                     latitude = 55.6066951,
                     longitude = 37.4141355,
                     altitude = 210.0,
                 ),
+                color = Color(0xFF7C4DFF),
+                tags = emptyList(),
                 isWallAnchor = true,
             ),
         )

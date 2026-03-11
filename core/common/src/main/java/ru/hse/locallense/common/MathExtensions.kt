@@ -1,4 +1,4 @@
-package ru.hse.edu.geoar.math
+package ru.hse.locallense.common
 
 import kotlin.math.pow
 import kotlin.math.roundToInt
