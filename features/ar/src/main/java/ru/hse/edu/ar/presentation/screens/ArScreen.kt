@@ -134,7 +134,6 @@ fun ArContent(
             ARSceneView(context).also { sceneView ->
                 arGeoEngine = ArGeoEngine(
                     sceneView = sceneView,
-                    context = context,
                     scope = coroutineScope,
                 )
             }

@@ -17,6 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -27,6 +28,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import kotlinx.coroutines.delay
 import ru.hse.edu.ar.presentation.screens.ArScreen
+import ru.hse.edu.geoar.ar.ArGeoFactory
 import ru.hse.edu.locallense.R
 import ru.hse.edu.placemarks.presentation.screens.PlacemarksScreen
 import ru.hse.locallense.common.Core
@@ -34,6 +36,11 @@ import ru.hse.locallense.common.Core
 @Composable
 fun AppNavigation() {
     val context = LocalContext.current.applicationContext
+
+    val coroutineScope = rememberCoroutineScope()
+    LaunchedEffect(Unit) {
+        ArGeoFactory.init(context, coroutineScope)
+    }
 
     val navController = rememberNavController()
     val currentBackStackEntry = navController.currentBackStackEntryAsState()

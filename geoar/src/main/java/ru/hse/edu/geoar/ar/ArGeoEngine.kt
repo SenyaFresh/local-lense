@@ -6,6 +6,8 @@ import com.google.ar.core.TrackingState
 import io.github.sceneview.ar.ARSceneView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
+import ru.hse.edu.geoar.ar.ArGeoFactory.headingProvider
+import ru.hse.edu.geoar.ar.ArGeoFactory.locationTracker
 import ru.hse.edu.geoar.location.ArFrameData
 import ru.hse.edu.geoar.location.ArPoseLocationTracker
 import ru.hse.edu.geoar.location.LocationTracker
@@ -23,7 +25,6 @@ enum class ArGeoEngineMode {
 class ArGeoEngine(
     private val sceneView: ARSceneView,
     private val scope: CoroutineScope,
-    context: Context,
     initialMode: ArGeoEngineMode = ArGeoEngineMode.VIEW
 ) {
     var onTap: ((ArTapResult?) -> Unit)? = null
@@ -35,17 +36,9 @@ class ArGeoEngine(
             applyMode(value)
         }
 
-    private val headingProvider = HeadingProvider(context)
-    private val sensorsManager = SensorsManager(
-        headingProvider = headingProvider,
-        stepDetectorProvider = StepDetectorProvider(context),
-        linearAccelerationProvider = LinearAccelerationProvider(context),
-    )
-    private val locationTracker = LocationTracker(
-        sensorsManager = sensorsManager,
-        scope = scope,
-        context = context
-    )
+    private val headingProvider = ArGeoFactory.headingProvider
+    private val sensorsManager = ArGeoFactory.sensorsManager
+    private val locationTracker = ArGeoFactory.locationTracker
     private val arPoseLocationTracker = ArPoseLocationTracker(
         headingProvider = headingProvider,
         sceneView = sceneView,
