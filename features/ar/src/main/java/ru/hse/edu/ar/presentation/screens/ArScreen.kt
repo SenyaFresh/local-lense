@@ -43,50 +43,6 @@ fun ArScreen(
 ) {
     var tapResult by remember { mutableStateOf<ArTapResult?>(null) }
 
-    val hardMarkers = remember {
-        mutableStateListOf(
-            ArPlacemark(
-                id = 0,
-                name = "Метка",
-                type = ArPlacemark.Type.Simple,
-                locationData = LocationData(
-                    latitude = 55.6064317,
-                    longitude = 37.41246,
-                    altitude = 200.0,
-                ),
-                color = Color(0xFF7C4DFF),
-                tags = emptyList(),
-                isWallAnchor = true,
-            ),
-            ArPlacemark(
-                id = 1,
-                name = "Текстовая метка",
-                type = ArPlacemark.Type.Text("Текст какой-то метки"),
-                locationData = LocationData(
-                    latitude = 55.6068951,
-                    longitude = 37.4144355,
-                    altitude = 200.0,
-                ),
-                color = Color(0xFF7C4D00),
-                tags = emptyList(),
-                isWallAnchor = false,
-            ),
-            ArPlacemark(
-                id = 2,
-                name = "Другая тестовая метка",
-                type = ArPlacemark.Type.Text("Другой текст другой метки"),
-                locationData = LocationData(
-                    latitude = 55.6066951,
-                    longitude = 37.4141355,
-                    altitude = 210.0,
-                ),
-                color = Color(0xFF7C4DFF),
-                tags = emptyList(),
-                isWallAnchor = true,
-            ),
-        )
-    }
-
     val markersResult by viewModel.placemarks.collectAsState()
     val tagsResult by viewModel.tags.collectAsState()
 
@@ -114,7 +70,7 @@ fun ArScreen(
         onTryAgain = { },
         onSuccess = {
             ArContent(
-                markers = markersResult.unwrap() + hardMarkers,
+                markers = markersResult.unwrap(),
                 onArTap = { result ->
                     tapResult = result
                 },
