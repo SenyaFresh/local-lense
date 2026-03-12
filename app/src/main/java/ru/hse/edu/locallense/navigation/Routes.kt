@@ -6,9 +6,15 @@ import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 
 @Serializable
+enum class ArNavMode { VIEW_ALL, VIEW_SINGLE, ADD_NEW }
+
+@Serializable
 data object ArGraph {
     @Serializable
-    data object ArScreen
+    data class ArScreen(
+        val navMode: ArNavMode = ArNavMode.VIEW_ALL,
+        val placemarkId: Long? = null,
+    )
 
     @Serializable
     data object PreparationsScreen

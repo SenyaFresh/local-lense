@@ -35,64 +35,86 @@ import ru.hse.locallense.common.entities.LocationData
 import ru.hse.locallense.components.composables.sceneview.createComposeViewNode
 import ru.hse.locallense.presentation.ResultContainerComposable
 
+sealed class ArScreenMode {
+    data object ViewAll : ArScreenMode()
+    data class ViewSingle(val placemarkId: Long) : ArScreenMode()
+    data object AddNew : ArScreenMode()
+}
+
 @Composable
 fun ArScreen(
+    mode: ArScreenMode,
     diContainer: ArDiContainer = rememberArDiContainer(),
     viewModel: ArViewModel = viewModel(factory = diContainer.viewModelFactory),
-    isNewMarkMode: Boolean = false,
 ) {
     var tapResult by remember { mutableStateOf<ArTapResult?>(null) }
 
     val markersResult by viewModel.placemarks.collectAsState()
     val tagsResult by viewModel.tags.collectAsState()
 
-
-    tapResult?.let { result ->
-        AddPlacemarkDialog(
-            tapResult = result,
-            onDismiss = { tapResult = null },
-            onConfirm = { placemark ->
-                viewModel.onEvent(PlacemarkEvent.AddPlacemark(placemark))
-                tapResult = null
-            },
-            onAddTag = { tag ->
-                viewModel.onEvent(PlacemarkEvent.AddTag(tag))
-            },
-            onDeleteTag = { id ->
-                viewModel.onEvent(PlacemarkEvent.DeleteTag(id))
-            },
-            availableTags = tagsResult.unwrapOrNull() ?: emptyList(),
-        )
-    }
-
-    ResultContainerComposable(
-        container = markersResult,
-        onTryAgain = { },
-        onSuccess = {
-            ArContent(
-                markers = markersResult.unwrap(),
-                onArTap = { result ->
-                    tapResult = result
+    if (mode is ArScreenMode.AddNew) {
+        tapResult?.let { result ->
+            AddPlacemarkDialog(
+                tapResult = result,
+                onDismiss = { tapResult = null },
+                onConfirm = { placemark ->
+                    viewModel.onEvent(PlacemarkEvent.AddPlacemark(placemark))
+                    tapResult = null
                 },
-                isNewMarkMode = isNewMarkMode,
+                onAddTag = { tag ->
+                    viewModel.onEvent(PlacemarkEvent.AddTag(tag))
+                },
+                onDeleteTag = { id ->
+                    viewModel.onEvent(PlacemarkEvent.DeleteTag(id))
+                },
+                availableTags = tagsResult.unwrapOrNull() ?: emptyList(),
             )
         }
-    )
+    }
+
+    when (mode) {
+        is ArScreenMode.AddNew -> {
+            ArContent(
+                markers = emptyList(),
+                mode = mode,
+                onArTap = { tapResult = it },
+            )
+        }
+        else -> {
+            ResultContainerComposable(
+                container = markersResult,
+                onTryAgain = { },
+                onSuccess = {
+                    val markers = when (mode) {
+                        is ArScreenMode.ViewAll -> markersResult.unwrap()
+                        is ArScreenMode.ViewSingle -> markersResult.unwrap().filter { it.id == mode.placemarkId }
+                    }
+                    ArContent(
+                        markers = markers,
+                        mode = mode,
+                        onArTap = null,
+                    )
+                }
+            )
+        }
+    }
 }
 
 @Composable
 fun ArContent(
     markers: List<ArPlacemark>,
-    onArTap: (ArTapResult?) -> Unit,
-    isNewMarkMode: Boolean,
+    mode: ArScreenMode,
+    onArTap: ((ArTapResult?) -> Unit)?,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val activity = LocalActivity.current as ComponentActivity
     var arGeoEngine by remember { mutableStateOf<ArGeoEngine?>(null) }
 
-    LaunchedEffect(arGeoEngine, isNewMarkMode) {
+    val isPlacementMode = mode is ArScreenMode.AddNew
+
+    LaunchedEffect(arGeoEngine, isPlacementMode) {
         if (arGeoEngine == null) return@LaunchedEffect
-        if (isNewMarkMode) {
+        if (isPlacementMode) {
             arGeoEngine?.mode = ArGeoEngineMode.PLACEMENT
             arGeoEngine?.clear()
         } else {
@@ -112,10 +134,10 @@ fun ArContent(
         update = { sceneView ->
             val engine = arGeoEngine ?: return@AndroidView
             engine.onTap = { tapResult ->
-                onArTap(tapResult)
+                onArTap?.invoke(tapResult)
             }
 
-            if (!isNewMarkMode) {
+            if (!isPlacementMode) {
                 markers.forEach { marker ->
                     placeMarker(sceneView, activity, coroutineScope, engine, marker)
                 }

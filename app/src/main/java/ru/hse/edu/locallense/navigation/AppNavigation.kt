@@ -26,8 +26,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
+import androidx.navigation.toRoute
 import kotlinx.coroutines.delay
 import ru.hse.edu.ar.presentation.screens.ArScreen
+import ru.hse.edu.ar.presentation.screens.ArScreenMode
 import ru.hse.edu.ar.presentation.screens.PreparationsScreen
 import ru.hse.edu.geoar.ar.ArGeoFactory
 import ru.hse.edu.locallense.R
@@ -103,8 +105,6 @@ fun AppNavigation() {
         else -> null
     }
 
-    var isNewMarkMode by remember { mutableStateOf(false) }
-
     // Scaffold the layout with the top bar, bottom bar, and navigation host.
     Scaffold(
         topBar = {
@@ -143,11 +143,15 @@ fun AppNavigation() {
                             // TODO
                         },
                         onPlacemarkOpenInAr = { id ->
-                            // TODO
+                            navController.navigate(ArGraph.ArScreen(
+                                navMode = ArNavMode.VIEW_SINGLE,
+                                placemarkId = id,
+                            ))
                         },
                         onAddNewPlacemark = {
-                            isNewMarkMode = true
-                            navController.navigate(ArGraph.ArScreen)
+                            navController.navigate(ArGraph.ArScreen(
+                                navMode = ArNavMode.ADD_NEW,
+                            ))
                         }
                     )
                 }
@@ -162,15 +166,20 @@ fun AppNavigation() {
                         initialLongitude = initialLongitude,
                         onContinue = { lat, lng ->
                             ArGeoFactory.locationTracker.setExactLocation(lat, lng)
-                            isNewMarkMode = false
-                            navController.navigate(ArGraph.ArScreen)
+                            navController.navigate(ArGraph.ArScreen(
+                                navMode = ArNavMode.VIEW_ALL,
+                            ))
                         }
                     )
                 }
-                composable<ArGraph.ArScreen> {
-                    ArScreen(
-                        isNewMarkMode = isNewMarkMode
-                    )
+                composable<ArGraph.ArScreen> { backStackEntry ->
+                    val args = backStackEntry.toRoute<ArGraph.ArScreen>()
+                    val mode = when (args.navMode) {
+                        ArNavMode.VIEW_ALL -> ArScreenMode.ViewAll
+                        ArNavMode.VIEW_SINGLE -> ArScreenMode.ViewSingle(args.placemarkId!!)
+                        ArNavMode.ADD_NEW -> ArScreenMode.AddNew
+                    }
+                    ArScreen(mode = mode)
                 }
             }
         }
