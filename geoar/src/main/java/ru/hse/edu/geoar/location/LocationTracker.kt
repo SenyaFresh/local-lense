@@ -35,6 +35,12 @@ class LocationTracker(
 
     private var locationCallback: LocationCallback? = null
 
+    fun setExactLocation(latitude: Double, longitude: Double) {
+        val locationData = LocationData(latitude, longitude, _locationState.value!!.altitude)
+        locationKalmanFilter.forcePosition(locationData, System.currentTimeMillis())
+        _locationState.value = locationData
+    }
+
     fun start() {
         if (locationCallback != null) return
         locationKalmanFilter.reset()

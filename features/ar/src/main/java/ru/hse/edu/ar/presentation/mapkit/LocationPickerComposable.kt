@@ -35,7 +35,7 @@ import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.mapview.MapView
 
 @Composable
-fun LocationPickerMapView(
+fun LocationPickerComposable(
     modifier: Modifier = Modifier,
     title: String,
     initialLatitude: Double,

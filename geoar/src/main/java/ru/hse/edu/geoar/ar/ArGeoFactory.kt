@@ -37,6 +37,4 @@ object ArGeoFactory {
         )
         locationTracker.start()
     }
-
-
 }

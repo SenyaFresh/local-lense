@@ -9,6 +9,9 @@ import kotlin.reflect.KClass
 data object ArGraph {
     @Serializable
     data object ArScreen
+
+    @Serializable
+    data object PreparationsScreen
 }
 
 @Serializable

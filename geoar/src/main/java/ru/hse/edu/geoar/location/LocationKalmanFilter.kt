@@ -78,6 +78,21 @@ class LocationKalmanFilter(
         return buildEstimate()
     }
 
+    fun forcePosition(locationData: LocationData, timestampMs: Long) {
+        originLatitudeDegrees = locationData.latitude
+        originLongitudeDegrees = locationData.longitude
+        altitude = locationData.altitude
+
+        estimatedEastMeters = 0.0
+        estimatedNorthMeters = 0.0
+
+        varianceEastMeters2 = FORCED_POSITION_VARIANCE_M2
+        varianceNorthMeters2 = FORCED_POSITION_VARIANCE_M2
+
+        lastUpdateTimestampMs = timestampMs
+        isInitialized = true
+    }
+
     fun setMoving(moving: Boolean) {
         isMoving = moving
     }
@@ -198,5 +213,6 @@ class LocationKalmanFilter(
 
     companion object {
         private const val OUTLIER_SIGMA_MULTIPLIER = 2.5
+        private const val FORCED_POSITION_VARIANCE_M2 = 0.01
     }
 }
