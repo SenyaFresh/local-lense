@@ -103,6 +103,8 @@ fun AppNavigation() {
         else -> null
     }
 
+    var isNewMarkMode by remember { mutableStateOf(false) }
+
     // Scaffold the layout with the top bar, bottom bar, and navigation host.
     Scaffold(
         topBar = {
@@ -143,6 +145,10 @@ fun AppNavigation() {
                         onPlacemarkOpenInAr = { id ->
                             // TODO
                         },
+                        onAddNewPlacemark = {
+                            isNewMarkMode = true
+                            navController.navigate(ArGraph.ArScreen)
+                        }
                     )
                 }
             }
@@ -156,12 +162,15 @@ fun AppNavigation() {
                         initialLongitude = initialLongitude,
                         onContinue = { lat, lng ->
                             ArGeoFactory.locationTracker.setExactLocation(lat, lng)
+                            isNewMarkMode = false
                             navController.navigate(ArGraph.ArScreen)
                         }
                     )
                 }
                 composable<ArGraph.ArScreen> {
-                    ArScreen()
+                    ArScreen(
+                        isNewMarkMode = isNewMarkMode
+                    )
                 }
             }
         }

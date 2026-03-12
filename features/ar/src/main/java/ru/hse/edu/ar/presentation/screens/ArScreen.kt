@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -26,6 +27,7 @@ import ru.hse.edu.ar.presentation.components.ArGeoMarkerComposable
 import ru.hse.edu.ar.presentation.events.PlacemarkEvent
 import ru.hse.edu.ar.presentation.viewmodels.ArViewModel
 import ru.hse.edu.geoar.ar.ArGeoEngine
+import ru.hse.edu.geoar.ar.ArGeoEngineMode
 import ru.hse.edu.geoar.ar.ArGeoObject
 import ru.hse.edu.geoar.ar.ArGeoObjectPlacementResult
 import ru.hse.edu.geoar.ar.ArTapResult
@@ -37,6 +39,7 @@ import ru.hse.locallense.presentation.ResultContainerComposable
 fun ArScreen(
     diContainer: ArDiContainer = rememberArDiContainer(),
     viewModel: ArViewModel = viewModel(factory = diContainer.viewModelFactory),
+    isNewMarkMode: Boolean = false,
 ) {
     var tapResult by remember { mutableStateOf<ArTapResult?>(null) }
 
@@ -112,7 +115,10 @@ fun ArScreen(
         onSuccess = {
             ArContent(
                 markers = markersResult.unwrap() + hardMarkers,
-                onArTap = { result -> tapResult = result }
+                onArTap = { result ->
+                    tapResult = result
+                },
+                isNewMarkMode = isNewMarkMode,
             )
         }
     )
@@ -122,12 +128,21 @@ fun ArScreen(
 fun ArContent(
     markers: List<ArPlacemark>,
     onArTap: (ArTapResult?) -> Unit,
+    isNewMarkMode: Boolean,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val activity = LocalActivity.current as ComponentActivity
     var arGeoEngine by remember { mutableStateOf<ArGeoEngine?>(null) }
 
-    var placedMarkers by remember { mutableStateOf(emptyList<ArPlacemark>()) }
+    LaunchedEffect(arGeoEngine, isNewMarkMode) {
+        if (arGeoEngine == null) return@LaunchedEffect
+        if (isNewMarkMode) {
+            arGeoEngine?.mode = ArGeoEngineMode.PLACEMENT
+            arGeoEngine?.clear()
+        } else {
+            arGeoEngine?.mode = ArGeoEngineMode.VIEW
+        }
+    }
 
     AndroidView(
         factory = { context ->
@@ -140,13 +155,14 @@ fun ArContent(
         },
         update = { sceneView ->
             val engine = arGeoEngine ?: return@AndroidView
-            engine.onTap = { tapResult -> onArTap(tapResult) }
-
-            val markersToPlace = markers.filter { marker ->
-                !placedMarkers.contains(marker)
+            engine.onTap = { tapResult ->
+                onArTap(tapResult)
             }
-            markersToPlace.forEach { marker ->
-                placeMarker(sceneView, activity, coroutineScope, engine, marker)
+
+            if (!isNewMarkMode) {
+                markers.forEach { marker ->
+                    placeMarker(sceneView, activity, coroutineScope, engine, marker)
+                }
             }
         },
         modifier = Modifier.fillMaxSize(),

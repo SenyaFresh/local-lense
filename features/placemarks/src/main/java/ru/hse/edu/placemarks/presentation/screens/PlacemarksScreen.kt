@@ -4,9 +4,11 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -35,6 +37,7 @@ import ru.hse.edu.placemarks.presentation.events.PlacemarkEvent
 import ru.hse.edu.placemarks.presentation.viewmodels.PlacemarksViewModel
 import ru.hse.locallense.common.ResultContainer
 import ru.hse.locallense.common.entities.Tag
+import ru.hse.locallense.components.composables.buttons.AddFloatingActionButton
 import ru.hse.locallense.components.composables.environment.SearchBar
 import ru.hse.locallense.presentation.locals.LocalSpacing
 
@@ -45,7 +48,8 @@ fun PlacemarksScreen(
     searchEnabled: Boolean,
     onSearchEnabledChange: (Boolean) -> Unit,
     onPlacemarkOpenOnMap: (Long) -> Unit,
-    onPlacemarkOpenInAr: (Long) -> Unit
+    onPlacemarkOpenInAr: (Long) -> Unit,
+    onAddNewPlacemark: () -> Unit,
 ) {
     val placemarks by viewModel.placemarks.collectAsState()
     val tags by viewModel.tags.collectAsState()
@@ -65,6 +69,15 @@ fun PlacemarksScreen(
         onPlacemarkOpenInAr = onPlacemarkOpenInAr,
         onPlacemarkEvent = viewModel::onEvent,
     )
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        AddFloatingActionButton(
+            onClick = onAddNewPlacemark,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(LocalSpacing.current.medium)
+        )
+    }
 }
 
 @Composable

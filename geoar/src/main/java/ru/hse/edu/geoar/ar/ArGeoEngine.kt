@@ -99,6 +99,14 @@ class ArGeoEngine(
         return controller.info
     }
 
+    fun clear() {
+        controllers.forEach {
+            it.detach()
+            sceneView.removeChildNode(it.arGeoObject.node)
+        }
+        controllers.clear()
+    }
+
     private fun applyMode(newMode: ArGeoEngineMode) {
         when (newMode) {
             ArGeoEngineMode.PLACEMENT -> {
