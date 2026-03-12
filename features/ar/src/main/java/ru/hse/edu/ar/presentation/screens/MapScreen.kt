@@ -28,6 +28,7 @@ fun MapScreen(
     mode: MapScreenMode,
     initialLatitude: Double,
     initialLongitude: Double,
+    onPlacemarkAdded: () -> Unit,
     diContainer: ArDiContainer = rememberArDiContainer(),
     viewModel: ArViewModel = viewModel(factory = diContainer.viewModelFactory),
 ) {
@@ -44,6 +45,7 @@ fun MapScreen(
                 onConfirm = { placemark ->
                     viewModel.onEvent(PlacemarkEvent.AddPlacemark(placemark))
                     pickedLocation = null
+                    onPlacemarkAdded()
                 },
                 onAddTag = { tag ->
                     viewModel.onEvent(PlacemarkEvent.AddTag(tag))

@@ -194,7 +194,14 @@ fun AppNavigation() {
                         ArNavMode.VIEW_SINGLE -> ArScreenMode.ViewSingle(args.placemarkId!!)
                         ArNavMode.ADD_NEW -> ArScreenMode.AddNew
                     }
-                    ArScreen(mode = mode)
+                    ArScreen(
+                        mode = mode,
+                        onPlacemarkAdded = {
+                            navController.navigate(PlacemarksGraph.PlacemarksScreen) {
+                                popUpTo(PlacemarksGraph.PlacemarksScreen) { inclusive = true }
+                            }
+                        },
+                    )
                 }
             }
 
@@ -215,6 +222,11 @@ fun AppNavigation() {
                             mode = mode,
                             initialLatitude = lat,
                             initialLongitude = lng,
+                            onPlacemarkAdded = {
+                                navController.navigate(PlacemarksGraph.PlacemarksScreen) {
+                                    popUpTo(PlacemarksGraph.PlacemarksScreen) { inclusive = true }
+                                }
+                            },
                         )
                     } else {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

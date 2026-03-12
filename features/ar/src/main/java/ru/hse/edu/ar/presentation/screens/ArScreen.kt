@@ -41,6 +41,7 @@ sealed class ArScreenMode {
 @Composable
 fun ArScreen(
     mode: ArScreenMode,
+    onPlacemarkAdded: () -> Unit,
     diContainer: ArDiContainer = rememberArDiContainer(),
     viewModel: ArViewModel = viewModel(factory = diContainer.viewModelFactory),
 ) {
@@ -58,6 +59,7 @@ fun ArScreen(
                 onConfirm = { placemark ->
                     viewModel.onEvent(PlacemarkEvent.AddPlacemark(placemark))
                     tapResult = null
+                    onPlacemarkAdded()
                 },
                 onAddTag = { tag ->
                     viewModel.onEvent(PlacemarkEvent.AddTag(tag))
@@ -86,6 +88,7 @@ fun ArScreen(
                     val markers = when (mode) {
                         is ArScreenMode.ViewAll -> markersResult.unwrap()
                         is ArScreenMode.ViewSingle -> markersResult.unwrap().filter { it.id == mode.placemarkId }
+                        else -> emptyList()
                     }
                     ArContent(
                         markers = markers,
