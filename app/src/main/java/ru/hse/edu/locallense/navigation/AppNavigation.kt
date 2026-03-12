@@ -5,12 +5,15 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SearchOff
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
@@ -30,6 +34,8 @@ import androidx.navigation.toRoute
 import kotlinx.coroutines.delay
 import ru.hse.edu.ar.presentation.screens.ArScreen
 import ru.hse.edu.ar.presentation.screens.ArScreenMode
+import ru.hse.edu.ar.presentation.screens.MapScreen
+import ru.hse.edu.ar.presentation.screens.MapScreenMode
 import ru.hse.edu.ar.presentation.screens.PreparationsScreen
 import ru.hse.edu.geoar.ar.ArGeoFactory
 import ru.hse.edu.locallense.R
@@ -140,7 +146,10 @@ fun AppNavigation() {
                         searchEnabled = placemarksScreenSearchEnabled,
                         onSearchEnabledChange = { placemarksScreenSearchEnabled = it },
                         onPlacemarkOpenOnMap = { id ->
-                            // TODO
+                            navController.navigate(MapGraph.MapScreen(
+                                navMode = MapNavMode.VIEW_SINGLE,
+                                placemarkId = id,
+                            ))
                         },
                         onPlacemarkOpenInAr = { id ->
                             navController.navigate(ArGraph.ArScreen(
@@ -180,6 +189,32 @@ fun AppNavigation() {
                         ArNavMode.ADD_NEW -> ArScreenMode.AddNew
                     }
                     ArScreen(mode = mode)
+                }
+            }
+
+            navigation<MapGraph>(
+                startDestination = MapGraph.MapScreen()
+            ) {
+                composable<MapGraph.MapScreen> { backStackEntry ->
+                    val args = backStackEntry.toRoute<MapGraph.MapScreen>()
+                    val mode = when (args.navMode) {
+                        MapNavMode.VIEW_ALL -> MapScreenMode.ViewAll
+                        MapNavMode.VIEW_SINGLE -> MapScreenMode.ViewSingle(args.placemarkId!!)
+                        MapNavMode.ADD_NEW -> MapScreenMode.AddNew
+                    }
+                    val lat = initialLatitude
+                    val lng = initialLongitude
+                    if (lat != null && lng != null) {
+                        MapScreen(
+                            mode = mode,
+                            initialLatitude = lat,
+                            initialLongitude = lng,
+                        )
+                    } else {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
+                    }
                 }
             }
         }

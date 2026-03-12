@@ -71,7 +71,8 @@ enum class PlacemarkTypeOption(val label: String) {
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun AddPlacemarkDialog(
-    tapResult: ArTapResult,
+    locationData: LocationData,
+    isWallAnchor: Boolean = false,
     availableTags: List<Tag>,
     onDismiss: () -> Unit,
     onConfirm: (ArPlacemark) -> Unit,
@@ -347,10 +348,10 @@ fun AddPlacemarkDialog(
                                     id = Random.nextLong(),
                                     name = name,
                                     type = type,
-                                    locationData = tapResult.locationData,
+                                    locationData = locationData,
                                     color = selectedColor,
                                     tags = availableTags.filter { it.id in selectedTagIds },
-                                    isWallAnchor = tapResult.isWall,
+                                    isWallAnchor = isWallAnchor,
                                 )
                             )
                         },
@@ -479,14 +480,12 @@ private fun ChannelSlider(
 private fun AddPlacemarkDialogPreview() {
     MaterialTheme {
         AddPlacemarkDialog(
-            tapResult = ArTapResult(
-                locationData = LocationData(
-                    latitude = 55.7558,
-                    longitude = 37.6173,
-                    altitude = 150.0,
-                ),
-                isWall = false,
+            locationData = LocationData(
+                latitude = 55.7558,
+                longitude = 37.6173,
+                altitude = 150.0,
             ),
+            isWallAnchor = false,
             onDismiss = {},
             onConfirm = {},
             onAddTag = {},

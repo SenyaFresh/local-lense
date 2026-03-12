@@ -7,13 +7,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.sceneview.ar.ARSceneView
@@ -31,7 +29,6 @@ import ru.hse.edu.geoar.ar.ArGeoEngineMode
 import ru.hse.edu.geoar.ar.ArGeoObject
 import ru.hse.edu.geoar.ar.ArGeoObjectPlacementResult
 import ru.hse.edu.geoar.ar.ArTapResult
-import ru.hse.locallense.common.entities.LocationData
 import ru.hse.locallense.components.composables.sceneview.createComposeViewNode
 import ru.hse.locallense.presentation.ResultContainerComposable
 
@@ -55,7 +52,8 @@ fun ArScreen(
     if (mode is ArScreenMode.AddNew) {
         tapResult?.let { result ->
             AddPlacemarkDialog(
-                tapResult = result,
+                locationData = result.locationData,
+                isWallAnchor = result.isWall,
                 onDismiss = { tapResult = null },
                 onConfirm = { placemark ->
                     viewModel.onEvent(PlacemarkEvent.AddPlacemark(placemark))

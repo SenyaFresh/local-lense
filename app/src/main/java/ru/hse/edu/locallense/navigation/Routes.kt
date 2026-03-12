@@ -21,15 +21,21 @@ data object ArGraph {
 }
 
 @Serializable
-data object PlacemarksGraph {
-    @Serializable
-    data object PlacemarksScreen
-}
+enum class MapNavMode { VIEW_ALL, VIEW_SINGLE, ADD_NEW }
 
 @Serializable
 data object MapGraph {
     @Serializable
-    data object MapScreen
+    data class MapScreen(
+        val navMode: MapNavMode = MapNavMode.VIEW_ALL,
+        val placemarkId: Long? = null,
+    )
+}
+
+@Serializable
+data object PlacemarksGraph {
+    @Serializable
+    data object PlacemarksScreen
 }
 
 /**

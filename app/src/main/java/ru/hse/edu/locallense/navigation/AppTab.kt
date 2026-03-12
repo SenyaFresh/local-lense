@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.PhotoCameraBack
 import androidx.compose.material.icons.filled.ViewInAr
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -31,6 +32,11 @@ val MainTabs = persistentListOf(
         imageVector = Icons.Default.ViewInAr,
         titleRes = R.string.ar,
         graphRoute = ArGraph
+    ),
+    AppTab(
+        imageVector = Icons.Default.Map,
+        titleRes = R.string.map,
+        graphRoute = MapGraph
     ),
     AppTab(
         imageVector = Icons.AutoMirrored.Filled.FormatListBulleted,
