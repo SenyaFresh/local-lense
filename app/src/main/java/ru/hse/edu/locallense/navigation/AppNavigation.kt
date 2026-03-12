@@ -65,6 +65,7 @@ fun AppNavigation() {
     val titleRes: Int? = when (currentBackStackEntry.value.routeClass()) {
         PlacemarksGraph.PlacemarksScreen::class -> R.string.placemarks
         ArGraph.ArScreen::class -> R.string.ar
+        MapGraph.MapScreen::class -> R.string.map
         else -> null
     }
 
@@ -157,11 +158,16 @@ fun AppNavigation() {
                                 placemarkId = id,
                             ))
                         },
-                        onAddNewPlacemark = {
+                        onAddNewPlacemarkOnMap = {
+                            navController.navigate(MapGraph.MapScreen(
+                                navMode = MapNavMode.ADD_NEW,
+                            ))
+                        },
+                        onAddNewPlacemarkInAr = {
                             navController.navigate(ArGraph.ArScreen(
                                 navMode = ArNavMode.ADD_NEW,
                             ))
-                        }
+                        },
                     )
                 }
             }

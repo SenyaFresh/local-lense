@@ -29,6 +29,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import ru.hse.edu.placemarks.di.PlacemarksDiContainer
 import ru.hse.edu.placemarks.di.rememberPlacemarksDiContainer
 import ru.hse.edu.placemarks.domain.entities.Placemark
+import ru.hse.edu.placemarks.presentation.components.AddPlacemarkMethodDialog
 import ru.hse.edu.placemarks.presentation.components.PlacemarksColumn
 import ru.hse.edu.placemarks.presentation.components.PlacemarksSortDialog
 import ru.hse.edu.placemarks.presentation.components.TagsRow
@@ -49,13 +50,24 @@ fun PlacemarksScreen(
     onSearchEnabledChange: (Boolean) -> Unit,
     onPlacemarkOpenOnMap: (Long) -> Unit,
     onPlacemarkOpenInAr: (Long) -> Unit,
-    onAddNewPlacemark: () -> Unit,
+    onAddNewPlacemarkOnMap: () -> Unit,
+    onAddNewPlacemarkInAr: () -> Unit,
 ) {
     val placemarks by viewModel.placemarks.collectAsState()
     val tags by viewModel.tags.collectAsState()
     val selectedTagIds by viewModel.selectedTagIds.collectAsState()
     val selectedSortType by viewModel.sortType.collectAsState()
     val currentSearchText by viewModel.searchQuery.collectAsState()
+
+    var showAddMethodDialog by remember { mutableStateOf(false) }
+
+    if (showAddMethodDialog) {
+        AddPlacemarkMethodDialog(
+            onDismiss = { showAddMethodDialog = false },
+            onAddOnMap = onAddNewPlacemarkOnMap,
+            onAddInAr = onAddNewPlacemarkInAr,
+        )
+    }
 
     PlacemarksContent(
         placemarks = placemarks,
@@ -72,7 +84,7 @@ fun PlacemarksScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         AddFloatingActionButton(
-            onClick = onAddNewPlacemark,
+            onClick = { showAddMethodDialog = true },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(LocalSpacing.current.medium)
