@@ -328,7 +328,7 @@ private fun LocationInfoCard(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(44.dp)
+                        .size(72.dp)
                         .background(
                             color = accentColor.copy(alpha = 0.12f),
                             shape = RoundedCornerShape(14.dp),
@@ -339,12 +339,12 @@ private fun LocationInfoCard(
                         imageVector = Icons.Default.LocationOn,
                         contentDescription = null,
                         tint = accentColor,
-                        modifier = Modifier.size(24.dp),
+                        modifier = Modifier.size(40.dp),
                     )
                 }
 
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.weight(1f),
                 ) {
                     Text(
