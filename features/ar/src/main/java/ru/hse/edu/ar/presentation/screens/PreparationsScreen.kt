@@ -61,7 +61,6 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 
-@RequiresApi(Build.VERSION_CODES.GINGERBREAD)
 @Composable
 fun PreparationsScreen(
     initialLatitude: Double?,
@@ -304,7 +303,6 @@ private fun Figure8Animation(modifier: Modifier = Modifier) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.GINGERBREAD)
 @Composable
 private fun LocationInfoCard(
     latitude: Double,
@@ -388,7 +386,6 @@ private fun CompassCalibrationCardPreview() {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.GINGERBREAD)
 @Preview(showBackground = true)
 @Composable
 private fun LocationInfoCardPreview() {
