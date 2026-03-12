@@ -6,6 +6,8 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.Typeface
 import androidx.core.graphics.createBitmap
+import java.util.Locale
+import kotlin.math.abs
 
 fun createPinBitmap(
     color: Int,
@@ -48,4 +50,15 @@ fun createPinBitmap(
     }
 
     return bitmap
+}
+
+fun formatCoordinates(latitude: Double, longitude: Double): String {
+    val latDir = if (latitude >= 0) "N" else "S"
+    val lonDir = if (longitude >= 0) "E" else "W"
+    return String.format(
+        Locale.ROOT,
+        "%.4f° %s, %.4f° %s",
+        abs(latitude), latDir,
+        abs(longitude), lonDir,
+    )
 }

@@ -1,20 +1,38 @@
 package ru.hse.edu.ar.presentation.screens
 
+import android.os.Build
+import androidx.activity.compose.BackHandler
+import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -26,7 +44,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -35,11 +52,8 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import ru.hse.edu.ar.di.ArDiContainer
-import ru.hse.edu.ar.di.rememberArDiContainer
 import ru.hse.edu.ar.presentation.mapkit.LocationPickerComposable
-import ru.hse.edu.ar.presentation.viewmodels.ArViewModel
+import ru.hse.edu.ar.presentation.mapkit.formatCoordinates
 import ru.hse.locallense.components.composables.buttons.DefaultPrimaryButton
 import ru.hse.locallense.presentation.OnLoadingEffect
 import kotlin.math.PI
@@ -47,21 +61,9 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 
+@RequiresApi(Build.VERSION_CODES.GINGERBREAD)
 @Composable
 fun PreparationsScreen(
-    initialLatitude: Double?,
-    initialLongitude: Double?,
-    onContinue: (latitude: Double, longitude: Double) -> Unit,
-) {
-    PreparationsContent(
-        initialLatitude = initialLatitude,
-        initialLongitude = initialLongitude,
-        onContinue = onContinue,
-    )
-}
-
-@Composable
-fun PreparationsContent(
     initialLatitude: Double?,
     initialLongitude: Double?,
     onContinue: (latitude: Double, longitude: Double) -> Unit,
@@ -86,42 +88,87 @@ fun PreparationsContent(
 
     var latitude by remember { mutableDoubleStateOf(fixedLat) }
     var longitude by remember { mutableDoubleStateOf(fixedLng) }
+    var isMapVisible by remember { mutableStateOf(false) }
+    var hasCustomLocation by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .systemBarsPadding()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Text(
-            text = "Подготовка",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-        )
+    BackHandler(enabled = isMapVisible) {
+        isMapVisible = false
+    }
 
-        CompassCalibrationCard()
-
-        LocationPickerComposable(
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .clip(MaterialTheme.shapes.large),
-            title = "Уточните местоположение",
-            initialLatitude = fixedLat,
-            initialLongitude = fixedLng,
-            onConfirm = { lat, lng ->
-                latitude = lat
-                longitude = lng
-            },
-        )
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .systemBarsPadding()
+                .padding(horizontal = 20.dp)
+                .padding(top = 28.dp, bottom = 20.dp),
+        ) {
+            Text(
+                text = "Подготовка",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
 
-        DefaultPrimaryButton(
-            label = "Продолжить",
-            onClick = { onContinue(latitude, longitude) },
-            modifier = Modifier.fillMaxWidth(),
-        )
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "Настройте параметры перед началом",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            CompassCalibrationCard()
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            LocationInfoCard(
+                latitude = latitude,
+                longitude = longitude,
+                isCustomLocation = hasCustomLocation,
+                onChangeClick = { isMapVisible = true },
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            DefaultPrimaryButton(
+                label = "Продолжить",
+                onClick = { onContinue(latitude, longitude) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        AnimatedVisibility(
+            visible = isMapVisible,
+            enter = slideInVertically(
+                initialOffsetY = { it },
+                animationSpec = tween(400, easing = FastOutSlowInEasing),
+            ) + fadeIn(animationSpec = tween(300)),
+            exit = slideOutVertically(
+                targetOffsetY = { it },
+                animationSpec = tween(350, easing = FastOutSlowInEasing),
+            ) + fadeOut(animationSpec = tween(250)),
+        ) {
+            LocationPickerComposable(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .systemBarsPadding(),
+                title = "Уточните местоположение",
+                initialLatitude = latitude,
+                initialLongitude = longitude,
+                onConfirm = { lat, lng ->
+                    latitude = lat
+                    longitude = lng
+                    hasCustomLocation = true
+                    isMapVisible = false
+                },
+                onDismiss = { isMapVisible = false },
+            )
+        }
     }
 }
 
@@ -129,17 +176,30 @@ fun PreparationsContent(
 private fun CompassCalibrationCard(modifier: Modifier = Modifier) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        tonalElevation = 1.dp,
+        shape = RoundedCornerShape(20.dp),
+        tonalElevation = 2.dp,
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Figure8Animation(modifier = Modifier.size(80.dp))
+            Box(
+                modifier = Modifier
+                    .size(72.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                        shape = RoundedCornerShape(18.dp),
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Figure8Animation(modifier = Modifier.size(56.dp))
+            }
 
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.weight(1f),
+            ) {
                 Text(
                     text = "Калибровка компаса",
                     style = MaterialTheme.typography.titleSmall,
@@ -244,10 +304,101 @@ private fun Figure8Animation(modifier: Modifier = Modifier) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.GINGERBREAD)
+@Composable
+private fun LocationInfoCard(
+    latitude: Double,
+    longitude: Double,
+    isCustomLocation: Boolean,
+    onChangeClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val accentColor = MaterialTheme.colorScheme.tertiary
+
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        tonalElevation = 2.dp,
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(
+                            color = accentColor.copy(alpha = 0.12f),
+                            shape = RoundedCornerShape(14.dp),
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = null,
+                        tint = accentColor,
+                        modifier = Modifier.size(24.dp),
+                    )
+                }
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(
+                        text = if (isCustomLocation) "Выбранная позиция" else "Текущая позиция",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        text = formatCoordinates(latitude, longitude),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            FilledTonalButton(
+                onClick = onChangeClick,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = accentColor.copy(alpha = 0.12f),
+                    contentColor = accentColor,
+                ),
+            ) {
+                Text(
+                    text = if (isCustomLocation) "Изменить на карте" else "Уточнить на карте",
+                    fontWeight = FontWeight.Medium,
+                )
+            }
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun CompassCalibrationCardPreview() {
     MaterialTheme {
         CompassCalibrationCard(modifier = Modifier.padding(16.dp))
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.GINGERBREAD)
+@Preview(showBackground = true)
+@Composable
+private fun LocationInfoCardPreview() {
+    MaterialTheme {
+        LocationInfoCard(
+            latitude = 55.7558,
+            longitude = 37.6173,
+            isCustomLocation = false,
+            onChangeClick = {},
+            modifier = Modifier.padding(16.dp),
+        )
     }
 }
