@@ -21,6 +21,8 @@ import ru.hse.locallense.presentation.locals.LocalSpacing
 fun PlacemarksColumn(
     placemarks: ResultContainer<List<Placemark>>,
     onPlacemarkDelete: (Long) -> Unit,
+    onPlacemarkOpenOnMap: (Long) -> Unit,
+    onPlacemarkOpenInAr: (Long) -> Unit
 ) {
     ResultContainerComposable(
         container = placemarks,
@@ -50,7 +52,9 @@ fun PlacemarksColumn(
                         Box(modifier = Modifier.padding(vertical = LocalSpacing.current.extraSmall)) {
                             PlacemarkListItem(
                                 placemark = it,
-                                onPlacemarkDelete = { onPlacemarkDelete(it.id) }
+                                onPlacemarkDelete = { onPlacemarkDelete(it.id) },
+                                onOpenOnMap = { onPlacemarkOpenOnMap(it.id) },
+                                onOpenInAr = { onPlacemarkOpenInAr(it.id) }
                             )
                         }
                     }

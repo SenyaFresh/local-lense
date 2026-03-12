@@ -62,9 +62,6 @@ fun AppNavigationBar(
                             imageVector = tab.imageVector,
                             contentDescription = stringResource(id = tab.titleRes),
                         )
-                    },
-                    label = {
-                        Text(text = stringResource(id = tab.titleRes))
                     }
                 )
             }

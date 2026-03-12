@@ -2,12 +2,14 @@ package ru.hse.edu.placemarks.presentation.components
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -22,6 +24,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.rounded.LocationOn
+import androidx.compose.material.icons.rounded.Map
+import androidx.compose.material.icons.rounded.ViewInAr
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -40,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
@@ -61,17 +66,30 @@ import ru.hse.locallense.presentation.locals.LocalSpacing
 import kotlin.collections.emptyList
 import kotlin.math.roundToInt
 
+private val tagColorPalette = listOf(
+    Color(0xFF1565C0),
+    Color(0xFF2E7D32),
+    Color(0xFFE65100),
+    Color(0xFF6A1B9A),
+    Color(0xFF00838F),
+    Color(0xFFC62828),
+    Color(0xFFF9A825),
+    Color(0xFF37474F),
+)
+
 @Composable
 fun PlacemarkListItem(
     placemark: Placemark,
     onPlacemarkDelete: () -> Unit,
     modifier: Modifier = Modifier,
-    isActionsRevealed: Boolean = false
+    isActionsRevealed: Boolean = false,
+    onOpenOnMap: () -> Unit = {},
+    onOpenInAr: () -> Unit = {}
 ) {
     var contextMenuWidth by remember { mutableFloatStateOf(0f) }
     val offset = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
-    val itemShape = CardDefaults.shape
+    val cardShape = RoundedCornerShape(16.dp)
 
     LaunchedEffect(isActionsRevealed, contextMenuWidth) {
         if (isActionsRevealed) {
@@ -83,191 +101,113 @@ fun PlacemarkListItem(
 
     Card(
         modifier = modifier,
+        shape = cardShape,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+            containerColor = MaterialTheme.colorScheme.surface
         ),
-        shape = itemShape,
-        elevation = CardDefaults.cardElevation(1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-        PlacemarkCardContent(
-            placemark = placemark,
-            onPlacemarkDelete = onPlacemarkDelete,
-            offset = offset,
-            contextMenuWidth = contextMenuWidth,
-            onSizeChanged = { contextMenuWidth = it.width.toFloat() },
-            shape = itemShape,
-            scope = scope
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min)
+        ) {
+            DeleteActionReveal(
+                onDelete = onPlacemarkDelete,
+                onSizeChanged = { contextMenuWidth = it.width.toFloat() },
+                shape = cardShape
+            )
+
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                shape = cardShape,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .offset { IntOffset(offset.value.roundToInt(), 0) }
+                    .pointerInput(contextMenuWidth) {
+                        detectHorizontalDragGestures(
+                            onHorizontalDrag = { _, dragAmount ->
+                                scope.launch {
+                                    val newOffset = (offset.value + dragAmount)
+                                        .coerceIn(-contextMenuWidth, 0f)
+                                    offset.snapTo(newOffset)
+                                }
+                            },
+                            onDragEnd = {
+                                scope.launch {
+                                    if (offset.value <= -contextMenuWidth / 2f) {
+                                        offset.animateTo(-contextMenuWidth)
+                                    } else {
+                                        offset.animateTo(0f)
+                                    }
+                                }
+                            }
+                        )
+                    }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    PlacemarkColorIndicator(color = placemark.color)
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    PlacemarkInfo(
+                        placemark = placemark,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    PlacemarkQuickActions(
+                        onOpenOnMap = onOpenOnMap,
+                        onOpenInAr = onOpenInAr,
+                    )
+                }
+            }
+        }
     }
 }
 
 @Composable
-private fun PlacemarkCardContent(
-    placemark: Placemark,
-    onPlacemarkDelete: () -> Unit,
-    offset: Animatable<Float, *>,
-    contextMenuWidth: Float,
+private fun BoxScope.DeleteActionReveal(
+    onDelete: () -> Unit,
     onSizeChanged: (IntSize) -> Unit,
-    shape: Shape,
-    scope: CoroutineScope
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(if (placemark.tags.isEmpty()) 70.dp else 90.dp)
-    ) {
-        SecondaryPlacemarkActions(
-            onSizeChanged = onSizeChanged,
-            onPlacemarkDelete = onPlacemarkDelete,
-            shape = shape
-        )
-
-        PlacemarkContent(
-            placemark = placemark,
-            offset = offset,
-            contextMenuWidth = contextMenuWidth,
-            scope = scope,
-            shape = shape,
-        )
-    }
-}
-
-@Composable
-private fun BoxScope.SecondaryPlacemarkActions(
-    onSizeChanged: (IntSize) -> Unit,
-    onPlacemarkDelete: () -> Unit,
-    shape: Shape,
-    modifier: Modifier = Modifier
+    shape: Shape
 ) {
     Row(
-        modifier = modifier
+        modifier = Modifier
             .align(Alignment.CenterEnd)
-            .onSizeChanged { size -> onSizeChanged(size) }
-            .padding(1.dp)
+            .fillMaxHeight()
+            .onSizeChanged(onSizeChanged)
             .clip(shape),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        ActionIcon(
-            imageVector = Icons.Default.Delete,
-            text = "Удалить",
-            contentColor = MaterialTheme.colorScheme.onError,
-            containerColor = MaterialTheme.colorScheme.error,
-            modifier = Modifier.fillMaxHeight(),
-            onClick = onPlacemarkDelete
-        )
-    }
-}
-
-@Composable
-private fun PlacemarkContent(
-    placemark: Placemark,
-    offset: Animatable<Float, *>,
-    contextMenuWidth: Float,
-    scope: CoroutineScope,
-    shape: Shape,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        shape = shape,
-        modifier = Modifier
-            .offset { IntOffset(offset.value.roundToInt(), 0) }
-            .pointerInput(contextMenuWidth) {
-                detectHorizontalDragGestures(
-                    onHorizontalDrag = { _, dragAmount ->
-                        scope.launch {
-                            val newOffset =
-                                (offset.value + dragAmount).coerceIn(-contextMenuWidth, 0f)
-                            offset.snapTo(newOffset)
-                        }
-                    },
-                    onDragEnd = {
-                        scope.launch {
-                            if (offset.value <= -contextMenuWidth / 2f) {
-                                offset.animateTo(-contextMenuWidth)
-                            } else {
-                                offset.animateTo(0f)
-                            }
-                        }
-                    }
-                )
-            }
-    ) {
-        Row(modifier = modifier.fillMaxSize()) {
-            Spacer(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(4.dp)
-                    .background(placemark.color)
-            )
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .padding(
-                        start = 12.dp,
-                        end = 12.dp,
-                        top = 10.dp,
-                        bottom = 10.dp
-                    )
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .background(MaterialTheme.colorScheme.error)
+                .clickable(onClick = onDelete)
+                .padding(horizontal = 24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = placemark.name,
-                        maxLines = 1,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-
-                    Spacer(modifier = Modifier.height(3.dp))
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(3.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.LocationOn,
-                            contentDescription = null,
-                            modifier = Modifier.size(13.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = "${placemark.locationData.latitude.round(6)}, ${placemark.locationData.longitude.round(6)}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-
-                    if (placemark.tags.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            placemark.tags.forEach { tag ->
-                                PlacemarkTag(tag = tag.name)
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Box(
-                    modifier = Modifier
-                        .height(24.dp)
-                        .width(4.dp)
-                        .clip(RoundedCornerShape(2.dp))
-                        .background(MaterialTheme.colorScheme.outlineVariant)
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onError,
+                    modifier = Modifier.size(22.dp)
+                )
+                Text(
+                    text = "Удалить",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onError
                 )
             }
         }
@@ -275,19 +215,134 @@ private fun PlacemarkContent(
 }
 
 @Composable
+private fun PlacemarkColorIndicator(
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(44.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(color.copy(alpha = 0.15f)),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.LocationOn,
+            contentDescription = null,
+            tint = color,
+            modifier = Modifier.size(24.dp)
+        )
+    }
+}
+
+@Composable
+private fun PlacemarkInfo(
+    placemark: Placemark,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = placemark.name,
+            maxLines = 1,
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+            overflow = TextOverflow.Ellipsis,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+
+        Spacer(modifier = Modifier.height(3.dp))
+
+        Text(
+            text = "${placemark.locationData.latitude.round(6)}, ${placemark.locationData.longitude.round(6)}",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        if (placemark.tags.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                placemark.tags.forEach { tag ->
+                    PlacemarkTag(tag = tag.name)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PlacemarkQuickActions(
+    onOpenOnMap: () -> Unit,
+    onOpenInAr: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        PlacemarkActionButton(
+            icon = Icons.Rounded.Map,
+            contentDescription = "Открыть на карте",
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            onClick = onOpenOnMap
+        )
+        PlacemarkActionButton(
+            icon = Icons.Rounded.ViewInAr,
+            contentDescription = "Открыть в AR",
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+            onClick = onOpenInAr
+        )
+    }
+}
+
+@Composable
+private fun PlacemarkActionButton(
+    icon: ImageVector,
+    contentDescription: String,
+    containerColor: Color,
+    contentColor: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(34.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(containerColor)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = contentColor,
+            modifier = Modifier.size(18.dp)
+        )
+    }
+}
+
+@Composable
 private fun PlacemarkTag(tag: String) {
+    val color = remember(tag) {
+        tagColorPalette[(tag.hashCode() and 0x7FFFFFFF) % tagColorPalette.size]
+    }
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(
-                MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
-            )
-            .padding(horizontal = 6.dp, vertical = 2.dp)
+            .clip(RoundedCornerShape(6.dp))
+            .background(color.copy(alpha = 0.1f))
+            .padding(horizontal = 8.dp, vertical = 3.dp)
     ) {
         Text(
             text = "#$tag",
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSecondaryContainer,
+            color = color,
+            fontWeight = FontWeight.Medium,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -313,6 +368,8 @@ fun PlacemarkListItemWithTagsPreview() {
             ),
         ),
         onPlacemarkDelete = {},
+        onOpenOnMap = {},
+        onOpenInAr = {}
     )
 }
 
@@ -332,5 +389,7 @@ fun PlacemarkListItemWithoutTagsPreview() {
             tags = emptyList(),
         ),
         onPlacemarkDelete = {},
+        onOpenOnMap = {},
+        onOpenInAr = {}
     )
 }

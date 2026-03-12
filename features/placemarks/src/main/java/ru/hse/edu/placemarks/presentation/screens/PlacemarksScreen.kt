@@ -44,6 +44,8 @@ fun PlacemarksScreen(
     viewModel: PlacemarksViewModel = viewModel(factory = diContainer.viewModelFactory),
     searchEnabled: Boolean,
     onSearchEnabledChange: (Boolean) -> Unit,
+    onPlacemarkOpenOnMap: (Long) -> Unit,
+    onPlacemarkOpenInAr: (Long) -> Unit
 ) {
     val placemarks by viewModel.placemarks.collectAsState()
     val tags by viewModel.tags.collectAsState()
@@ -59,7 +61,9 @@ fun PlacemarksScreen(
         searchEnabled = searchEnabled,
         currentSearchText = currentSearchText,
         onSearchEnabledChange = onSearchEnabledChange,
-        onPlacemarkEvent = viewModel::onEvent
+        onPlacemarkOpenOnMap = onPlacemarkOpenOnMap,
+        onPlacemarkOpenInAr = onPlacemarkOpenInAr,
+        onPlacemarkEvent = viewModel::onEvent,
     )
 }
 
@@ -72,7 +76,9 @@ fun PlacemarksContent(
     tags: ResultContainer<List<Tag>>,
     selectedTagIds: List<Long>,
     selectedSortType: SortType,
-    onPlacemarkEvent: (PlacemarkEvent) -> Unit
+    onPlacemarkOpenOnMap: (Long) -> Unit,
+    onPlacemarkOpenInAr: (Long) -> Unit,
+    onPlacemarkEvent: (PlacemarkEvent) -> Unit,
 ) {
 
     var showSortTypeDialog by remember { mutableStateOf(false) }
@@ -138,6 +144,8 @@ fun PlacemarksContent(
         PlacemarksColumn(
             placemarks = placemarks,
             onPlacemarkDelete = { id -> onPlacemarkEvent(PlacemarkEvent.DeletePlacemark(id)) },
+            onPlacemarkOpenOnMap = onPlacemarkOpenOnMap,
+            onPlacemarkOpenInAr = onPlacemarkOpenInAr,
         )
     }
 }

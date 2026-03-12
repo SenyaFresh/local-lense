@@ -14,9 +14,7 @@ import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -31,7 +29,6 @@ import androidx.navigation.navigation
 import kotlinx.coroutines.delay
 import ru.hse.edu.ar.presentation.screens.ArScreen
 import ru.hse.edu.ar.presentation.screens.PreparationsScreen
-import ru.hse.edu.geoar.ar.ArGeoConfig
 import ru.hse.edu.geoar.ar.ArGeoFactory
 import ru.hse.edu.locallense.R
 import ru.hse.edu.placemarks.presentation.screens.PlacemarksScreen
@@ -139,7 +136,13 @@ fun AppNavigation() {
                 composable<PlacemarksGraph.PlacemarksScreen> {
                     PlacemarksScreen(
                         searchEnabled = placemarksScreenSearchEnabled,
-                        onSearchEnabledChange = { placemarksScreenSearchEnabled = it }
+                        onSearchEnabledChange = { placemarksScreenSearchEnabled = it },
+                        onPlacemarkOpenOnMap = { id ->
+                            // TODO
+                        },
+                        onPlacemarkOpenInAr = { id ->
+                            // TODO
+                        },
                     )
                 }
             }

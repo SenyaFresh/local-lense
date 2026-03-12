@@ -20,6 +20,12 @@ data object PlacemarksGraph {
     data object PlacemarksScreen
 }
 
+@Serializable
+data object MapGraph {
+    @Serializable
+    data object MapScreen
+}
+
 /**
  * Used to retrieve the class of the destination in a navigation back stack entry.
  *
