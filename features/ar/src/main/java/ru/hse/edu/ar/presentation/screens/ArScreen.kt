@@ -4,7 +4,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +43,8 @@ sealed class ArScreenMode {
 @Composable
 fun ArScreen(
     mode: ArScreenMode,
+    arGeoEngine: ArGeoEngine,
+    arSceneView: ARSceneView,
     onPlacemarkAdded: () -> Unit,
     diContainer: ArDiContainer = rememberArDiContainer(),
     viewModel: ArViewModel = viewModel(factory = diContainer.viewModelFactory),
@@ -78,6 +82,8 @@ fun ArScreen(
                 markers = emptyList(),
                 mode = mode,
                 onArTap = { tapResult = it },
+                arGeoEngine = arGeoEngine,
+                arSceneView = arSceneView,
             )
         }
         else -> {
@@ -94,6 +100,8 @@ fun ArScreen(
                         markers = markers,
                         mode = mode,
                         onArTap = null,
+                        arGeoEngine = arGeoEngine,
+                        arSceneView = arSceneView,
                     )
                 }
             )
@@ -106,46 +114,43 @@ fun ArContent(
     markers: List<ArPlacemark>,
     mode: ArScreenMode,
     onArTap: ((ArTapResult?) -> Unit)?,
+    arGeoEngine: ArGeoEngine,
+    arSceneView: ARSceneView,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val activity = LocalActivity.current as ComponentActivity
-    var arGeoEngine by remember { mutableStateOf<ArGeoEngine?>(null) }
 
     val isPlacementMode = mode is ArScreenMode.AddNew
 
     LaunchedEffect(arGeoEngine, isPlacementMode) {
-        if (arGeoEngine == null) return@LaunchedEffect
         if (isPlacementMode) {
-            arGeoEngine?.mode = ArGeoEngineMode.PLACEMENT
-            arGeoEngine?.clear()
+            arGeoEngine.mode = ArGeoEngineMode.PLACEMENT
+            arGeoEngine.clear()
         } else {
-            arGeoEngine?.mode = ArGeoEngineMode.VIEW
+            arGeoEngine.mode = ArGeoEngineMode.VIEW
         }
     }
 
-    AndroidView(
-        factory = { context ->
-            ARSceneView(context).also { sceneView ->
-                arGeoEngine = ArGeoEngine(
-                    sceneView = sceneView,
-                    scope = coroutineScope,
-                )
-            }
-        },
-        update = { sceneView ->
-            val engine = arGeoEngine ?: return@AndroidView
-            engine.onTap = { tapResult ->
-                onArTap?.invoke(tapResult)
-            }
+    SideEffect {
+        arGeoEngine.onTap = { tapResult ->
+            onArTap?.invoke(tapResult)
+        }
+    }
 
-            if (!isPlacementMode) {
-                markers.forEach { marker ->
-                    placeMarker(sceneView, activity, coroutineScope, engine, marker)
-                }
+    if (!isPlacementMode) {
+        LaunchedEffect(markers) {
+            markers.forEach { marker ->
+                placeMarker(arSceneView, activity, coroutineScope, arGeoEngine, marker)
             }
-        },
-        modifier = Modifier.fillMaxSize(),
-    )
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            arGeoEngine.onTap = null
+            arGeoEngine.clear()
+        }
+    }
 }
 
 private fun placeMarker(
