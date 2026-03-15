@@ -59,7 +59,7 @@ private fun PinMarker(
 ) {
     Row(
         modifier = Modifier
-            .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(20.dp))
+            .background(Color.Black.copy(alpha = 0.9f), RoundedCornerShape(20.dp))
             .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -92,7 +92,7 @@ private fun ContentCard(name: String, text: String) {
     Column(
         modifier = Modifier
             .widthIn(min = 160.dp, max = 260.dp)
-            .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
+            .background(Color.Black.copy(alpha = 0.9f), RoundedCornerShape(16.dp))
             .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(16.dp))
             .padding(16.dp),
     ) {

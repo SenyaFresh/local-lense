@@ -5,9 +5,11 @@ import io.github.sceneview.math.Position
 import io.github.sceneview.math.Rotation
 import io.github.sceneview.math.Scale
 import ru.hse.edu.geoar.ar.ArGeoConfig
+import ru.hse.edu.geoar.ar.ArGeoConfig.SCALE_DAMPING
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.ln
+import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -64,7 +66,9 @@ object ArMath {
                 (ArGeoConfig.MAX_DISTANCE_METERS - ArGeoConfig.AR_RADIUS))
             .coerceIn(0.0, 1.0)
 
-        val smoothedFraction = smoothStep(normalizedDistance)
+        val damped = normalizedDistance.pow(SCALE_DAMPING)
+
+        val smoothedFraction = smoothStep(damped)
         val scaleFactor = (1.0 - smoothedFraction * (1.0 - ArGeoConfig.MIN_SCALE_FACTOR)).toFloat()
         return uniformScale(scaleFactor * ArGeoConfig.BASE_SCALE)
     }
