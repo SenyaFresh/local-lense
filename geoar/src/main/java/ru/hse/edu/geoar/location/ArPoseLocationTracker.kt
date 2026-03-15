@@ -38,8 +38,26 @@ class ArPoseLocationTracker(
     private var initialYaw: Float = 0f
     private var lastHeading: Float? = null
     private var lastLocation: LocationData? = null
+    private var lastPose: Pose? = null
+    private var headingLocked = false
+
+    val isHeadingLocked: Boolean
+        get() = headingLocked
 
     var onFrameUpdate: ((ArFrameData) -> Unit)? = null
+
+    fun forceHeading(heading: Float) {
+        val currentPose = lastPose ?: return
+        if (initialPose == null) return
+        val currentYaw = extractYawDegrees(currentPose)
+        val yawDelta = currentYaw - initialYaw
+        initialHeading = (heading + yawDelta).mod(360f)
+        headingLocked = true
+    }
+
+    fun unlockHeading() {
+        headingLocked = false
+    }
 
     fun start() {
         locationTracker.start()
@@ -61,6 +79,7 @@ class ArPoseLocationTracker(
 
             when (trackingState) {
                 TrackingState.TRACKING -> {
+                    lastPose = pose
                     if (initialPose == null) {
                         initialPose = pose
                         initialHeading = lastHeading
@@ -70,11 +89,13 @@ class ArPoseLocationTracker(
                         if (initialHeading == null) initialHeading = lastHeading
                         if (initialLocation == null) initialLocation = lastLocation
 
-                        val currentHeading = lastHeading
-                        if (currentHeading != null) {
-                            val currentYaw = extractYawDegrees(pose)
-                            val yawDelta = currentYaw - initialYaw
-                            initialHeading = (currentHeading + yawDelta).mod(360f)
+                        if (!headingLocked) {
+                            val currentHeading = lastHeading
+                            if (currentHeading != null) {
+                                val currentYaw = extractYawDegrees(pose)
+                                val yawDelta = currentYaw - initialYaw
+                                initialHeading = (currentHeading + yawDelta).mod(360f)
+                            }
                         }
                     }
                 }
@@ -86,6 +107,8 @@ class ArPoseLocationTracker(
                     initialHeading = null
                     initialLocation = null
                     initialYaw = 0f
+                    lastPose = null
+                    headingLocked = false
                 }
             }
 
@@ -125,6 +148,8 @@ class ArPoseLocationTracker(
         initialYaw = 0f
         lastHeading = null
         lastLocation = null
+        lastPose = null
+        headingLocked = false
     }
 
     fun computeLocation(pose: Pose): LocationData? {

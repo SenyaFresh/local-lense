@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -119,6 +120,7 @@ fun AppNavigation() {
 
     var isArScreenActive by remember { mutableStateOf(false) }
 
+    val initialHeading by ArGeoFactory.headingProvider.smoothedValue.collectAsState()
 
 
     Scaffold(
@@ -193,11 +195,21 @@ fun AppNavigation() {
                         PreparationsScreen(
                             initialLatitude = initialLatitude,
                             initialLongitude = initialLongitude,
+                            initialHeading = initialHeading,
+                            onHeadingChange = { heading ->
+                                if (heading == null) {
+                                    arGeoEngine?.arPoseLocationTracker?.unlockHeading()
+                                } else {
+                                    arGeoEngine?.arPoseLocationTracker?.forceHeading(heading)
+                                }
+                            },
                             onContinue = { lat, lng ->
                                 ArGeoFactory.locationTracker.setExactLocation(lat, lng)
-                                navController.navigate(ArGraph.ArScreen(
-                                    navMode = ArNavMode.VIEW_ALL,
-                                ))
+                                navController.navigate(
+                                    ArGraph.ArScreen(
+                                        navMode = ArNavMode.VIEW_ALL,
+                                    )
+                                )
                             }
                         )
                         isArScreenActive = false

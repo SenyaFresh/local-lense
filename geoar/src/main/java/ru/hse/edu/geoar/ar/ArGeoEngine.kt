@@ -39,7 +39,7 @@ class ArGeoEngine(
     private val headingProvider = ArGeoFactory.headingProvider
     private val sensorsManager = ArGeoFactory.sensorsManager
     private val locationTracker = ArGeoFactory.locationTracker
-    private val arPoseLocationTracker = ArPoseLocationTracker(
+    val arPoseLocationTracker = ArPoseLocationTracker(
         headingProvider = headingProvider,
         sceneView = sceneView,
         locationTracker = locationTracker,

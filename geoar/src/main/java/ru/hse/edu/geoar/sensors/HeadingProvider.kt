@@ -39,5 +39,4 @@ class HeadingProvider(
         SensorManager.getOrientation(remappedRotationMatrix, orientationAngles)
         return ((Math.toDegrees(orientationAngles[0].toDouble()) + declination).mod(360.0)).toFloat()
     }
-
 }

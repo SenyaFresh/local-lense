@@ -24,19 +24,23 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -45,11 +49,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import ru.hse.edu.ar.presentation.components.HeadingPickerComposable
+import ru.hse.edu.ar.presentation.components.formatHeading
 import ru.hse.edu.ar.presentation.mapkit.LocationPickerComposable
 import ru.hse.edu.ar.presentation.mapkit.formatCoordinates
 import ru.hse.locallense.components.composables.buttons.DefaultPrimaryButton
@@ -57,16 +66,20 @@ import ru.hse.locallense.presentation.OnLoadingEffect
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
+import kotlin.math.roundToInt
 import kotlin.math.sin
 
 @Composable
 fun PreparationsScreen(
     initialLatitude: Double?,
     initialLongitude: Double?,
+    initialHeading: Float? = null,
+    onHeadingChange: (Float?) -> Unit,
     onContinue: (latitude: Double, longitude: Double) -> Unit,
 ) {
     var rememberedLat by remember { mutableStateOf<Double?>(null) }
     var rememberedLng by remember { mutableStateOf<Double?>(null) }
+    var rememberedHeading by remember { mutableStateOf<Float?>(null) }
 
     if (rememberedLat == null && initialLatitude != null) {
         rememberedLat = initialLatitude
@@ -74,9 +87,13 @@ fun PreparationsScreen(
     if (rememberedLng == null && initialLongitude != null) {
         rememberedLng = initialLongitude
     }
+    if (rememberedHeading == null && initialHeading != null) {
+        rememberedHeading = normalizeHeading(initialHeading)
+    }
 
     val fixedLat = rememberedLat
     val fixedLng = rememberedLng
+    val fixedHeading = rememberedHeading
 
     if (fixedLat == null || fixedLng == null) {
         OnLoadingEffect()
@@ -85,11 +102,19 @@ fun PreparationsScreen(
 
     var latitude by remember { mutableDoubleStateOf(fixedLat) }
     var longitude by remember { mutableDoubleStateOf(fixedLng) }
+    var customHeading by remember { mutableStateOf<Float?>(null) }
     var isMapVisible by remember { mutableStateOf(false) }
+    var isHeadingPickerVisible by remember { mutableStateOf(false) }
     var hasCustomLocation by remember { mutableStateOf(false) }
 
-    BackHandler(enabled = isMapVisible) {
-        isMapVisible = false
+    val displayHeading = customHeading ?: fixedHeading
+    val isCustomHeading = customHeading != null
+
+    BackHandler(enabled = isMapVisible || isHeadingPickerVisible) {
+        when {
+            isHeadingPickerVisible -> isHeadingPickerVisible = false
+            isMapVisible -> isMapVisible = false
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -97,9 +122,8 @@ fun PreparationsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
-                .systemBarsPadding()
                 .padding(horizontal = 20.dp)
-                .padding(top = 28.dp, bottom = 20.dp),
+                .padding(bottom = 20.dp),
         ) {
             Text(
                 text = "Подготовка",
@@ -122,6 +146,14 @@ fun PreparationsScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            HeadingInfoCard(
+                heading = displayHeading,
+                isCustomHeading = isCustomHeading,
+                onChangeClick = { isHeadingPickerVisible = true },
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             LocationInfoCard(
                 latitude = latitude,
                 longitude = longitude,
@@ -133,7 +165,10 @@ fun PreparationsScreen(
 
             DefaultPrimaryButton(
                 label = "Продолжить",
-                onClick = { onContinue(latitude, longitude) },
+                onClick = {
+                    onHeadingChange(customHeading)
+                    onContinue(latitude, longitude)
+                },
                 modifier = Modifier.fillMaxWidth(),
             )
         }
@@ -152,8 +187,7 @@ fun PreparationsScreen(
             LocationPickerComposable(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-                    .systemBarsPadding(),
+                    .background(MaterialTheme.colorScheme.background),
                 title = "Уточните местоположение",
                 initialLatitude = latitude,
                 initialLongitude = longitude,
@@ -164,6 +198,35 @@ fun PreparationsScreen(
                     isMapVisible = false
                 },
                 onDismiss = { isMapVisible = false },
+            )
+        }
+
+        AnimatedVisibility(
+            visible = isHeadingPickerVisible,
+            enter = slideInVertically(
+                initialOffsetY = { it },
+                animationSpec = tween(400, easing = FastOutSlowInEasing),
+            ) + fadeIn(animationSpec = tween(300)),
+            exit = slideOutVertically(
+                targetOffsetY = { it },
+                animationSpec = tween(350, easing = FastOutSlowInEasing),
+            ) + fadeOut(animationSpec = tween(250)),
+        ) {
+            HeadingPickerComposable(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
+                title = "Уточните направление",
+                initialHeading = displayHeading ?: 0f,
+                onConfirm = { heading ->
+                    customHeading = normalizeHeading(heading)
+                    isHeadingPickerVisible = false
+                },
+                onReset = {
+                    customHeading = null
+                    isHeadingPickerVisible = false
+                },
+                onDismiss = { isHeadingPickerVisible = false },
             )
         }
     }
@@ -206,6 +269,89 @@ private fun CompassCalibrationCard(modifier: Modifier = Modifier) {
                     text = "Покрутите телефон восьмёркой для повышения точности",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun HeadingInfoCard(
+    heading: Float?,
+    isCustomHeading: Boolean,
+    onChangeClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val accentColor = MaterialTheme.colorScheme.primary
+
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        tonalElevation = 2.dp,
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(72.dp)
+                        .background(
+                            color = accentColor.copy(alpha = 0.12f),
+                            shape = RoundedCornerShape(14.dp),
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Explore,
+                        contentDescription = null,
+                        tint = accentColor,
+                        modifier = Modifier.size(40.dp),
+                    )
+                }
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(
+                        text = if (isCustomHeading) "Уточнённое направление" else "Направление компаса",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        text = heading?.let(::formatHeading) ?: "Автоматически по компасу",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        text = if (isCustomHeading) {
+                            "Направление зафиксировано вручную"
+                        } else {
+                            "При необходимости можно выставить вручную"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            FilledTonalButton(
+                onClick = onChangeClick,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = accentColor.copy(alpha = 0.12f),
+                    contentColor = accentColor,
+                ),
+            ) {
+                Text(
+                    text = if (isCustomHeading) "Изменить направление" else "Уточнить направление",
+                    fontWeight = FontWeight.Medium,
                 )
             }
         }
@@ -376,11 +522,29 @@ private fun LocationInfoCard(
     }
 }
 
+private fun normalizeHeading(heading: Float): Float {
+    val normalized = heading % 360f
+    return if (normalized < 0f) normalized + 360f else normalized
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun CompassCalibrationCardPreview() {
     MaterialTheme {
         CompassCalibrationCard(modifier = Modifier.padding(16.dp))
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun HeadingInfoCardPreview() {
+    MaterialTheme {
+        HeadingInfoCard(
+            heading = 86f,
+            isCustomHeading = true,
+            onChangeClick = {},
+            modifier = Modifier.padding(16.dp),
+        )
     }
 }
 
