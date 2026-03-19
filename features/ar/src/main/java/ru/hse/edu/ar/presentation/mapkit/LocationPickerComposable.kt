@@ -2,6 +2,9 @@ package ru.hse.edu.ar.presentation.mapkit
 
 import android.system.Os.close
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,11 +17,14 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -79,12 +85,10 @@ fun LocationPickerComposable(
                     MapKitFactory.getInstance().onStart()
                     mapView.onStart()
                 }
-
                 Lifecycle.Event.ON_STOP -> {
                     mapView.onStop()
                     MapKitFactory.getInstance().onStop()
                 }
-
                 else -> Unit
             }
         }
@@ -94,7 +98,6 @@ fun LocationPickerComposable(
 
     DisposableEffect(map) {
         map.move(CameraPosition(Point(initialLatitude, initialLongitude), initialZoom, 0f, 0f))
-
         val listener = CameraListener { _, pos, _, _ ->
             currentLat = pos.target.latitude
             currentLon = pos.target.longitude
@@ -103,73 +106,99 @@ fun LocationPickerComposable(
         onDispose { map.removeCameraListener(listener) }
     }
 
-    Column(modifier = modifier) {
+    Column(modifier = modifier.background(MaterialTheme.colorScheme.background)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 8.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (onDismiss != null) {
-                IconButton(onClick = onDismiss) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.errorContainer,
+                            shape = CircleShape,
+                        )
+                        .clip(CircleShape)
+                        .clickable(onClick = onDismiss),
+                    contentAlignment = Alignment.Center,
+                ) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Закрыть",
+                        tint = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.size(20.dp),
                     )
                 }
+                Spacer(modifier = Modifier.width(12.dp))
             }
 
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = if (onDismiss != null) 0.dp else 16.dp),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.weight(1f),
             )
-
-            if (onDismiss != null) {
-                Spacer(modifier = Modifier.size(48.dp))
-            }
         }
 
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            shape = RoundedCornerShape(12.dp),
-            tonalElevation = 4.dp,
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.secondaryContainer,
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 10.dp),
-                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(
-                    imageVector = Icons.Default.LocationOn,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(16.dp),
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = formatCoordinates(currentLat, currentLon),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.secondary,
+                            shape = CircleShape,
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSecondary,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Text(
+                        text = "Координаты",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = formatCoordinates(currentLat, currentLon),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    )
+                }
             }
         }
 
+        Spacer(modifier = Modifier.height(12.dp))
+
         Text(
             text = "Перемещайте карту для выбора точки",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.outline,
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp, bottom = 4.dp),
+                .padding(bottom = 12.dp),
         )
 
         Box(
@@ -177,27 +206,53 @@ fun LocationPickerComposable(
                 .weight(1f)
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-                .clip(RoundedCornerShape(20.dp)),
+                .clip(RoundedCornerShape(24.dp))
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                    shape = RoundedCornerShape(24.dp),
+                ),
             contentAlignment = Alignment.Center,
         ) {
             AndroidView(factory = { mapView }, modifier = Modifier.fillMaxSize())
-            MapPin(modifier = Modifier.offset(y = (-22).dp))
+
+            Box(
+                modifier = Modifier
+                    .offset(y = 2.dp)
+                    .size(width = 14.dp, height = 6.dp)
+                    .background(
+                        color = Color.Black.copy(alpha = 0.15f),
+                        shape = CircleShape,
+                    ),
+            )
+
+            MapPin(modifier = Modifier.offset(y = (-24).dp))
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         Button(
             onClick = { onConfirm(currentLat, currentLon) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-                .padding(bottom = 16.dp)
-                .height(52.dp),
+                .padding(bottom = 20.dp)
+                .height(56.dp),
             shape = RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+            ),
         ) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+            )
+            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "Подтвердить",
-                style = MaterialTheme.typography.titleSmall,
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
         }
@@ -206,21 +261,23 @@ fun LocationPickerComposable(
 
 @Composable
 private fun MapPin(modifier: Modifier = Modifier) {
-    val pinColor = MaterialTheme.colorScheme.error
+    val pinColor = MaterialTheme.colorScheme.tertiary
+    val dotColor = MaterialTheme.colorScheme.onTertiary
 
-    Canvas(modifier = modifier.size(32.dp, 44.dp)) {
+    Canvas(modifier = modifier.size(34.dp, 46.dp)) {
         val r = size.width / 2
         val center = Offset(r, r)
 
-        drawCircle(pinColor, r - 1.dp.toPx(), center)
+        drawCircle(pinColor, r, center)
 
         val path = Path().apply {
-            moveTo(r - r * 0.5f, r + r * 0.2f)
-            lineTo(r, size.height - 1.dp.toPx())
-            lineTo(r + r * 0.5f, r + r * 0.2f)
+            moveTo(r - r * 0.45f, r + r * 0.25f)
+            lineTo(r, size.height)
+            lineTo(r + r * 0.45f, r + r * 0.25f)
             close()
         }
         drawPath(path, pinColor)
-        drawCircle(Color.White, r * 0.35f, center)
+
+        drawCircle(dotColor, r * 0.3f, center)
     }
 }

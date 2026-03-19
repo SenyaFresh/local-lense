@@ -8,6 +8,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -36,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -86,12 +89,10 @@ fun PlacemarksMapComposable(
                     MapKitFactory.getInstance().onStart()
                     mapView.onStart()
                 }
-
                 Lifecycle.Event.ON_STOP -> {
                     mapView.onStop()
                     MapKitFactory.getInstance().onStop()
                 }
-
                 else -> Unit
             }
         }
@@ -140,7 +141,16 @@ fun PlacemarksMapComposable(
         pinsLoading = false
     }
 
-    Box(modifier = modifier.clip(RoundedCornerShape(20.dp))) {
+    Box(
+        modifier = modifier
+            .padding(4.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant,
+                shape = RoundedCornerShape(24.dp),
+            ),
+    ) {
         AndroidView(factory = { mapView }, modifier = Modifier.fillMaxSize())
 
         AnimatedVisibility(
@@ -154,19 +164,31 @@ fun PlacemarksMapComposable(
                 .align(Alignment.TopEnd)
                 .padding(12.dp),
         ) {
-            MapOverlayChip {
-                Icon(
-                    imageVector = Icons.Default.Place,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(14.dp),
-                )
-                Spacer(modifier = Modifier.width(4.dp))
+            MapOverlayChip(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.94f),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.secondary,
+                            shape = CircleShape,
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Place,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSecondary,
+                        modifier = Modifier.size(14.dp),
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = placemarks.size.toString(),
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
                 )
             }
         }
@@ -179,18 +201,31 @@ fun PlacemarksMapComposable(
                 .align(Alignment.BottomCenter)
                 .padding(16.dp),
         ) {
-            MapOverlayChip {
-                Icon(
-                    imageVector = Icons.Default.Place,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                    modifier = Modifier.size(16.dp),
-                )
-                Spacer(modifier = Modifier.width(6.dp))
+            MapOverlayChip(
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.94f),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.tertiary,
+                            shape = CircleShape,
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Place,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onTertiary,
+                        modifier = Modifier.size(16.dp),
+                    )
+                }
+                Spacer(modifier = Modifier.width(10.dp))
                 Text(
                     text = "Нет доступных меток",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer,
                 )
             }
         }
@@ -202,16 +237,17 @@ fun PlacemarksMapComposable(
             modifier = Modifier.align(Alignment.Center),
         ) {
             Surface(
-                shape = CircleShape,
-                tonalElevation = 8.dp,
-                shadowElevation = 4.dp,
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.95f),
+                shadowElevation = 6.dp,
             ) {
                 CircularProgressIndicator(
                     modifier = Modifier
-                        .padding(14.dp)
-                        .size(26.dp),
+                        .padding(16.dp)
+                        .size(28.dp),
                     strokeWidth = 3.dp,
                     color = MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.12f),
                 )
             }
         }
@@ -221,17 +257,17 @@ fun PlacemarksMapComposable(
 @Composable
 private fun MapOverlayChip(
     modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
     content: @Composable RowScope.() -> Unit,
 ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(14.dp),
-        tonalElevation = 6.dp,
-        shadowElevation = 2.dp,
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
+        shape = RoundedCornerShape(16.dp),
+        shadowElevation = 4.dp,
+        color = containerColor,
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
             content = content,
         )

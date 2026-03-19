@@ -14,6 +14,7 @@ import ru.hse.edu.ar.presentation.events.PlacemarkEvent
 import ru.hse.edu.ar.presentation.mapkit.LocationPickerComposable
 import ru.hse.edu.ar.presentation.mapkit.PlacemarksMapComposable
 import ru.hse.edu.ar.presentation.viewmodels.ArViewModel
+import ru.hse.edu.geoar.ar.ArGeoFactory
 import ru.hse.locallense.common.entities.LocationData
 import ru.hse.locallense.presentation.ResultContainerComposable
 
@@ -65,8 +66,7 @@ fun MapScreen(
                 initialLatitude = initialLatitude,
                 initialLongitude = initialLongitude,
                 onConfirm = { lat, lng ->
-                    // TODO: заменить захардкоженную высоту на реальную логику получения altitude
-                    pickedLocation = LocationData(lat, lng, 200.0)
+                    pickedLocation = LocationData(lat, lng, ArGeoFactory.locationTracker.locationState.value?.altitude ?: 200.0)
                 },
             )
         }

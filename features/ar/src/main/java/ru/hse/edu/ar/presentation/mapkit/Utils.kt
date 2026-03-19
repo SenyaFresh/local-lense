@@ -53,8 +53,8 @@ fun createPinBitmap(
 }
 
 fun formatCoordinates(latitude: Double, longitude: Double): String {
-    val latDir = if (latitude >= 0) "N" else "S"
-    val lonDir = if (longitude >= 0) "E" else "W"
+    val latDir = if (latitude >= 0) "C" else "Ю"
+    val lonDir = if (longitude >= 0) "З" else "В"
     return String.format(
         Locale.ROOT,
         "%.4f° %s, %.4f° %s",
