@@ -216,7 +216,7 @@ fun PreparationsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background),
-                title = "Уточните направление",
+                title = "Направление",
                 initialHeading = displayHeading ?: 0f,
                 onConfirm = { heading ->
                     customHeading = normalizeHeading(heading)

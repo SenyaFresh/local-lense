@@ -7,21 +7,28 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -34,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -57,28 +65,53 @@ fun HeadingPickerComposable(
         mutableFloatStateOf(normalizeHeading(initialHeading))
     }
 
+    val colorScheme = MaterialTheme.colorScheme
+
     Column(modifier = modifier) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 8.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconButton(onClick = onDismiss) {
+            FilledTonalIconButton(
+                onClick = onDismiss,
+                colors = IconButtonDefaults.filledTonalIconButtonColors(
+                    containerColor = colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                    contentColor = colorScheme.onSurface,
+                ),
+            ) {
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "Закрыть",
                 )
             }
 
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.weight(1f),
-            )
+            Spacer(modifier = Modifier.width(12.dp))
 
-            TextButton(onClick = onReset) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = colorScheme.onSurface,
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = formatHeading(currentHeading),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colorScheme.onSurfaceVariant,
+                )
+            }
+
+            FilledTonalButton(
+                onClick = onReset,
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = colorScheme.tertiaryContainer,
+                    contentColor = colorScheme.onTertiaryContainer,
+                ),
+            ) {
                 Text(text = "Авто")
             }
         }
@@ -87,86 +120,137 @@ fun HeadingPickerComposable(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .clip(RoundedCornerShape(20.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.28f)),
+                .padding(horizontal = 16.dp),
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(12.dp),
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                shape = RoundedCornerShape(28.dp),
+                color = colorScheme.surface,
+                tonalElevation = 2.dp,
             ) {
                 Box(
                     modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    HeadingPreview(
-                        heading = currentHeading,
-                        modifier = Modifier.size(220.dp),
-                    )
-                }
-
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    tonalElevation = 6.dp,
+                        .fillMaxSize()
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    colorScheme.primaryContainer.copy(alpha = 0.22f),
+                                    colorScheme.surface,
+                                    colorScheme.tertiaryContainer.copy(alpha = 0.18f),
+                                ),
+                            ),
+                        ),
                 ) {
                     Column(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
-                        Slider(
-                            value = currentHeading,
-                            onValueChange = { currentHeading = normalizeHeading(it) },
-                            valueRange = 0f..359f,
-                        )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth(),
+                            contentAlignment = Alignment.Center,
                         ) {
-                            Text(
-                                text = "С",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            Text(
-                                text = "В",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            Text(
-                                text = "Ю",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            Text(
-                                text = "З",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            HeadingPreview(
+                                heading = currentHeading,
+                                modifier = Modifier
+                                    .fillMaxWidth(0.82f)
+                                    .aspectRatio(1f),
                             )
                         }
 
-                        Row(
+                        Surface(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            shape = RoundedCornerShape(20.dp),
+                            color = colorScheme.surface.copy(alpha = 0.94f),
+                            tonalElevation = 6.dp,
                         ) {
-                            FilledTonalButton(
-                                onClick = { currentHeading = normalizeHeading(currentHeading - 5f) },
-                                modifier = Modifier.weight(1f),
-                                shape = RoundedCornerShape(12.dp),
+                            Column(
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
                             ) {
-                                Text(text = "−5°")
-                            }
+                                Slider(
+                                    value = currentHeading,
+                                    onValueChange = { currentHeading = normalizeHeading(it) },
+                                    valueRange = 0f..359f,
+                                    colors = SliderDefaults.colors(
+                                        thumbColor = colorScheme.primary,
+                                        activeTrackColor = colorScheme.primary,
+                                        inactiveTrackColor = colorScheme.primary.copy(alpha = 0.18f),
+                                    ),
+                                )
 
-                            FilledTonalButton(
-                                onClick = { currentHeading = normalizeHeading(currentHeading + 5f) },
-                                modifier = Modifier.weight(1f),
-                                shape = RoundedCornerShape(12.dp),
-                            ) {
-                                Text(text = "+5°")
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                ) {
+                                    Text(
+                                        text = "С",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = colorScheme.tertiary,
+                                        fontWeight = FontWeight.SemiBold,
+                                    )
+                                    Text(
+                                        text = "В",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = colorScheme.onSurfaceVariant,
+                                    )
+                                    Text(
+                                        text = "Ю",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = colorScheme.onSurfaceVariant,
+                                    )
+                                    Text(
+                                        text = "З",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = colorScheme.onSurfaceVariant,
+                                    )
+                                    Text(
+                                        text = "С",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = colorScheme.tertiary,
+                                        fontWeight = FontWeight.SemiBold,
+                                    )
+                                }
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                ) {
+                                    FilledTonalButton(
+                                        onClick = {
+                                            currentHeading = normalizeHeading(currentHeading - 5f)
+                                        },
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .height(48.dp),
+                                        shape = RoundedCornerShape(14.dp),
+                                        colors = ButtonDefaults.filledTonalButtonColors(
+                                            containerColor = colorScheme.primaryContainer,
+                                            contentColor = colorScheme.onPrimaryContainer,
+                                        ),
+                                    ) {
+                                        Text(text = "−5°")
+                                    }
+
+                                    FilledTonalButton(
+                                        onClick = {
+                                            currentHeading = normalizeHeading(currentHeading + 5f)
+                                        },
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .height(48.dp),
+                                        shape = RoundedCornerShape(14.dp),
+                                        colors = ButtonDefaults.filledTonalButtonColors(
+                                            containerColor = colorScheme.secondaryContainer,
+                                            contentColor = colorScheme.onSecondaryContainer,
+                                        ),
+                                    ) {
+                                        Text(text = "+5°")
+                                    }
+                                }
                             }
                         }
                     }
@@ -181,13 +265,23 @@ fun HeadingPickerComposable(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-                .padding(bottom = 16.dp)
-                .height(52.dp),
+                .padding(bottom = 20.dp)
+                .height(56.dp),
             shape = RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+            ),
         ) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+            )
+            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "Подтвердить",
-                style = MaterialTheme.typography.titleSmall,
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
         }
@@ -199,60 +293,135 @@ private fun HeadingPreview(
     heading: Float,
     modifier: Modifier = Modifier,
 ) {
-    val primaryColor = MaterialTheme.colorScheme.primary
-    val outlineColor = MaterialTheme.colorScheme.outlineVariant
-    val surfaceColor = MaterialTheme.colorScheme.surface
-    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val colorScheme = MaterialTheme.colorScheme
 
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center,
     ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val strokeWidth = 2.dp.toPx()
-            val outerRadius = size.minDimension / 2 - strokeWidth
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            shape = CircleShape,
+            color = colorScheme.surface.copy(alpha = 0.96f),
+            tonalElevation = 8.dp,
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                colorScheme.primaryContainer.copy(alpha = 0.34f),
+                                colorScheme.surface,
+                                colorScheme.tertiaryContainer.copy(alpha = 0.18f),
+                            ),
+                        ),
+                    ),
+            ) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val strokeWidth = 2.dp.toPx()
+                    val outerRadius = size.minDimension / 2 - strokeWidth - 8.dp.toPx()
 
-            drawCircle(
-                color = outlineColor,
-                radius = outerRadius,
-                style = Stroke(width = strokeWidth),
-            )
+                    drawCircle(
+                        color = colorScheme.outlineVariant.copy(alpha = 0.7f),
+                        radius = outerRadius,
+                        style = Stroke(width = strokeWidth),
+                    )
 
-            drawCircle(
-                color = primaryColor.copy(alpha = 0.06f),
-                radius = outerRadius * 0.72f,
-            )
+                    drawCircle(
+                        color = colorScheme.primary.copy(alpha = 0.08f),
+                        radius = outerRadius * 0.72f,
+                    )
 
-            drawLine(
-                color = primaryColor,
-                start = Offset(center.x, center.y - outerRadius),
-                end = Offset(center.x, center.y - outerRadius * 0.86f),
-                strokeWidth = 4.dp.toPx(),
-                cap = StrokeCap.Round,
-            )
+                    drawCircle(
+                        color = colorScheme.tertiary.copy(alpha = 0.08f),
+                        radius = outerRadius * 0.46f,
+                    )
 
-            repeat(36) { index ->
-                val angle = Math.toRadians(index * 10.0 - 90.0)
-                val isMajor = index % 9 == 0
-                val startRadius = outerRadius * if (isMajor) 0.78f else 0.84f
-                val endRadius = outerRadius * 0.94f
+                    repeat(36) { index ->
+                        val angle = Math.toRadians(index * 10.0 - 90.0)
+                        val isMajor = index % 9 == 0
+                        val startRadius = outerRadius * if (isMajor) 0.76f else 0.83f
+                        val endRadius = outerRadius * 0.93f
 
-                val start = Offset(
-                    x = center.x + cos(angle).toFloat() * startRadius,
-                    y = center.y + sin(angle).toFloat() * startRadius,
-                )
-                val end = Offset(
-                    x = center.x + cos(angle).toFloat() * endRadius,
-                    y = center.y + sin(angle).toFloat() * endRadius,
-                )
+                        val start = Offset(
+                            x = center.x + cos(angle).toFloat() * startRadius,
+                            y = center.y + sin(angle).toFloat() * startRadius,
+                        )
+                        val end = Offset(
+                            x = center.x + cos(angle).toFloat() * endRadius,
+                            y = center.y + sin(angle).toFloat() * endRadius,
+                        )
 
-                drawLine(
-                    color = if (isMajor) primaryColor.copy(alpha = 0.45f) else outlineColor,
-                    start = start,
-                    end = end,
-                    strokeWidth = if (isMajor) 2.dp.toPx() else 1.dp.toPx(),
-                    cap = StrokeCap.Round,
-                )
+                        drawLine(
+                            color = if (isMajor) {
+                                colorScheme.primary.copy(alpha = 0.42f)
+                            } else {
+                                colorScheme.outlineVariant.copy(alpha = 0.9f)
+                            },
+                            start = start,
+                            end = end,
+                            strokeWidth = if (isMajor) 2.dp.toPx() else 1.dp.toPx(),
+                            cap = StrokeCap.Round,
+                        )
+                    }
+
+                    drawLine(
+                        color = colorScheme.tertiary,
+                        start = Offset(center.x, center.y - outerRadius),
+                        end = Offset(center.x, center.y - outerRadius * 0.83f),
+                        strokeWidth = 4.dp.toPx(),
+                        cap = StrokeCap.Round,
+                    )
+                }
+
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(36.dp)
+                        .graphicsLayer { rotationZ = heading },
+                ) {
+                    val centerX = size.width / 2
+                    val centerY = size.height / 2
+                    val tipY = size.height * 0.08f
+                    val baseY = size.height * 0.56f
+                    val tailBottom = size.height * 0.86f
+                    val halfArrowWidth = size.width * 0.10f
+                    val tailHalfWidth = size.width * 0.03f
+
+                    val path = Path().apply {
+                        moveTo(centerX, tipY)
+                        lineTo(centerX + halfArrowWidth, baseY)
+                        lineTo(centerX + tailHalfWidth, baseY)
+                        lineTo(centerX + tailHalfWidth, tailBottom)
+                        lineTo(centerX - tailHalfWidth, tailBottom)
+                        lineTo(centerX - tailHalfWidth, baseY)
+                        lineTo(centerX - halfArrowWidth, baseY)
+                        close()
+                    }
+
+                    drawPath(
+                        path = path,
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                colorScheme.tertiary,
+                                colorScheme.primary,
+                            ),
+                        ),
+                    )
+
+                    drawCircle(
+                        color = colorScheme.surface,
+                        radius = 12.dp.toPx(),
+                        center = Offset(centerX, centerY),
+                    )
+
+                    drawCircle(
+                        color = colorScheme.primary,
+                        radius = 4.dp.toPx(),
+                        center = Offset(centerX, centerY),
+                    )
+                }
             }
         }
 
@@ -260,85 +429,53 @@ private fun HeadingPreview(
             text = "С",
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = 16.dp),
+                .padding(top = 18.dp),
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = onSurfaceColor,
+            fontWeight = FontWeight.Bold,
+            color = colorScheme.tertiary,
         )
+
         Text(
             text = "В",
             modifier = Modifier
                 .align(Alignment.CenterEnd)
-                .padding(end = 18.dp),
+                .padding(end = 20.dp),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
-            color = onSurfaceColor,
+            color = colorScheme.onSurfaceVariant,
         )
+
         Text(
             text = "Ю",
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 16.dp),
+                .padding(bottom = 18.dp),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
-            color = onSurfaceColor,
+            color = colorScheme.onSurfaceVariant,
         )
+
         Text(
             text = "З",
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .padding(start = 18.dp),
+                .padding(start = 20.dp),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
-            color = onSurfaceColor,
+            color = colorScheme.onSurfaceVariant,
         )
 
-        Canvas(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(36.dp)
-                .graphicsLayer { rotationZ = heading },
-        ) {
-            val centerX = size.width / 2
-            val centerY = size.height / 2
-            val tipY = size.height * 0.08f
-            val baseY = size.height * 0.56f
-            val tailBottom = size.height * 0.86f
-            val halfArrowWidth = size.width * 0.10f
-            val tailHalfWidth = size.width * 0.03f
-
-            val path = Path().apply {
-                moveTo(centerX, tipY)
-                lineTo(centerX + halfArrowWidth, baseY)
-                lineTo(centerX + tailHalfWidth, baseY)
-                lineTo(centerX + tailHalfWidth, tailBottom)
-                lineTo(centerX - tailHalfWidth, tailBottom)
-                lineTo(centerX - tailHalfWidth, baseY)
-                lineTo(centerX - halfArrowWidth, baseY)
-                close()
-            }
-
-            drawPath(
-                path = path,
-                color = primaryColor,
-            )
-
-            drawCircle(
-                color = surfaceColor,
-                radius = 10.dp.toPx(),
-                center = Offset(centerX, centerY),
-            )
-        }
-
         Surface(
-            shape = CircleShape,
-            tonalElevation = 4.dp,
+            shape = RoundedCornerShape(18.dp),
+            color = colorScheme.surface,
+            tonalElevation = 8.dp,
         ) {
             Text(
                 text = formatHeadingDegrees(heading),
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                modifier = Modifier.padding(horizontal = 18.dp, vertical = 10.dp),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
+                color = colorScheme.onSurface,
             )
         }
     }
