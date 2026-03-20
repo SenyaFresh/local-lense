@@ -198,7 +198,7 @@ fun AppNavigation() {
                             initialHeading = initialHeading,
                             onHeadingChange = { heading ->
                                 if (heading == null) {
-                                    arGeoEngine?.arPoseLocationTracker?.unlockHeading()
+//                                    arGeoEngine?.arPoseLocationTracker?.unlockHeading()
                                 } else {
                                     arGeoEngine?.arPoseLocationTracker?.forceHeading(heading)
                                 }
