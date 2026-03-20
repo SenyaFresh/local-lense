@@ -15,10 +15,6 @@ class AttachedWallState(
         return anchor.trackingState != TrackingState.STOPPED
     }
 
-    override fun update(parameters: PlacementParameters) {
-        applyBillboardRotation(parameters.cameraPose, parameters.arGeoObject.node)
-    }
-
     override fun release() = anchor.detach()
 
     companion object {
@@ -27,13 +23,17 @@ class AttachedWallState(
             val plane = hitResult.trackable as Plane
 
             val normal = FloatArray(3)
-            plane.centerPose.getTransformedAxis(1, 1f, normal, 0)
+            plane.centerPose.getTransformedAxis(2, 1f, normal, 0)
+
             val node = parameters.arGeoObject.node
+
             node.worldPosition = ArMath.wallPosition(
                 anchorPose = anchor.pose,
                 normal = normal,
                 offset = ArGeoConfig.WALL_OFFSET
             )
+
+            node.worldQuaternion = ArMath.wallRotation(normal)
 
             val state = AttachedWallState(anchor)
             state.update(parameters)

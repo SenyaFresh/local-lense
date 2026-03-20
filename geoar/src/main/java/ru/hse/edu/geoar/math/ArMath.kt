@@ -1,6 +1,9 @@
 package ru.hse.edu.geoar.math
 
 import com.google.ar.core.Pose
+import dev.romainguy.kotlin.math.Float3
+import dev.romainguy.kotlin.math.Quaternion
+import dev.romainguy.kotlin.math.degrees
 import io.github.sceneview.math.Position
 import io.github.sceneview.math.Rotation
 import io.github.sceneview.math.Scale
@@ -46,6 +49,15 @@ object ArMath {
         anchorPose.tx(), anchorPose.ty(), anchorPose.tz(),
         normal[0], normal[2], offset
     )
+    fun wallRotation(normal: FloatArray): Quaternion {
+        val alongWallX = -normal[2]
+        val alongWallZ = normal[0]
+        val angleRadians = atan2(alongWallX, alongWallZ)
+        return Quaternion.fromAxisAngle(
+            Float3(0f, 1f, 0f),
+            degrees(angleRadians)
+        )
+    }
 
     fun compressDistance(meters: Double): Float {
         val arRadius = ArGeoConfig.AR_RADIUS
