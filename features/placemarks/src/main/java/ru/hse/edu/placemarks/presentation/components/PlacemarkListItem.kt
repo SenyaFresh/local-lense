@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -53,17 +52,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import ru.hse.edu.placemarks.domain.entities.Placemark
-import ru.hse.locallense.common.ResultContainer
 import ru.hse.locallense.common.entities.LocationData
 import ru.hse.locallense.common.entities.Tag
 import ru.hse.locallense.common.round
-import ru.hse.locallense.components.composables.ActionIcon
-import ru.hse.locallense.presentation.locals.LocalSpacing
-import kotlin.collections.emptyList
 import kotlin.math.roundToInt
 
 private val tagColorPalette = listOf(
@@ -253,7 +246,11 @@ private fun PlacemarkInfo(
         Spacer(modifier = Modifier.height(3.dp))
 
         Text(
-            text = "${placemark.locationData.latitude.round(6)}, ${placemark.locationData.longitude.round(6)}",
+            text = "${placemark.locationData.latitude.round(6)}, ${
+                placemark.locationData.longitude.round(
+                    6
+                )
+            }",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,

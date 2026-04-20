@@ -2,7 +2,6 @@ package ru.hse.edu.placemarks.sources
 
 import android.content.Context
 import androidx.room.Room
-import ru.hse.edu.placemarks.entities.PlacemarkDataEntity
 import ru.hse.edu.placemarks.entities.PlacemarkWithTags
 import ru.hse.edu.placemarks.entities.TagDataEntity
 import ru.hse.edu.placemarks.sources.room.PlacemarksDatabase

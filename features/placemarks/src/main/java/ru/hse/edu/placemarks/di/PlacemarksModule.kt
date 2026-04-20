@@ -10,6 +10,7 @@ class PlacemarksModule {
 
     @Provides
     @Feature
-    fun providePlacemarksRepository(deps: PlacemarksDeps): PlacemarksRepository = deps.placemarksRepository
+    fun providePlacemarksRepository(deps: PlacemarksDeps): PlacemarksRepository =
+        deps.placemarksRepository
 
 }

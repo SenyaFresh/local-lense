@@ -49,6 +49,7 @@ object ArMath {
         anchorPose.tx(), anchorPose.ty(), anchorPose.tz(),
         normal[0], normal[2], offset
     )
+
     fun wallRotation(normal: FloatArray): Quaternion {
         val alongWallX = -normal[2]
         val alongWallZ = normal[0]

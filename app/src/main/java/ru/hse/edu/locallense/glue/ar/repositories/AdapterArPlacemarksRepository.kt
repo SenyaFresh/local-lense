@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 class AdapterArPlacemarksRepository @Inject constructor(
     private val placemarksDataRepository: PlacemarksDataRepository,
-): ArPlacemarksRepository {
+) : ArPlacemarksRepository {
     override suspend fun getPlacemarks(): Flow<ResultContainer<List<ArPlacemark>>> {
         return placemarksDataRepository.getPlacemarks().map { result ->
             result.map { list ->

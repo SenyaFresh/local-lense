@@ -14,7 +14,7 @@ import ru.hse.locallense.common.entities.Tag
 
 class AdapterPlacemarksRepository @Inject constructor(
     private val placemarksDataRepository: PlacemarksDataRepository,
-): PlacemarksRepository {
+) : PlacemarksRepository {
     override suspend fun getPlacemarks(): Flow<ResultContainer<List<Placemark>>> {
         return placemarksDataRepository.getPlacemarks().map { result ->
             result.map { list ->

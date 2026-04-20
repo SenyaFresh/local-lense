@@ -8,11 +8,12 @@ import javax.inject.Inject
 
 @Stable
 class PlacemarksDiContainer {
-    @Inject lateinit var viewModelFactory: PlacemarksViewModel.Factory
+    @Inject
+    lateinit var viewModelFactory: PlacemarksViewModel.Factory
 }
 
 @Composable
-fun rememberPlacemarksDiContainer() : PlacemarksDiContainer {
+fun rememberPlacemarksDiContainer(): PlacemarksDiContainer {
     return remember {
         PlacemarksDiContainer().also {
             DaggerPlacemarksComponent.builder().deps(PlacemarksDepsProvider.deps).build().inject(it)

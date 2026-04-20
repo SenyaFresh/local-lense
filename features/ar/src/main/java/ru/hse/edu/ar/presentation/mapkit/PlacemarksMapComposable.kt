@@ -89,10 +89,12 @@ fun PlacemarksMapComposable(
                     MapKitFactory.getInstance().onStart()
                     mapView.onStart()
                 }
+
                 Lifecycle.Event.ON_STOP -> {
                     mapView.onStop()
                     MapKitFactory.getInstance().onStop()
                 }
+
                 else -> Unit
             }
         }

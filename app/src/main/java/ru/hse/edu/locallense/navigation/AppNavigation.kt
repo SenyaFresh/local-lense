@@ -6,7 +6,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,7 +15,6 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,7 +26,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.compose.NavHost
@@ -38,7 +35,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import io.github.sceneview.ar.ARSceneView
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import ru.hse.edu.ar.presentation.screens.ArScreen
 import ru.hse.edu.ar.presentation.screens.ArScreenMode
@@ -115,6 +111,7 @@ fun AppNavigation() {
                 onClick = { placemarksScreenSearchEnabled = !placemarksScreenSearchEnabled }
             ),
         )
+
         else -> null
     }
 
@@ -162,26 +159,34 @@ fun AppNavigation() {
                             searchEnabled = placemarksScreenSearchEnabled,
                             onSearchEnabledChange = { placemarksScreenSearchEnabled = it },
                             onPlacemarkOpenOnMap = { id ->
-                                navController.navigate(MapGraph.MapScreen(
-                                    navMode = MapNavMode.VIEW_SINGLE,
-                                    placemarkId = id,
-                                ))
+                                navController.navigate(
+                                    MapGraph.MapScreen(
+                                        navMode = MapNavMode.VIEW_SINGLE,
+                                        placemarkId = id,
+                                    )
+                                )
                             },
                             onPlacemarkOpenInAr = { id ->
-                                navController.navigate(ArGraph.ArScreen(
-                                    navMode = ArNavMode.VIEW_SINGLE,
-                                    placemarkId = id,
-                                ))
+                                navController.navigate(
+                                    ArGraph.ArScreen(
+                                        navMode = ArNavMode.VIEW_SINGLE,
+                                        placemarkId = id,
+                                    )
+                                )
                             },
                             onAddNewPlacemarkOnMap = {
-                                navController.navigate(MapGraph.MapScreen(
-                                    navMode = MapNavMode.ADD_NEW,
-                                ))
+                                navController.navigate(
+                                    MapGraph.MapScreen(
+                                        navMode = MapNavMode.ADD_NEW,
+                                    )
+                                )
                             },
                             onAddNewPlacemarkInAr = {
-                                navController.navigate(ArGraph.ArScreen(
-                                    navMode = ArNavMode.ADD_NEW,
-                                ))
+                                navController.navigate(
+                                    ArGraph.ArScreen(
+                                        navMode = ArNavMode.ADD_NEW,
+                                    )
+                                )
                             },
                         )
                         isArScreenActive = false
@@ -230,7 +235,9 @@ fun AppNavigation() {
                                 arSceneView = sceneView,
                                 onPlacemarkAdded = {
                                     navController.navigate(PlacemarksGraph.PlacemarksScreen) {
-                                        popUpTo(PlacemarksGraph.PlacemarksScreen) { inclusive = true }
+                                        popUpTo(PlacemarksGraph.PlacemarksScreen) {
+                                            inclusive = true
+                                        }
                                     }
                                 },
                             )
@@ -258,7 +265,9 @@ fun AppNavigation() {
                                 initialLongitude = lng,
                                 onPlacemarkAdded = {
                                     navController.navigate(PlacemarksGraph.PlacemarksScreen) {
-                                        popUpTo(PlacemarksGraph.PlacemarksScreen) { inclusive = true }
+                                        popUpTo(PlacemarksGraph.PlacemarksScreen) {
+                                            inclusive = true
+                                        }
                                     }
                                 },
                             )

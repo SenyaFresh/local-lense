@@ -14,7 +14,7 @@ import ru.hse.edu.placemarks.entities.TagDataEntity
     ],
     version = 2,
 )
-abstract class PlacemarksDatabase: RoomDatabase() {
+abstract class PlacemarksDatabase : RoomDatabase() {
 
     abstract fun getPlacemarksDao(): PlacemarksDao
 

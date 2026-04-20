@@ -1,20 +1,12 @@
 package ru.hse.edu.geoar.ar
 
-import android.content.Context
 import com.google.ar.core.Plane
 import com.google.ar.core.TrackingState
 import io.github.sceneview.ar.ARSceneView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
-import ru.hse.edu.geoar.ar.ArGeoFactory.headingProvider
-import ru.hse.edu.geoar.ar.ArGeoFactory.locationTracker
 import ru.hse.edu.geoar.location.ArFrameData
 import ru.hse.edu.geoar.location.ArPoseLocationTracker
-import ru.hse.edu.geoar.location.LocationTracker
-import ru.hse.edu.geoar.sensors.HeadingProvider
-import ru.hse.edu.geoar.sensors.LinearAccelerationProvider
-import ru.hse.edu.geoar.sensors.SensorsManager
-import ru.hse.edu.geoar.sensors.StepDetectorProvider
 import java.util.concurrent.CopyOnWriteArrayList
 
 enum class ArGeoEngineMode {
@@ -112,6 +104,7 @@ class ArGeoEngine(
             ArGeoEngineMode.PLACEMENT -> {
                 sceneView.planeRenderer.isVisible = true
             }
+
             ArGeoEngineMode.VIEW -> {
                 sceneView.planeRenderer.isVisible = false
             }

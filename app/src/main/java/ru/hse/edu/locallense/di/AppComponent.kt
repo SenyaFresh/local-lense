@@ -19,7 +19,7 @@ import ru.hse.locallense.common.di.AppScope
         CoreModule::class,
     ]
 )
-interface AppComponent: PlacemarksDeps, ArDeps {
+interface AppComponent : PlacemarksDeps, ArDeps {
 
     override val placemarksRepository: PlacemarksRepository
 
@@ -32,8 +32,8 @@ interface AppComponent: PlacemarksDeps, ArDeps {
     @Component.Builder
     interface Builder {
         @BindsInstance
-        fun context(context: Context) : Builder
+        fun context(context: Context): Builder
 
-        fun build() : AppComponent
+        fun build(): AppComponent
     }
 }

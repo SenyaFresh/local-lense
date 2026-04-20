@@ -66,10 +66,15 @@ fun MapScreen(
                 initialLatitude = initialLatitude,
                 initialLongitude = initialLongitude,
                 onConfirm = { lat, lng ->
-                    pickedLocation = LocationData(lat, lng, ArGeoFactory.locationTracker.locationState.value?.altitude ?: 200.0)
+                    pickedLocation = LocationData(
+                        lat,
+                        lng,
+                        ArGeoFactory.locationTracker.locationState.value?.altitude ?: 200.0
+                    )
                 },
             )
         }
+
         else -> {
             ResultContainerComposable(
                 container = markersResult,
@@ -77,7 +82,8 @@ fun MapScreen(
                 onSuccess = {
                     val markers = when (mode) {
                         is MapScreenMode.ViewAll -> markersResult.unwrap()
-                        is MapScreenMode.ViewSingle -> markersResult.unwrap().filter { it.id == mode.placemarkId }
+                        is MapScreenMode.ViewSingle -> markersResult.unwrap()
+                            .filter { it.id == mode.placemarkId }
                     }
                     PlacemarksMapComposable(
                         placemarks = markers,

@@ -1,6 +1,5 @@
 package ru.hse.edu.placemarks.sources
 
-import ru.hse.edu.placemarks.entities.PlacemarkDataEntity
 import ru.hse.edu.placemarks.entities.PlacemarkWithTags
 import ru.hse.edu.placemarks.entities.TagDataEntity
 

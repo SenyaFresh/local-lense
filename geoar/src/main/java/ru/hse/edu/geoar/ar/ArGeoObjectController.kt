@@ -13,8 +13,8 @@ import ru.hse.edu.geoar.ar.state.StateUpdater
 import ru.hse.edu.geoar.math.ArMath
 import ru.hse.edu.geoar.math.GeoMath
 import ru.hse.edu.geoar.math.GeoMath.distanceMeters
-import ru.hse.locallense.common.round
 import ru.hse.locallense.common.entities.LocationData
+import ru.hse.locallense.common.round
 
 class ArGeoObjectController(val arGeoObject: ArGeoObject) {
 

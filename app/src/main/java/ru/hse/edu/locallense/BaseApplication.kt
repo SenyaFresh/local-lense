@@ -1,14 +1,12 @@
 package ru.hse.edu.locallense
 
 import android.app.Application
+import com.yandex.mapkit.MapKitFactory
 import ru.hse.edu.ar.di.ArDepsStore
 import ru.hse.edu.locallense.di.AppComponent
 import ru.hse.edu.locallense.di.DaggerAppComponent
 import ru.hse.edu.placemarks.di.PlacemarksDepsStore
 import ru.hse.locallense.common.Core
-import com.yandex.mapkit.MapKitFactory
-import kotlinx.coroutines.coroutineScope
-import ru.hse.edu.geoar.ar.ArGeoFactory
 
 /**
  * Base application class for setting up application-wide dependencies and configurations.

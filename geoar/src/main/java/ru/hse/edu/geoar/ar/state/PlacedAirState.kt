@@ -1,6 +1,5 @@
 package ru.hse.edu.geoar.ar.state
 
-import android.util.Log
 import ru.hse.edu.geoar.ar.ArGeoConfig
 import ru.hse.edu.geoar.math.ArMath
 import ru.hse.edu.geoar.math.GeoMath.relativeBearingRadians

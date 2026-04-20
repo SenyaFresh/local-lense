@@ -1,11 +1,9 @@
 package ru.hse.edu.ar.presentation.mapkit
 
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.yandex.mapkit.Animation
 import com.yandex.mapkit.geometry.Point
@@ -51,13 +49,4 @@ class CameraPositionState(
 
     fun move(location: LocationData, zoom: Float = this.zoom, animate: Boolean = true) =
         move(location.latitude, location.longitude, zoom, animate = animate)
-}
-
-@Composable
-fun rememberCameraPositionState(
-    latitude: Double,
-    longitude: Double,
-    zoom: Float = 10f,
-): CameraPositionState = remember {
-    CameraPositionState(latitude, longitude, zoom)
 }

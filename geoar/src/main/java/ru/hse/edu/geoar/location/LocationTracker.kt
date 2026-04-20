@@ -2,7 +2,6 @@ package ru.hse.edu.geoar.location
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.location.Location
 import android.os.Looper
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -14,7 +13,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import ru.hse.edu.geoar.sensors.SensorsManager
-import ru.hse.locallense.common.ResultContainer
 import ru.hse.locallense.common.entities.LocationData
 
 @SuppressLint("MissingPermission")

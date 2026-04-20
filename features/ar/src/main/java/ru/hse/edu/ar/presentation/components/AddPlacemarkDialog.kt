@@ -54,7 +54,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import ru.hse.edu.ar.domain.entities.ArPlacemark
-import ru.hse.edu.geoar.ar.ArTapResult
 import ru.hse.locallense.common.entities.LocationData
 import ru.hse.locallense.common.entities.Tag
 import ru.hse.locallense.components.composables.buttons.DefaultPrimaryButton

@@ -8,11 +8,12 @@ import javax.inject.Inject
 
 @Stable
 class ArDiContainer {
-    @Inject lateinit var viewModelFactory: ArViewModel.Factory
+    @Inject
+    lateinit var viewModelFactory: ArViewModel.Factory
 }
 
 @Composable
-fun rememberArDiContainer() : ArDiContainer {
+fun rememberArDiContainer(): ArDiContainer {
     return remember {
         ArDiContainer().also {
             DaggerArComponent.builder().deps(ArDepsProvider.deps).build().inject(it)

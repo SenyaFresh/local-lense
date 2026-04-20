@@ -4,7 +4,6 @@ import com.google.ar.core.Frame
 import com.google.ar.core.Pose
 import io.github.sceneview.node.Node
 import ru.hse.edu.geoar.ar.ArGeoObject
-import ru.hse.edu.geoar.location.LocationFix
 import ru.hse.edu.geoar.math.ArMath
 import ru.hse.locallense.common.entities.LocationData
 
@@ -25,6 +24,7 @@ abstract class ArPlacementState {
         val deltaZ = cameraPose.tz() - node.position.z
         node.worldRotation = ArMath.billboardRotation(deltaX, deltaY, deltaZ)
     }
+
     open fun isValid(parameters: PlacementParameters): Boolean = false
     open fun update(parameters: PlacementParameters) = Unit
     open fun release() = Unit

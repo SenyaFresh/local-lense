@@ -6,7 +6,6 @@ import ru.hse.locallense.common.ResultContainer
 import ru.hse.locallense.common.entities.Tag
 import ru.hse.locallense.components.composables.lists.ActionableItemsFlowRow
 import ru.hse.locallense.components.entities.ActionableItem
-import kotlin.collections.map
 
 @Composable
 fun TagsRow(

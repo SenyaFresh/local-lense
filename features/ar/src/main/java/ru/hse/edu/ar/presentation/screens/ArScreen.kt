@@ -2,7 +2,6 @@ package ru.hse.edu.ar.presentation.screens
 
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivity
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -13,8 +12,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.sceneview.ar.ARSceneView
 import kotlinx.coroutines.CoroutineScope
@@ -86,6 +83,7 @@ fun ArScreen(
                 arSceneView = arSceneView,
             )
         }
+
         else -> {
             ResultContainerComposable(
                 container = markersResult,
@@ -93,7 +91,9 @@ fun ArScreen(
                 onSuccess = {
                     val markers = when (mode) {
                         is ArScreenMode.ViewAll -> markersResult.unwrap()
-                        is ArScreenMode.ViewSingle -> markersResult.unwrap().filter { it.id == mode.placemarkId }
+                        is ArScreenMode.ViewSingle -> markersResult.unwrap()
+                            .filter { it.id == mode.placemarkId }
+
                         else -> emptyList()
                     }
                     ArContent(

@@ -22,7 +22,7 @@ class CoreModule {
 
     @Provides
     @AppScope
-    fun provideLazyFlowLoaderFactory() : LazyFlowLoaderFactory {
+    fun provideLazyFlowLoaderFactory(): LazyFlowLoaderFactory {
         return DefaultLazyFlowLoaderFactory(Dispatchers.IO)
     }
 
