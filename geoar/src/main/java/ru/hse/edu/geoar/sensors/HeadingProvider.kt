@@ -39,4 +39,11 @@ class HeadingProvider(
         SensorManager.getOrientation(remappedRotationMatrix, orientationAngles)
         return ((Math.toDegrees(orientationAngles[0].toDouble()) + declination).mod(360.0)).toFloat()
     }
+
+    override fun smooth(newValue: Float, previousValue: Float): Float {
+        val delta = ((newValue - previousValue + 540f) % 360f) - 180f
+        val next = previousValue + alpha * delta
+        val mod = next % 360f
+        return if (mod < 0f) mod + 360f else mod
+    }
 }

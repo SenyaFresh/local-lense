@@ -43,6 +43,7 @@ fun ArScreen(
     arGeoEngine: ArGeoEngine,
     arSceneView: ARSceneView,
     onPlacemarkAdded: () -> Unit,
+    onCompassMarkersChange: (List<ArPlacemark>) -> Unit = {},
     diContainer: ArDiContainer = rememberArDiContainer(),
     viewModel: ArViewModel = viewModel(factory = diContainer.viewModelFactory),
 ) {
@@ -81,6 +82,7 @@ fun ArScreen(
                 onArTap = { tapResult = it },
                 arGeoEngine = arGeoEngine,
                 arSceneView = arSceneView,
+                onCompassMarkersChange = onCompassMarkersChange,
             )
         }
 
@@ -102,6 +104,7 @@ fun ArScreen(
                         onArTap = null,
                         arGeoEngine = arGeoEngine,
                         arSceneView = arSceneView,
+                        onCompassMarkersChange = onCompassMarkersChange,
                     )
                 }
             )
@@ -116,6 +119,7 @@ fun ArContent(
     onArTap: ((ArTapResult?) -> Unit)?,
     arGeoEngine: ArGeoEngine,
     arSceneView: ARSceneView,
+    onCompassMarkersChange: (List<ArPlacemark>) -> Unit = {},
 ) {
     val coroutineScope = rememberCoroutineScope()
     val activity = LocalActivity.current as ComponentActivity
@@ -145,10 +149,15 @@ fun ArContent(
         }
     }
 
+    LaunchedEffect(markers, isPlacementMode) {
+        onCompassMarkersChange(if (isPlacementMode) emptyList() else markers)
+    }
+
     DisposableEffect(Unit) {
         onDispose {
             arGeoEngine.onTap = null
             arGeoEngine.clear()
+            onCompassMarkersChange(emptyList())
         }
     }
 }

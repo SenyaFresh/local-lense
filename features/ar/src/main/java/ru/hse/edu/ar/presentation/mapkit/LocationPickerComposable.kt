@@ -1,6 +1,5 @@
 package ru.hse.edu.ar.presentation.mapkit
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -36,9 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -52,6 +49,7 @@ import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.map.CameraListener
 import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.mapview.MapView
+import ru.hse.locallense.components.composables.MapPin
 
 @Composable
 fun LocationPickerComposable(
@@ -255,25 +253,3 @@ fun LocationPickerComposable(
     }
 }
 
-@Composable
-private fun MapPin(modifier: Modifier = Modifier) {
-    val pinColor = MaterialTheme.colorScheme.tertiary
-    val dotColor = MaterialTheme.colorScheme.onTertiary
-
-    Canvas(modifier = modifier.size(34.dp, 46.dp)) {
-        val r = size.width / 2
-        val center = Offset(r, r)
-
-        drawCircle(pinColor, r, center)
-
-        val path = Path().apply {
-            moveTo(r - r * 0.45f, r + r * 0.25f)
-            lineTo(r, size.height)
-            lineTo(r + r * 0.45f, r + r * 0.25f)
-            close()
-        }
-        drawPath(path, pinColor)
-
-        drawCircle(dotColor, r * 0.3f, center)
-    }
-}

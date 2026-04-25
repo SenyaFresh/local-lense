@@ -21,6 +21,21 @@ object GeoMath {
         )
     }
 
+    fun distanceMeters(from: LocationData, to: LocationData): Double =
+        haversine(
+            latitude1 = from.latitude, longitude1 = from.longitude,
+            latitude2 = to.latitude, longitude2 = to.longitude
+        )
+
+    fun bearingDegrees(from: LocationData, to: LocationData): Double =
+        calculateBearingDegrees(
+            latitude1 = from.latitude, longitude1 = from.longitude,
+            latitude2 = to.latitude, longitude2 = to.longitude
+        )
+
+    fun normalizeToPlusMinus180(degrees: Double): Double =
+        (degrees + 540.0).mod(360.0) - 180.0
+
     fun distanceMeters(cameraPose: Pose, node: Node): Double {
         val targetPosition = node.worldPosition
         return horizontalDistance(
@@ -108,6 +123,4 @@ object GeoMath {
         return Math.toDegrees(atan2(crossProduct, dotProduct))
     }
 
-    private fun normalizeToPlusMinus180(degrees: Double): Double =
-        (degrees + 540.0).mod(360.0) - 180.0
 }

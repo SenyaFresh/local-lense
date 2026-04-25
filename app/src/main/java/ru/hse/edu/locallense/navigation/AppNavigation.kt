@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -36,6 +37,8 @@ import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import io.github.sceneview.ar.ARSceneView
 import kotlinx.coroutines.delay
+import ru.hse.edu.ar.domain.entities.ArPlacemark
+import ru.hse.edu.ar.presentation.components.ArCompassOverlay
 import ru.hse.edu.ar.presentation.screens.ArScreen
 import ru.hse.edu.ar.presentation.screens.ArScreenMode
 import ru.hse.edu.ar.presentation.screens.MapScreen
@@ -116,8 +119,10 @@ fun AppNavigation() {
     }
 
     var isArScreenActive by remember { mutableStateOf(false) }
+    var compassMarkers by remember { mutableStateOf<List<ArPlacemark>>(emptyList()) }
 
     val initialHeading by ArGeoFactory.headingProvider.smoothedValue.collectAsState()
+    val userLocation by ArGeoFactory.locationTracker.locationState.collectAsState()
 
 
     Scaffold(
@@ -240,6 +245,7 @@ fun AppNavigation() {
                                         }
                                     }
                                 },
+                                onCompassMarkersChange = { compassMarkers = it },
                             )
                             isArScreenActive = true
                         }
@@ -300,6 +306,17 @@ fun AppNavigation() {
                     }
                 },
             )
+
+            if (isArScreenActive) {
+                ArCompassOverlay(
+                    markers = compassMarkers,
+                    userHeading = initialHeading,
+                    userLocation = userLocation,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = 4.dp, start = 12.dp, end = 12.dp),
+                )
+            }
         }
     }
 }
