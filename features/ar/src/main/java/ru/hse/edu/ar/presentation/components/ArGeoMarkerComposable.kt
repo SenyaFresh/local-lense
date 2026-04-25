@@ -68,8 +68,7 @@ fun ArGeoMarkerComposable(
             caption = type.text,
         )
         is ArPlacemark.Type.Simple,
-        is ArPlacemark.Type.Photo,
-        is ArPlacemark.Type.Audio -> PinMarker(
+        is ArPlacemark.Type.Photo -> PinMarker(
             name = arPlacemark.name,
             distanceMeters = distance,
         )

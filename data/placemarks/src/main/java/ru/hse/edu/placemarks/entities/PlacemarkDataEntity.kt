@@ -22,6 +22,5 @@ enum class PlacemarkType {
     SIMPLE,
     TEXT,
     PHOTO,
-    AUDIO,
     TEXT_PHOTO,
 }

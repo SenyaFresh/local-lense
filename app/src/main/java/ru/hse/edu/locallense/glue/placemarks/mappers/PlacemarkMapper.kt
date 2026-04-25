@@ -12,7 +12,6 @@ fun PlacemarkWithTags.toPlacemark(): Placemark {
         PlacemarkType.SIMPLE -> Placemark.Type.Simple
         PlacemarkType.TEXT -> Placemark.Type.Text(placemark.content ?: "")
         PlacemarkType.PHOTO -> Placemark.Type.Photo(placemark.content ?: "")
-        PlacemarkType.AUDIO -> Placemark.Type.Audio(placemark.content ?: "")
         PlacemarkType.TEXT_PHOTO -> Placemark.Type.TextPhoto(
             text = placemark.content.orEmpty(),
             photoPath = placemark.contentSecondary.orEmpty(),

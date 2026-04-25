@@ -15,14 +15,12 @@ fun ArPlacemark.toPlacemarkWithTags(): PlacemarkWithTags {
         is ArPlacemark.Type.Simple -> PlacemarkType.SIMPLE
         is ArPlacemark.Type.Text -> PlacemarkType.TEXT
         is ArPlacemark.Type.Photo -> PlacemarkType.PHOTO
-        is ArPlacemark.Type.Audio -> PlacemarkType.AUDIO
         is ArPlacemark.Type.TextPhoto -> PlacemarkType.TEXT_PHOTO
     }
 
     val entityContent = when (arType) {
         is ArPlacemark.Type.Text -> arType.text
         is ArPlacemark.Type.Photo -> arType.filepath
-        is ArPlacemark.Type.Audio -> arType.filepath
         is ArPlacemark.Type.TextPhoto -> arType.text
         is ArPlacemark.Type.Simple -> null
     }
@@ -56,7 +54,6 @@ fun PlacemarkWithTags.toArPlacemark(): ArPlacemark {
         PlacemarkType.SIMPLE -> ArPlacemark.Type.Simple
         PlacemarkType.TEXT -> ArPlacemark.Type.Text(placemark.content ?: "")
         PlacemarkType.PHOTO -> ArPlacemark.Type.Photo(placemark.content ?: "")
-        PlacemarkType.AUDIO -> ArPlacemark.Type.Audio(placemark.content ?: "")
         PlacemarkType.TEXT_PHOTO -> ArPlacemark.Type.TextPhoto(
             text = placemark.content.orEmpty(),
             photoPath = placemark.contentSecondary.orEmpty(),
