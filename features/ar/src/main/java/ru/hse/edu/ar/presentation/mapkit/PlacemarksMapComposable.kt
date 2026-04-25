@@ -41,6 +41,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -57,6 +58,7 @@ import com.yandex.mapkit.mapview.MapView
 import com.yandex.runtime.image.ImageProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import ru.hse.edu.ar.R
 import ru.hse.edu.ar.domain.entities.ArPlacemark
 
 @Composable
@@ -224,7 +226,7 @@ fun PlacemarksMapComposable(
                 }
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    text = "Нет доступных меток",
+                    text = stringResource(R.string.ar_map_no_placemarks),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onTertiaryContainer,

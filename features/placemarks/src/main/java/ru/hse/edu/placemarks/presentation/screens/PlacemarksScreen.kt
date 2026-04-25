@@ -24,8 +24,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ru.hse.edu.placemarks.R
 import ru.hse.edu.placemarks.di.PlacemarksDiContainer
 import ru.hse.edu.placemarks.di.rememberPlacemarksDiContainer
 import ru.hse.edu.placemarks.domain.entities.Placemark
@@ -120,7 +122,7 @@ fun PlacemarksContent(
     Column {
         Crossfade(
             targetState = searchEnabled,
-            label = "Показать поиск",
+            label = stringResource(R.string.placemarks_search_show_label),
             animationSpec = tween(100),
             modifier = Modifier.animateContentSize()
         ) { state ->
@@ -132,7 +134,7 @@ fun PlacemarksContent(
                         onSearchEnabledChange(false)
                         onPlacemarkEvent(PlacemarkEvent.SearchByName(""))
                     },
-                    label = "Поиск заметки",
+                    label = stringResource(R.string.placemarks_search_label),
                     modifier = Modifier.padding(LocalSpacing.current.small)
                 )
             } else {

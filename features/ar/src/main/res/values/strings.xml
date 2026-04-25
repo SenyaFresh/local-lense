@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ar_dialog_new_note_title">Новая заметка</string>
+    <string name="ar_type_simple">Обычная</string>
+    <string name="ar_type_text">Текстовая</string>
+    <string name="ar_type_photo_text">Фото и текст</string>
+    <string name="ar_field_name_placeholder">Название</string>
+    <string name="ar_field_text_placeholder">Текст заметки</string>
+    <string name="ar_field_photo_caption_placeholder">Подпись к фото</string>
+    <string name="ar_field_tag_placeholder">Тег</string>
+    <string name="ar_section_color">Цвет</string>
+    <string name="ar_section_tags">Теги</string>
+    <string name="ar_tags_empty">Нет доступных тегов</string>
+    <string name="ar_tag_remove_cd">Удалить тег %1$s</string>
+    <string name="ar_action_add">Добавить</string>
+    <string name="ar_action_cancel">Отмена</string>
+    <string name="ar_action_confirm">Подтвердить</string>
+    <string name="ar_action_close_cd">Закрыть</string>
+    <string name="ar_action_remove_photo_cd">Убрать фото</string>
+    <string name="ar_photo_picker_upload">Загрузить фото</string>
+
+    <string name="ar_preparations_title">Подготовка</string>
+    <string name="ar_preparations_subtitle">Настройте параметры перед началом</string>
+    <string name="ar_preparations_compass_calibration_title">Калибровка компаса</string>
+    <string name="ar_preparations_compass_calibration_hint">Покрутите телефон восьмёркой для повышения точности</string>
+    <string name="ar_preparations_heading_custom_title">Уточнённое направление</string>
+    <string name="ar_preparations_heading_auto_title">Направление компаса</string>
+    <string name="ar_preparations_heading_auto_value">Автоматически по компасу</string>
+    <string name="ar_preparations_heading_locked_hint">Направление зафиксировано вручную</string>
+    <string name="ar_preparations_heading_change_hint">При необходимости можно выставить вручную</string>
+    <string name="ar_preparations_heading_change_action">Изменить направление</string>
+    <string name="ar_preparations_heading_set_action">Уточнить направление</string>
+    <string name="ar_preparations_location_custom_title">Выбранная позиция</string>
+    <string name="ar_preparations_location_current_title">Текущая позиция</string>
+    <string name="ar_preparations_location_change_action">Изменить на карте</string>
+    <string name="ar_preparations_location_set_action">Уточнить на карте</string>
+    <string name="ar_preparations_continue">Продолжить</string>
+    <string name="ar_preparations_picker_location_title">Уточните местоположение</string>
+    <string name="ar_preparations_picker_heading_title">Направление</string>
+
+    <string name="ar_heading_picker_auto">Авто</string>
+    <string name="ar_heading_picker_minus_5">−5°</string>
+    <string name="ar_heading_picker_plus_5">+5°</string>
+
+    <string name="ar_location_picker_coordinates_label">Координаты</string>
+    <string name="ar_location_picker_hint">Перемещайте карту для выбора точки</string>
+
+    <string name="ar_map_no_placemarks">Нет доступных меток</string>
+    <string name="ar_map_pick_location_title">Выберите место</string>
+
+    <string name="ar_compass_cardinal_north">С</string>
+    <string name="ar_compass_cardinal_east">В</string>
+    <string name="ar_compass_cardinal_south">Ю</string>
+    <string name="ar_compass_cardinal_west">З</string>
+</resources>

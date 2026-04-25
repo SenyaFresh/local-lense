@@ -47,9 +47,11 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import ru.hse.edu.ar.R
 import ru.hse.edu.ar.presentation.components.HeadingPickerComposable
 import ru.hse.edu.ar.presentation.components.formatHeading
 import ru.hse.edu.ar.presentation.mapkit.LocationPickerComposable
@@ -118,7 +120,7 @@ fun PreparationsScreen(
                 .padding(bottom = 20.dp),
         ) {
             Text(
-                text = "Подготовка",
+                text = stringResource(R.string.ar_preparations_title),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
@@ -127,7 +129,7 @@ fun PreparationsScreen(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Настройте параметры перед началом",
+                text = stringResource(R.string.ar_preparations_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -156,7 +158,7 @@ fun PreparationsScreen(
             Spacer(modifier = Modifier.weight(1f))
 
             DefaultPrimaryButton(
-                label = "Продолжить",
+                label = stringResource(R.string.ar_preparations_continue),
                 onClick = {
                     onHeadingChange(customHeading)
                     onContinue(latitude, longitude)
@@ -180,7 +182,7 @@ fun PreparationsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background),
-                title = "Уточните местоположение",
+                title = stringResource(R.string.ar_preparations_picker_location_title),
                 initialLatitude = latitude,
                 initialLongitude = longitude,
                 onConfirm = { lat, lng ->
@@ -208,7 +210,7 @@ fun PreparationsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background),
-                title = "Направление",
+                title = stringResource(R.string.ar_preparations_picker_heading_title),
                 initialHeading = displayHeading ?: 0f,
                 onConfirm = { heading ->
                     customHeading = normalizeHeading(heading)
@@ -253,12 +255,12 @@ private fun CompassCalibrationCard(modifier: Modifier = Modifier) {
                 modifier = Modifier.weight(1f),
             ) {
                 Text(
-                    text = "Калибровка компаса",
+                    text = stringResource(R.string.ar_preparations_compass_calibration_title),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(
-                    text = "Покрутите телефон восьмёркой для повышения точности",
+                    text = stringResource(R.string.ar_preparations_compass_calibration_hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -311,21 +313,24 @@ private fun HeadingInfoCard(
                     modifier = Modifier.weight(1f),
                 ) {
                     Text(
-                        text = if (isCustomHeading) "Уточнённое направление" else "Направление компаса",
+                        text = stringResource(
+                            if (isCustomHeading) R.string.ar_preparations_heading_custom_title
+                            else R.string.ar_preparations_heading_auto_title
+                        ),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                     )
                     Text(
-                        text = heading?.let(::formatHeading) ?: "Автоматически по компасу",
+                        text = heading?.let(::formatHeading)
+                            ?: stringResource(R.string.ar_preparations_heading_auto_value),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
-                        text = if (isCustomHeading) {
-                            "Направление зафиксировано вручную"
-                        } else {
-                            "При необходимости можно выставить вручную"
-                        },
+                        text = stringResource(
+                            if (isCustomHeading) R.string.ar_preparations_heading_locked_hint
+                            else R.string.ar_preparations_heading_change_hint
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -342,7 +347,10 @@ private fun HeadingInfoCard(
                 ),
             ) {
                 Text(
-                    text = if (isCustomHeading) "Изменить направление" else "Уточнить направление",
+                    text = stringResource(
+                        if (isCustomHeading) R.string.ar_preparations_heading_change_action
+                        else R.string.ar_preparations_heading_set_action
+                    ),
                     fontWeight = FontWeight.Medium,
                 )
             }
@@ -484,7 +492,10 @@ private fun LocationInfoCard(
                     modifier = Modifier.weight(1f),
                 ) {
                     Text(
-                        text = if (isCustomLocation) "Выбранная позиция" else "Текущая позиция",
+                        text = stringResource(
+                            if (isCustomLocation) R.string.ar_preparations_location_custom_title
+                            else R.string.ar_preparations_location_current_title
+                        ),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                     )
@@ -506,7 +517,10 @@ private fun LocationInfoCard(
                 ),
             ) {
                 Text(
-                    text = if (isCustomLocation) "Изменить на карте" else "Уточнить на карте",
+                    text = stringResource(
+                        if (isCustomLocation) R.string.ar_preparations_location_change_action
+                        else R.string.ar_preparations_location_set_action
+                    ),
                     fontWeight = FontWeight.Medium,
                 )
             }

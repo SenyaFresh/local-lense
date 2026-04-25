@@ -24,8 +24,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import ru.hse.edu.placemarks.R
 
 @Composable
 fun AddPlacemarkMethodDialog(
@@ -57,7 +59,7 @@ fun AddPlacemarkMethodDialog(
                 Spacer(Modifier.height(16.dp))
 
                 Text(
-                    text = "Добавить метку",
+                    text = stringResource(R.string.placemarks_add_dialog_title),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -65,7 +67,7 @@ fun AddPlacemarkMethodDialog(
                 Spacer(Modifier.height(8.dp))
 
                 Text(
-                    text = "Выберите способ добавления",
+                    text = stringResource(R.string.placemarks_add_dialog_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -101,7 +103,7 @@ fun AddPlacemarkMethodDialog(
                             )
                             Spacer(Modifier.height(8.dp))
                             Text(
-                                text = "На карте",
+                                text = stringResource(R.string.placemarks_add_method_map),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
@@ -133,7 +135,7 @@ fun AddPlacemarkMethodDialog(
                             )
                             Spacer(Modifier.height(8.dp))
                             Text(
-                                text = "В AR",
+                                text = stringResource(R.string.placemarks_add_method_ar),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.onTertiaryContainer
                             )
@@ -148,7 +150,7 @@ fun AddPlacemarkMethodDialog(
                     modifier = Modifier.align(Alignment.End)
                 ) {
                     Text(
-                        text = "Отмена",
+                        text = stringResource(R.string.placemarks_add_dialog_cancel),
                         color = MaterialTheme.colorScheme.outline
                     )
                 }

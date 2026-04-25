@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="placemarks_action_delete">Удалить</string>
+    <string name="placemarks_action_open_on_map_cd">Открыть на карте</string>
+    <string name="placemarks_action_open_in_ar_cd">Открыть в AR</string>
+    <string name="placemarks_tag_prefix">#%1$s</string>
+
+    <string name="placemarks_empty_state">Вы пока не добавили ни одной метки.</string>
+
+    <string name="placemarks_add_dialog_title">Добавить метку</string>
+    <string name="placemarks_add_dialog_subtitle">Выберите способ добавления</string>
+    <string name="placemarks_add_method_map">На карте</string>
+    <string name="placemarks_add_method_ar">В AR</string>
+    <string name="placemarks_add_dialog_cancel">Отмена</string>
+
+    <string name="placemarks_search_label">Поиск заметки</string>
+    <string name="placemarks_search_show_label">Показать поиск</string>
+
+    <string name="placemarks_sort_dialog_title">Выберите тип сортировки</string>
+    <string name="placemarks_sort_by_name_asc">По названию (А-Я)</string>
+    <string name="placemarks_sort_by_name_desc">По названию (Я-А)</string>
+    <string name="placemarks_sort_by_distance_asc">По удалённости (ближайшие)</string>
+    <string name="placemarks_sort_by_distance_desc">По удалённости (далее)</string>
+    <string name="placemarks_sort_dialog_ok">Ок</string>
+</resources>

@@ -58,6 +58,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -67,6 +68,7 @@ import coil3.compose.AsyncImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import ru.hse.edu.ar.R
 import ru.hse.edu.ar.domain.entities.ArPlacemark
 import ru.hse.locallense.common.entities.LocationData
 import ru.hse.locallense.common.entities.Tag
@@ -78,10 +80,10 @@ import java.util.UUID
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
-enum class PlacemarkTypeOption(val label: String) {
-    SIMPLE("Обычная"),
-    TEXT("Текстовая"),
-    PHOTO_TEXT("Фото и текст"),
+enum class PlacemarkTypeOption(val labelRes: Int) {
+    SIMPLE(R.string.ar_type_simple),
+    TEXT(R.string.ar_type_text),
+    PHOTO_TEXT(R.string.ar_type_photo_text),
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -153,7 +155,7 @@ fun AddPlacemarkDialog(
                 verticalArrangement = Arrangement.spacedBy(20.dp),
             ) {
                 Text(
-                    text = "Новая заметка",
+                    text = stringResource(R.string.ar_dialog_new_note_title),
                     style = MaterialTheme.typography.headlineSmall,
                 )
 
@@ -165,7 +167,7 @@ fun AddPlacemarkDialog(
                             shape = SegmentedButtonDefaults.itemShape(
                                 idx, PlacemarkTypeOption.entries.size,
                             ),
-                        ) { Text(opt.label) }
+                        ) { Text(stringResource(opt.labelRes)) }
                     }
                 }
 
@@ -173,7 +175,7 @@ fun AddPlacemarkDialog(
                     text = name,
                     onValueChange = { name = it },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Название") },
+                    placeholder = { Text(stringResource(R.string.ar_field_name_placeholder)) },
                 )
 
                 AnimatedVisibility(visible = selectedType == PlacemarkTypeOption.TEXT) {
@@ -181,7 +183,7 @@ fun AddPlacemarkDialog(
                         text = text,
                         onValueChange = { text = it },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Текст заметки") },
+                        placeholder = { Text(stringResource(R.string.ar_field_text_placeholder)) },
                     )
                 }
 
@@ -202,13 +204,13 @@ fun AddPlacemarkDialog(
                             text = text,
                             onValueChange = { text = it },
                             modifier = Modifier.fillMaxWidth(),
-                            placeholder = { Text("Подпись к фото") },
+                            placeholder = { Text(stringResource(R.string.ar_field_photo_caption_placeholder)) },
                         )
                     }
                 }
 
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    SectionLabel("Цвет")
+                    SectionLabel(stringResource(R.string.ar_section_color))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -278,11 +280,11 @@ fun AddPlacemarkDialog(
                 }
 
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    SectionLabel("Теги")
+                    SectionLabel(stringResource(R.string.ar_section_tags))
 
                     if (availableTags.isEmpty() && !showNewTagInput) {
                         Text(
-                            text = "Нет доступных тегов",
+                            text = stringResource(R.string.ar_tags_empty),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                         )
@@ -313,7 +315,7 @@ fun AddPlacemarkDialog(
                                     trailingIcon = {
                                         Icon(
                                             Icons.Default.Close,
-                                            contentDescription = "Удалить тег ${tag.name}",
+                                            contentDescription = stringResource(R.string.ar_tag_remove_cd, tag.name),
                                             modifier = Modifier
                                                 .size(18.dp)
                                                 .clip(CircleShape)
@@ -333,7 +335,7 @@ fun AddPlacemarkDialog(
                         if (!showNewTagInput) {
                             AssistChip(
                                 onClick = { showNewTagInput = true },
-                                label = { Text("Добавить") },
+                                label = { Text(stringResource(R.string.ar_action_add)) },
                                 leadingIcon = {
                                     Icon(Icons.Default.Add, null, Modifier.size(18.dp))
                                 },
@@ -350,7 +352,7 @@ fun AddPlacemarkDialog(
                                 text = newTagName,
                                 onValueChange = { newTagName = it },
                                 modifier = Modifier.weight(1f),
-                                placeholder = { Text("Тег") },
+                                placeholder = { Text(stringResource(R.string.ar_field_tag_placeholder)) },
                             )
                             IconButton(
                                 onClick = {
@@ -363,7 +365,8 @@ fun AddPlacemarkDialog(
                                 enabled = newTagName.isNotBlank(),
                             ) {
                                 Icon(
-                                    Icons.Default.Check, "Подтвердить",
+                                    Icons.Default.Check,
+                                    contentDescription = stringResource(R.string.ar_action_confirm),
                                     tint = if (newTagName.isNotBlank())
                                         MaterialTheme.colorScheme.primary
                                     else
@@ -374,7 +377,8 @@ fun AddPlacemarkDialog(
                                 onClick = { newTagName = ""; showNewTagInput = false },
                             ) {
                                 Icon(
-                                    Icons.Default.Close, "Отмена",
+                                    Icons.Default.Close,
+                                    contentDescription = stringResource(R.string.ar_action_cancel),
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             }
@@ -387,12 +391,12 @@ fun AddPlacemarkDialog(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     DefaultSecondaryButton(
-                        label = "Отмена",
+                        label = stringResource(R.string.ar_action_cancel),
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f),
                     )
                     DefaultPrimaryButton(
-                        label = "Добавить",
+                        label = stringResource(R.string.ar_action_add),
                         onClick = {
                             val type = when (selectedType) {
                                 PlacemarkTypeOption.SIMPLE -> ArPlacemark.Type.Simple
@@ -575,7 +579,7 @@ private fun PhotoPickerTile(
                     modifier = Modifier.size(32.dp),
                 )
                 Text(
-                    text = "Загрузить фото",
+                    text = stringResource(R.string.ar_photo_picker_upload),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -599,7 +603,7 @@ private fun PhotoPickerTile(
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Убрать фото",
+                    contentDescription = stringResource(R.string.ar_action_remove_photo_cd),
                     tint = Color.White,
                     modifier = Modifier.size(18.dp),
                 )

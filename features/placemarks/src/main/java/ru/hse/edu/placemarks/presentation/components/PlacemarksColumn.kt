@@ -10,8 +10,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import ru.hse.edu.placemarks.R
 import ru.hse.edu.placemarks.domain.entities.Placemark
 import ru.hse.locallense.common.ResultContainer
 import ru.hse.locallense.presentation.ResultContainerComposable
@@ -32,7 +34,7 @@ fun PlacemarksColumn(
             if (unwrappedPlacemarks.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
-                        text = "Вы пока не добавили ни одной метки.",
+                        text = stringResource(R.string.placemarks_empty_state),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium
                     )

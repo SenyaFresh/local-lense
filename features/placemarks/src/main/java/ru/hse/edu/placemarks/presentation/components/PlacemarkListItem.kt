@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import java.io.File
 import kotlinx.coroutines.launch
+import ru.hse.edu.placemarks.R
 import ru.hse.edu.placemarks.domain.entities.Placemark
 import ru.hse.locallense.common.entities.LocationData
 import ru.hse.locallense.common.entities.Tag
@@ -210,7 +212,7 @@ private fun BoxScope.DeleteActionReveal(
                     modifier = Modifier.size(22.dp)
                 )
                 Text(
-                    text = "Удалить",
+                    text = stringResource(R.string.placemarks_action_delete),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onError
                 )
@@ -320,14 +322,14 @@ private fun PlacemarkQuickActions(
     ) {
         PlacemarkActionButton(
             icon = Icons.Rounded.Map,
-            contentDescription = "Открыть на карте",
+            contentDescription = stringResource(R.string.placemarks_action_open_on_map_cd),
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
             onClick = onOpenOnMap
         )
         PlacemarkActionButton(
             icon = Icons.Rounded.ViewInAr,
-            contentDescription = "Открыть в AR",
+            contentDescription = stringResource(R.string.placemarks_action_open_in_ar_cd),
             containerColor = MaterialTheme.colorScheme.tertiaryContainer,
             contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
             onClick = onOpenInAr
@@ -373,7 +375,7 @@ private fun PlacemarkTag(tag: String) {
             .padding(horizontal = 8.dp, vertical = 3.dp)
     ) {
         Text(
-            text = "#$tag",
+            text = stringResource(R.string.placemarks_tag_prefix, tag),
             style = MaterialTheme.typography.labelSmall,
             color = color,
             fontWeight = FontWeight.Medium,

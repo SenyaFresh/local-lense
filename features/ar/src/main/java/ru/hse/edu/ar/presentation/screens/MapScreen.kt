@@ -6,7 +6,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
+import ru.hse.edu.ar.R
 import ru.hse.edu.ar.di.ArDiContainer
 import ru.hse.edu.ar.di.rememberArDiContainer
 import ru.hse.edu.ar.presentation.components.AddPlacemarkDialog
@@ -62,7 +64,7 @@ fun MapScreen(
     when (mode) {
         is MapScreenMode.AddNew -> {
             LocationPickerComposable(
-                title = "Выберите место",
+                title = stringResource(R.string.ar_map_pick_location_title),
                 initialLatitude = initialLatitude,
                 initialLongitude = initialLongitude,
                 onConfirm = { lat, lng ->

@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -49,6 +50,7 @@ import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.map.CameraListener
 import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.mapview.MapView
+import ru.hse.edu.ar.R
 import ru.hse.locallense.components.composables.MapPin
 
 @Composable
@@ -121,7 +123,7 @@ fun LocationPickerComposable(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Закрыть",
+                        contentDescription = stringResource(R.string.ar_action_close_cd),
                         tint = MaterialTheme.colorScheme.onErrorContainer,
                         modifier = Modifier.size(20.dp),
                     )
@@ -168,7 +170,7 @@ fun LocationPickerComposable(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
-                        text = "Координаты",
+                        text = stringResource(R.string.ar_location_picker_coordinates_label),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
                     )
@@ -186,7 +188,7 @@ fun LocationPickerComposable(
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = "Перемещайте карту для выбора точки",
+            text = stringResource(R.string.ar_location_picker_hint),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.outline,
             textAlign = TextAlign.Center,
@@ -245,7 +247,7 @@ fun LocationPickerComposable(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Подтвердить",
+                text = stringResource(R.string.ar_action_confirm),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )

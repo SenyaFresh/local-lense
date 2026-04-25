@@ -43,8 +43,10 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import ru.hse.edu.ar.R
 import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
@@ -80,7 +82,7 @@ fun HeadingPickerComposable(
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Закрыть",
+                    contentDescription = stringResource(R.string.ar_action_close_cd),
                 )
             }
 
@@ -109,7 +111,7 @@ fun HeadingPickerComposable(
                     contentColor = colorScheme.onTertiaryContainer,
                 ),
             ) {
-                Text(text = "Авто")
+                Text(text = stringResource(R.string.ar_heading_picker_auto))
             }
         }
 
@@ -184,28 +186,28 @@ fun HeadingPickerComposable(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                 ) {
                                     Text(
-                                        text = "С",
+                                        text = stringResource(R.string.ar_compass_cardinal_north),
                                         style = MaterialTheme.typography.labelMedium,
                                         color = colorScheme.tertiary,
                                         fontWeight = FontWeight.SemiBold,
                                     )
                                     Text(
-                                        text = "В",
+                                        text = stringResource(R.string.ar_compass_cardinal_east),
                                         style = MaterialTheme.typography.labelMedium,
                                         color = colorScheme.onSurfaceVariant,
                                     )
                                     Text(
-                                        text = "Ю",
+                                        text = stringResource(R.string.ar_compass_cardinal_south),
                                         style = MaterialTheme.typography.labelMedium,
                                         color = colorScheme.onSurfaceVariant,
                                     )
                                     Text(
-                                        text = "З",
+                                        text = stringResource(R.string.ar_compass_cardinal_west),
                                         style = MaterialTheme.typography.labelMedium,
                                         color = colorScheme.onSurfaceVariant,
                                     )
                                     Text(
-                                        text = "С",
+                                        text = stringResource(R.string.ar_compass_cardinal_north),
                                         style = MaterialTheme.typography.labelMedium,
                                         color = colorScheme.tertiary,
                                         fontWeight = FontWeight.SemiBold,
@@ -229,7 +231,7 @@ fun HeadingPickerComposable(
                                             contentColor = colorScheme.onPrimaryContainer,
                                         ),
                                     ) {
-                                        Text(text = "−5°")
+                                        Text(text = stringResource(R.string.ar_heading_picker_minus_5))
                                     }
 
                                     FilledTonalButton(
@@ -245,7 +247,7 @@ fun HeadingPickerComposable(
                                             contentColor = colorScheme.onSecondaryContainer,
                                         ),
                                     ) {
-                                        Text(text = "+5°")
+                                        Text(text = stringResource(R.string.ar_heading_picker_plus_5))
                                     }
                                 }
                             }
@@ -277,7 +279,7 @@ fun HeadingPickerComposable(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Подтвердить",
+                text = stringResource(R.string.ar_action_confirm),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
@@ -423,7 +425,7 @@ private fun HeadingPreview(
         }
 
         Text(
-            text = "С",
+            text = stringResource(R.string.ar_compass_cardinal_north),
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(top = 18.dp),
@@ -433,7 +435,7 @@ private fun HeadingPreview(
         )
 
         Text(
-            text = "В",
+            text = stringResource(R.string.ar_compass_cardinal_east),
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .padding(end = 20.dp),
@@ -443,7 +445,7 @@ private fun HeadingPreview(
         )
 
         Text(
-            text = "Ю",
+            text = stringResource(R.string.ar_compass_cardinal_south),
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 18.dp),
@@ -453,7 +455,7 @@ private fun HeadingPreview(
         )
 
         Text(
-            text = "З",
+            text = stringResource(R.string.ar_compass_cardinal_west),
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .padding(start = 20.dp),
