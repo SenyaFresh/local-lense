@@ -11,6 +11,7 @@ import ru.hse.edu.placemarks.di.PlacemarksDeps
 import ru.hse.edu.placemarks.domain.repositories.PlacemarksRepository
 import ru.hse.locallense.common.CoreProvider
 import ru.hse.locallense.common.di.AppScope
+import ru.hse.locallense.common.entities.LocationProvider
 
 @AppScope
 @Component(
@@ -22,6 +23,8 @@ import ru.hse.locallense.common.di.AppScope
 interface AppComponent : PlacemarksDeps, ArDeps {
 
     override val placemarksRepository: PlacemarksRepository
+
+    override val locationProvider: LocationProvider
 
     override val arPlacemarksRepository: ArPlacemarksRepository
 

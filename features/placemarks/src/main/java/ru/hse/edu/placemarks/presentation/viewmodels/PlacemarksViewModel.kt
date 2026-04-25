@@ -18,14 +18,11 @@ import ru.hse.edu.placemarks.domain.usecases.GetTagsUseCase
 import ru.hse.edu.placemarks.presentation.entities.SortType
 import ru.hse.edu.placemarks.presentation.events.PlacemarkEvent
 import ru.hse.locallense.common.ResultContainer
+import ru.hse.locallense.common.entities.LocationProvider
 import ru.hse.locallense.common.entities.Tag
+import ru.hse.locallense.common.entities.distanceMetersTo
 import ru.hse.locallense.presentation.BaseViewModel
 import javax.inject.Inject
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.pow
-import kotlin.math.sin
-import kotlin.math.sqrt
 
 class PlacemarksViewModel @Inject constructor(
     private val getPlacemarksUseCase: GetPlacemarksUseCase,
@@ -33,10 +30,8 @@ class PlacemarksViewModel @Inject constructor(
     private val getTagsUseCase: GetTagsUseCase,
     private val addTagUseCase: AddTagUseCase,
     private val deleteTagUseCase: DeleteTagUseCase,
+    private val locationProvider: LocationProvider,
 ) : BaseViewModel() {
-
-    private val currentLatitude: Double = 55.7558
-    private val currentLongitude: Double = 37.6173
 
     private val _rawPlacemarks =
         MutableStateFlow<ResultContainer<List<Placemark>>>(ResultContainer.Loading)
@@ -54,36 +49,14 @@ class PlacemarksViewModel @Inject constructor(
         _rawPlacemarks, _sortType, _selectedTagIds, _searchQuery
     ) { container, sort, tagIds, query ->
         when (container) {
-            is ResultContainer.Loading -> ResultContainer.Loading
+            is ResultContainer.Loading -> container
             is ResultContainer.Error -> container
-            is ResultContainer.Done -> {
-                val filteredByTags = if (tagIds.isEmpty()) {
-                    container.unwrap()
-                } else {
-                    container.unwrap().filter { placemark ->
-                        placemark.tags.any { tag -> tag.id in tagIds }
-                    }
-                }
-                val filteredByName = if (query.isBlank()) {
-                    filteredByTags
-                } else {
-                    filteredByTags.filter { placemark ->
-                        placemark.name.contains(query, ignoreCase = true)
-                    }
-                }
-                val sorted = when (sort) {
-                    SortType.BY_NAME_ASC -> filteredByName.sortedBy { it.name }
-                    SortType.BY_NAME_DESC -> filteredByName.sortedByDescending { it.name }
-                    SortType.BY_DISTANCE_ASC -> filteredByName.sortedBy {
-                        calculateDistance(it.locationData.latitude, it.locationData.longitude)
-                    }
-
-                    SortType.BY_DISTANCE_DESC -> filteredByName.sortedByDescending {
-                        calculateDistance(it.locationData.latitude, it.locationData.longitude)
-                    }
-                }
-                ResultContainer.Done(sorted)
-            }
+            is ResultContainer.Done -> ResultContainer.Done(
+                container.value
+                    .filterByTags(tagIds)
+                    .filterByName(query)
+                    .sortBy(sort)
+            )
         }
     }.stateIn(viewModelScope, SharingStarted.Lazily, ResultContainer.Loading)
 
@@ -101,38 +74,47 @@ class PlacemarksViewModel @Inject constructor(
             is PlacemarkEvent.DeletePlacemark -> deletePlacemark(event.id)
             is PlacemarkEvent.DeleteTag -> deleteTag(event.id)
             is PlacemarkEvent.AddTag -> addTag(event.tag)
-            is PlacemarkEvent.SortBy -> setSortType(event.sortType)
-            is PlacemarkEvent.SelectTag -> selectTag(event.id)
-            is PlacemarkEvent.SearchByName -> searchByName(event.query)
+            is PlacemarkEvent.SortBy -> _sortType.value = event.sortType
+            is PlacemarkEvent.SelectTag -> toggleTag(event.id)
+            is PlacemarkEvent.SearchByName -> _searchQuery.value = event.query
         }
     }
 
-    private fun searchByName(query: String) {
-        _searchQuery.value = query
-    }
-
-    private fun selectTag(tagId: Long) {
-        if (_selectedTagIds.value.contains(tagId)) {
-            _selectedTagIds.value = _selectedTagIds.value.filter { it != tagId }
+    private fun toggleTag(tagId: Long) {
+        _selectedTagIds.value = if (tagId in _selectedTagIds.value) {
+            _selectedTagIds.value - tagId
         } else {
-            _selectedTagIds.value += tagId
+            _selectedTagIds.value + tagId
         }
     }
 
-    private fun setSortType(sortType: SortType) {
-        _sortType.value = sortType
+    private fun List<Placemark>.filterByTags(tagIds: List<Long>): List<Placemark> =
+        if (tagIds.isEmpty()) this
+        else filter { placemark -> placemark.tags.any { it.id in tagIds } }
+
+    private fun List<Placemark>.filterByName(query: String): List<Placemark> =
+        if (query.isBlank()) this
+        else filter { it.name.contains(query, ignoreCase = true) }
+
+    private fun List<Placemark>.sortBy(sort: SortType): List<Placemark> = when (sort) {
+        SortType.BY_NAME_ASC -> sortedBy { it.name }
+        SortType.BY_NAME_DESC -> sortedByDescending { it.name }
+        SortType.BY_DISTANCE_ASC -> sortedByDistance(ascending = true)
+        SortType.BY_DISTANCE_DESC -> sortedByDistance(ascending = false)
+    }
+
+    private fun List<Placemark>.sortedByDistance(ascending: Boolean): List<Placemark> {
+        val origin = locationProvider.current ?: return sortedBy { it.name }
+        return if (ascending) sortedBy { origin.distanceMetersTo(it.locationData) }
+        else sortedByDescending { origin.distanceMetersTo(it.locationData) }
     }
 
     private fun collectPlacemarks() = viewModelScope.launch {
-        getPlacemarksUseCase.invoke().collect { result ->
-            _rawPlacemarks.value = result
-        }
+        getPlacemarksUseCase.invoke().collect { _rawPlacemarks.value = it }
     }
 
     private fun collectTags() = viewModelScope.launch {
-        getTagsUseCase.invoke().collect { result ->
-            _tags.value = result
-        }
+        getTagsUseCase.invoke().collect { _tags.value = it }
     }
 
     private fun deletePlacemark(id: Long) = viewModelScope.launch {
@@ -147,16 +129,6 @@ class PlacemarksViewModel @Inject constructor(
         addTagUseCase.invoke(tag)
     }
 
-    private fun calculateDistance(lat: Double, lon: Double): Double {
-        val dLat = Math.toRadians(lat - currentLatitude)
-        val dLon = Math.toRadians(lon - currentLongitude)
-        val a = sin(dLat / 2).pow(2) +
-                cos(Math.toRadians(currentLatitude)) *
-                cos(Math.toRadians(lat)) *
-                sin(dLon / 2).pow(2)
-        return 6371.0 * 2 * atan2(sqrt(a), sqrt(1 - a))
-    }
-
     @Suppress("UNCHECKED_CAST")
     class Factory @Inject constructor(
         private val getPlacemarksUseCase: GetPlacemarksUseCase,
@@ -164,6 +136,7 @@ class PlacemarksViewModel @Inject constructor(
         private val getTagsUseCase: GetTagsUseCase,
         private val addTagUseCase: AddTagUseCase,
         private val deleteTagUseCase: DeleteTagUseCase,
+        private val locationProvider: LocationProvider,
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             require(modelClass == PlacemarksViewModel::class.java)
@@ -173,6 +146,7 @@ class PlacemarksViewModel @Inject constructor(
                 getTagsUseCase = getTagsUseCase,
                 addTagUseCase = addTagUseCase,
                 deleteTagUseCase = deleteTagUseCase,
+                locationProvider = locationProvider,
             ) as T
         }
     }

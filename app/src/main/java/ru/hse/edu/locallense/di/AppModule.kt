@@ -5,6 +5,7 @@ import android.content.Context
 import dagger.Module
 import dagger.Provides
 import ru.hse.edu.locallense.glue.ar.di.ArPlacemarksRepositoryModule
+import ru.hse.edu.locallense.glue.location.LocationProviderModule
 import ru.hse.edu.locallense.glue.placemarks.di.PlacemarksRepositoryModule
 import ru.hse.edu.placemarks.di.PlacemarksDataRepositoryModule
 
@@ -16,6 +17,7 @@ import ru.hse.edu.placemarks.di.PlacemarksDataRepositoryModule
         PlacemarksDataRepositoryModule::class,
         PlacemarksRepositoryModule::class,
         ArPlacemarksRepositoryModule::class,
+        LocationProviderModule::class,
     ]
 )
 class AppModule {
