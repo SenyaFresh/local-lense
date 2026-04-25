@@ -6,6 +6,9 @@ import com.google.ar.core.TrackingState
 import io.github.sceneview.ar.ARSceneView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import ru.hse.edu.geoar.math.Dimens
@@ -28,6 +31,7 @@ class ArPoseLocationTracker(
     private val sceneView: ARSceneView,
     private val locationTracker: LocationTracker,
     private val scope: CoroutineScope,
+    private val anchorPersistence: AnchorPersistence? = null,
 ) {
 
     private var updateJob: Job? = null
@@ -36,10 +40,39 @@ class ArPoseLocationTracker(
     private var initialHeading: Float? = null
     private var initialLocation: LocationData? = null
     private var initialYaw: Float = 0f
+
     private var lastHeading: Float? = null
     private var lastLocation: LocationData? = null
     private var lastPose: Pose? = null
+
     private var headingLocked = false
+    private var pendingForcedHeading: Float? = null
+
+    private var warmupStartMs: Long = 0L
+    private var isWarmedUp = false
+
+    private var migrationStartMs: Long = 0L
+    private var migrationLatOffset: Double = 0.0
+    private var migrationLonOffset: Double = 0.0
+    private var migrationAltOffset: Double = 0.0
+    private var migrationHeadingOffset: Float = 0f
+
+    private data class PreLossSnapshot(
+        val timestampMs: Long,
+        val location: LocationData,
+        val heading: Float,
+    )
+
+    private var preLossSnapshot: PreLossSnapshot? = null
+
+    private var lastTrackingState: TrackingState? = null
+    private var lastPersistedAtMs: Long = 0L
+
+    private val _effectiveUserLocation = MutableStateFlow<LocationData?>(null)
+    val effectiveUserLocation: StateFlow<LocationData?> = _effectiveUserLocation.asStateFlow()
+
+    private val _effectiveUserHeading = MutableStateFlow<Float?>(null)
+    val effectiveUserHeading: StateFlow<Float?> = _effectiveUserHeading.asStateFlow()
 
     val isHeadingLocked: Boolean
         get() = headingLocked
@@ -47,20 +80,28 @@ class ArPoseLocationTracker(
     var onFrameUpdate: ((ArFrameData) -> Unit)? = null
 
     fun forceHeading(heading: Float) {
-        val currentPose = lastPose ?: return
-        if (initialPose == null) return
-        val currentYaw = extractYawDegrees(currentPose)
-        val yawDelta = currentYaw - initialYaw
-        initialHeading = (heading + yawDelta).mod(360f)
-        headingLocked = true
+        val currentPose = lastPose
+        if (currentPose != null && initialPose != null && isWarmedUp) {
+            val currentYaw = extractYawDegrees(currentPose)
+            val yawDelta = currentYaw - initialYaw
+            initialHeading = (heading + yawDelta + 360f).mod(360f)
+            headingLocked = true
+            cancelMigration()
+            pendingForcedHeading = null
+        } else {
+            pendingForcedHeading = heading
+            headingLocked = true
+        }
     }
 
     fun unlockHeading() {
         headingLocked = false
+        pendingForcedHeading = null
     }
 
     fun start() {
         locationTracker.start()
+        restorePersistedSnapshotAsPreLoss()
         updateJob = scope.launch {
             combine(
                 headingProvider.smoothedValue,
@@ -73,67 +114,7 @@ class ArPoseLocationTracker(
             }
         }
         sceneView.onSessionUpdated = { _, frame ->
-            val camera = frame.camera
-            val pose = camera.pose
-            val trackingState = camera.trackingState
-
-            when (trackingState) {
-                TrackingState.TRACKING -> {
-                    lastPose = pose
-                    if (initialPose == null) {
-                        initialPose = pose
-                        initialHeading = lastHeading
-                        initialLocation = lastLocation
-                        initialYaw = extractYawDegrees(pose)
-                    } else {
-                        if (initialHeading == null) initialHeading = lastHeading
-                        if (initialLocation == null) initialLocation = lastLocation
-
-                        if (!headingLocked) {
-                            val currentHeading = lastHeading
-                            if (currentHeading != null) {
-                                val currentYaw = extractYawDegrees(pose)
-                                val yawDelta = currentYaw - initialYaw
-                                initialHeading = (currentHeading + yawDelta).mod(360f)
-                            }
-                        }
-                    }
-                }
-
-                TrackingState.PAUSED -> {}
-
-                TrackingState.STOPPED -> {
-                    initialPose = null
-                    initialHeading = null
-                    initialLocation = null
-                    initialYaw = 0f
-                    lastPose = null
-                    headingLocked = false
-                }
-            }
-
-            val initPose = initialPose
-            val initHeading = initialHeading
-            val initLocation = initialLocation
-
-            if (trackingState == TrackingState.TRACKING && initPose != null && initHeading != null && initLocation != null) {
-                val location = computeLocation(
-                    pose = pose,
-                    initialPose = initPose,
-                    initialHeading = initHeading,
-                    initialLocation = initLocation
-                )
-                headingProvider.setLocation(location)
-                onFrameUpdate?.invoke(
-                    ArFrameData(
-                        userLocation = location,
-                        userHeading = lastHeading ?: initHeading,
-                        frame = frame,
-                        cameraPose = pose,
-                        initialCameraHeading = initHeading,
-                    )
-                )
-            }
+            handleFrameUpdate(frame)
         }
     }
 
@@ -142,24 +123,218 @@ class ArPoseLocationTracker(
         updateJob = null
         locationTracker.stop()
         sceneView.onSessionUpdated = null
+        clearAnchor()
+        lastHeading = null
+        lastLocation = null
+        lastPose = null
+        preLossSnapshot = null
+        cancelMigration()
+        pendingForcedHeading = null
+        headingLocked = false
+        _effectiveUserLocation.value = null
+        _effectiveUserHeading.value = null
+    }
+
+    fun computeLocation(pose: Pose): LocationData? {
+        val initPose = initialPose ?: return null
+        val initHeading = initialHeading ?: return null
+        val initLocation = initialLocation ?: return null
+        if (!isWarmedUp) return null
+        return computeLocation(pose, initPose, initHeading, initLocation)
+    }
+
+    private fun handleFrameUpdate(frame: Frame) {
+        val camera = frame.camera
+        val pose = camera.pose
+        val trackingState = camera.trackingState
+
+        val previousState = lastTrackingState
+        lastTrackingState = trackingState
+
+        when (trackingState) {
+            TrackingState.TRACKING -> {
+                lastPose = pose
+                if (!isWarmedUp) {
+                    tryWarmupAndCommit(pose)
+                }
+            }
+
+            TrackingState.PAUSED -> {
+            }
+
+            TrackingState.STOPPED -> {
+                if (previousState != TrackingState.STOPPED) {
+                    captureSnapshotForMigration()
+                }
+                clearAnchor()
+            }
+        }
+
+        emitFrameIfReady(frame, pose, trackingState)
+    }
+
+    private fun tryWarmupAndCommit(pose: Pose) {
+        if (warmupStartMs == 0L) {
+            warmupStartMs = System.currentTimeMillis()
+            return
+        }
+        val elapsed = System.currentTimeMillis() - warmupStartMs
+        if (elapsed < MIN_WARMUP_DURATION_MS) return
+
+        val currentLocation = lastLocation ?: return
+        val currentHeading = lastHeading ?: return
+
+        val accuracyMeters = locationTracker.currentAccuracyMeters()
+        val gpsConverged = accuracyMeters != null &&
+                accuracyMeters <= MAX_ACCEPTABLE_ACCURACY_METERS
+        if (!gpsConverged && elapsed < MAX_WARMUP_DURATION_MS) return
+
+        val pendingForce = pendingForcedHeading
+
+        initialPose = pose
+        initialYaw = extractYawDegrees(pose)
+        initialLocation = currentLocation
+        initialHeading = pendingForce ?: currentHeading
+        if (pendingForce != null) {
+            headingLocked = true
+        }
+        pendingForcedHeading = null
+        isWarmedUp = true
+
+        scheduleMigrationIfApplicable(initialLocation!!, initialHeading!!)
+    }
+
+    private fun captureSnapshotForMigration() {
+        val effLoc = _effectiveUserLocation.value ?: return
+        val effHead = _effectiveUserHeading.value ?: return
+        val snapshot = PreLossSnapshot(
+            timestampMs = System.currentTimeMillis(),
+            location = effLoc,
+            heading = effHead,
+        )
+        preLossSnapshot = snapshot
+        anchorPersistence?.save(
+            AnchorPersistence.Snapshot(
+                timestampMs = snapshot.timestampMs,
+                location = snapshot.location,
+                heading = snapshot.heading,
+            )
+        )
+    }
+
+    fun persistSnapshotNow() {
+        val effLoc = _effectiveUserLocation.value ?: return
+        val effHead = _effectiveUserHeading.value ?: return
+        anchorPersistence?.save(
+            AnchorPersistence.Snapshot(
+                timestampMs = System.currentTimeMillis(),
+                location = effLoc,
+                heading = effHead,
+            )
+        )
+    }
+
+    private fun restorePersistedSnapshotAsPreLoss() {
+        if (preLossSnapshot != null) return
+        val persisted = anchorPersistence?.load(MAX_PERSISTED_AGE_MS) ?: return
+        preLossSnapshot = PreLossSnapshot(
+            timestampMs = persisted.timestampMs,
+            location = persisted.location,
+            heading = persisted.heading,
+        )
+    }
+
+    private fun scheduleMigrationIfApplicable(
+        committedLocation: LocationData,
+        committedHeading: Float,
+    ) {
+        val snapshot = preLossSnapshot ?: return
+        preLossSnapshot = null
+        val age = System.currentTimeMillis() - snapshot.timestampMs
+        if (age > MAX_MIGRATION_AGE_MS) return
+
+        migrationLatOffset = snapshot.location.latitude - committedLocation.latitude
+        migrationLonOffset = snapshot.location.longitude - committedLocation.longitude
+        migrationAltOffset = snapshot.location.altitude - committedLocation.altitude
+        migrationHeadingOffset = signedAngleDelta(snapshot.heading, committedHeading)
+        migrationStartMs = System.currentTimeMillis()
+    }
+
+    private fun cancelMigration() {
+        migrationStartMs = 0L
+        migrationLatOffset = 0.0
+        migrationLonOffset = 0.0
+        migrationAltOffset = 0.0
+        migrationHeadingOffset = 0f
+    }
+
+    private fun computeMigrationFactor(): Double {
+        if (migrationStartMs == 0L) return 0.0
+        val elapsed = System.currentTimeMillis() - migrationStartMs
+        if (elapsed >= MIGRATION_DURATION_MS) {
+            cancelMigration()
+            return 0.0
+        }
+        val linear = 1.0 - elapsed.toDouble() / MIGRATION_DURATION_MS
+        return linear * linear
+    }
+
+    private fun clearAnchor() {
         initialPose = null
         initialHeading = null
         initialLocation = null
         initialYaw = 0f
-        lastHeading = null
-        lastLocation = null
         lastPose = null
-        headingLocked = false
+        isWarmedUp = false
+        warmupStartMs = 0L
+        cancelMigration()
     }
 
-    fun computeLocation(pose: Pose): LocationData? {
-        val initPose = initialPose
-        val initHeading = initialHeading
-        val initLocation = initialLocation
-        if (initPose == null || initHeading == null || initLocation == null) {
-            return null
+    private fun emitFrameIfReady(frame: Frame, pose: Pose, trackingState: TrackingState) {
+        if (trackingState != TrackingState.TRACKING) return
+        val initPose = initialPose ?: return
+        val initHeading = initialHeading ?: return
+        val initLocation = initialLocation ?: return
+        if (!isWarmedUp) return
+
+        val rawLocation = computeLocation(pose, initPose, initHeading, initLocation)
+        val yawDelta = extractYawDegrees(pose) - initialYaw
+
+        val factor = computeMigrationFactor()
+        val effectiveLocation = LocationData(
+            latitude = rawLocation.latitude + migrationLatOffset * factor,
+            longitude = rawLocation.longitude + migrationLonOffset * factor,
+            altitude = rawLocation.altitude + migrationAltOffset * factor,
+        )
+        val effectiveInitialHeading =
+            ((initHeading + migrationHeadingOffset * factor.toFloat()) + 360f).mod(360f)
+        val effectiveHeading = ((effectiveInitialHeading - yawDelta) + 360f).mod(360f)
+
+        _effectiveUserLocation.value = effectiveLocation
+        _effectiveUserHeading.value = effectiveHeading
+
+        val nowMs = System.currentTimeMillis()
+        if (nowMs - lastPersistedAtMs >= PERSIST_INTERVAL_MS) {
+            lastPersistedAtMs = nowMs
+            anchorPersistence?.save(
+                AnchorPersistence.Snapshot(
+                    timestampMs = nowMs,
+                    location = effectiveLocation,
+                    heading = effectiveHeading,
+                )
+            )
         }
-        return computeLocation(pose, initPose, initHeading, initLocation)
+
+        headingProvider.setLocation(effectiveLocation)
+        onFrameUpdate?.invoke(
+            ArFrameData(
+                userLocation = effectiveLocation,
+                userHeading = effectiveHeading,
+                frame = frame,
+                cameraPose = pose,
+                initialCameraHeading = effectiveInitialHeading,
+            )
+        )
     }
 
     private fun computeLocation(
@@ -197,5 +372,17 @@ class ArPoseLocationTracker(
         val cosYaw = 1.0 - 2.0 * (qx * qx + qy * qy)
         return Math.toDegrees(atan2(sinYaw, cosYaw)).toFloat()
     }
-}
 
+    private fun signedAngleDelta(target: Float, current: Float): Float =
+        ((target - current + 540f).mod(360f)) - 180f
+
+    companion object {
+        private const val MIN_WARMUP_DURATION_MS = 1500L
+        private const val MAX_WARMUP_DURATION_MS = 6000L
+        private const val MAX_ACCEPTABLE_ACCURACY_METERS = 8.0
+        private const val MIGRATION_DURATION_MS = 1500L
+        private const val MAX_MIGRATION_AGE_MS = 30_000L
+        private const val PERSIST_INTERVAL_MS = 3_000L
+        private const val MAX_PERSISTED_AGE_MS = 5L * 60L * 1000L
+    }
+}

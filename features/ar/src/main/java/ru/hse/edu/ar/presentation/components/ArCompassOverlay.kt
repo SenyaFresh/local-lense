@@ -47,10 +47,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import ru.hse.edu.ar.domain.entities.ArPlacemark
 import ru.hse.edu.geoar.ar.ArGeoConfig
-import ru.hse.edu.geoar.math.GeoMath
-import ru.hse.locallense.common.entities.LocationData
 import ru.hse.locallense.components.composables.MapPin
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -60,11 +57,18 @@ import kotlin.math.floor
 private const val VISIBLE_HALF_WINDOW_DEG = 35f
 private const val ALTITUDE_INDICATOR_THRESHOLD_DEG = 3.0
 
+data class ArCompassMarkerData(
+    val id: Long,
+    val color: Color,
+    val distanceMeters: Double,
+    val screenBearingDegrees: Float,
+    val altitudeDeltaMeters: Double,
+)
+
 @Composable
 fun ArCompassOverlay(
-    markers: List<ArPlacemark>,
+    markers: List<ArCompassMarkerData>,
     userHeading: Float,
-    userLocation: LocationData?,
     modifier: Modifier = Modifier,
 ) {
     val colorScheme = MaterialTheme.colorScheme
@@ -82,25 +86,20 @@ fun ArCompassOverlay(
 
     val normalizedHeading = normalizeHeading(userHeading)
 
-    val computedMarkers = remember(markers, normalizedHeading, userLocation) {
-        if (userLocation == null) emptyList() else
-            markers.mapNotNull { marker ->
-                val distance = GeoMath.distanceMeters(userLocation, marker.locationData)
-                if (distance > ArGeoConfig.MAX_DISTANCE_METERS) return@mapNotNull null
-                val bearing = GeoMath.bearingDegrees(userLocation, marker.locationData)
-                val rel = GeoMath
-                    .normalizeToPlusMinus180(bearing - normalizedHeading.toDouble())
-                    .toFloat()
-                if (rel < -VISIBLE_HALF_WINDOW_DEG || rel > VISIBLE_HALF_WINDOW_DEG)
-                    return@mapNotNull null
-                CompassMarkerData(
-                    id = marker.id,
-                    color = marker.color,
-                    distance = distance,
-                    relativeBearing = rel,
-                    altitudeDelta = marker.locationData.altitude - userLocation.altitude,
-                )
-            }.sortedBy { it.distance }
+    val computedMarkers = remember(markers) {
+        markers.mapNotNull { marker ->
+            if (marker.distanceMeters > ArGeoConfig.MAX_DISTANCE_METERS) return@mapNotNull null
+            if (marker.screenBearingDegrees < -VISIBLE_HALF_WINDOW_DEG ||
+                marker.screenBearingDegrees > VISIBLE_HALF_WINDOW_DEG
+            ) return@mapNotNull null
+            CompassMarkerData(
+                id = marker.id,
+                color = marker.color,
+                distance = marker.distanceMeters,
+                relativeBearing = marker.screenBearingDegrees,
+                altitudeDelta = marker.altitudeDeltaMeters,
+            )
+        }.sortedBy { it.distance }
     }
 
     Box(
@@ -398,26 +397,24 @@ private fun cardinalLabel(deg: Int): String = when (deg) {
 private fun PreviewCompassSpread() {
     ArCompassOverlay(
         markers = listOf(
-            previewMarker(1L, "Кафе", Color(0xFF7C4DFF), lat = 0.0009, alt = 5.0),
-            previewMarker(2L, "Парк", Color(0xFF00C853), lat = -0.0000, lon = 0.0001, alt = -3.0),
-            previewMarker(3L, "Музей", Color(0xFFFF6D00), lat = 0.0002, lon = 0.0008, alt = 0.5),
-            previewMarker(4L, "Школа", Color(0xFF2962FF), lat = 0.0001, lon = -0.0005, alt = 0.2),
+            previewMarker(1L, Color(0xFF7C4DFF), distance = 25.0, bearing = -28f, alt = 5.0),
+            previewMarker(2L, Color(0xFF00C853), distance = 110.0, bearing = -10f, alt = -3.0),
+            previewMarker(3L, Color(0xFFFF6D00), distance = 78.0, bearing = 6f, alt = 0.5),
+            previewMarker(4L, Color(0xFF2962FF), distance = 230.0, bearing = 24f, alt = 0.2),
         ),
         userHeading = 35f,
-        userLocation = LocationData(0.0, 0.0, 0.0),
         modifier = Modifier
             .fillMaxWidth()
             .padding(12.dp),
     )
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF333333, name = "Compass · no location")
+@Preview(showBackground = true, backgroundColor = 0xFF333333, name = "Compass · empty")
 @Composable
-private fun PreviewCompassNoLocation() {
+private fun PreviewCompassEmpty() {
     ArCompassOverlay(
-        markers = listOf(previewMarker(1L, "Кафе", Color(0xFF7C4DFF))),
+        markers = emptyList(),
         userHeading = 0f,
-        userLocation = null,
         modifier = Modifier
             .fillMaxWidth()
             .padding(12.dp),
@@ -429,12 +426,11 @@ private fun PreviewCompassNoLocation() {
 private fun PreviewCompassStack() {
     ArCompassOverlay(
         markers = listOf(
-            previewMarker(1L, "Точка А", Color(0xFF7C4DFF), lat = 0.0000, alt = 4.0),
-            previewMarker(2L, "Точка Б", Color(0xFF00C853), lat = 0.00051, alt = -5.0),
-            previewMarker(3L, "Точка В", Color(0xFFFF6D00), lat = 0.00052),
+            previewMarker(1L, Color(0xFF7C4DFF), distance = 60.0, bearing = -1f, alt = 4.0),
+            previewMarker(2L, Color(0xFF00C853), distance = 65.0, bearing = 1f, alt = -5.0),
+            previewMarker(3L, Color(0xFFFF6D00), distance = 90.0, bearing = 3f),
         ),
         userHeading = 0f,
-        userLocation = LocationData(0.0, 0.0, 0.0),
         modifier = Modifier
             .fillMaxWidth()
             .padding(12.dp),
@@ -443,17 +439,14 @@ private fun PreviewCompassStack() {
 
 private fun previewMarker(
     id: Long,
-    name: String,
     color: Color,
-    lat: Double = 0.0001,
-    lon: Double = 0.0,
+    distance: Double,
+    bearing: Float,
     alt: Double = 0.0,
-) = ArPlacemark(
+) = ArCompassMarkerData(
     id = id,
-    name = name,
-    type = ArPlacemark.Type.Simple,
     color = color,
-    tags = emptyList(),
-    locationData = LocationData(latitude = lat, longitude = lon, altitude = alt),
-    isWallAnchor = false,
+    distanceMeters = distance,
+    screenBearingDegrees = bearing,
+    altitudeDeltaMeters = alt,
 )

@@ -21,6 +21,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -38,6 +39,7 @@ import androidx.navigation.toRoute
 import io.github.sceneview.ar.ARSceneView
 import kotlinx.coroutines.delay
 import ru.hse.edu.ar.domain.entities.ArPlacemark
+import ru.hse.edu.ar.presentation.components.ArCompassMarkerData
 import ru.hse.edu.ar.presentation.components.ArCompassOverlay
 import ru.hse.edu.ar.presentation.screens.ArScreen
 import ru.hse.edu.ar.presentation.screens.ArScreenMode
@@ -46,6 +48,7 @@ import ru.hse.edu.ar.presentation.screens.MapScreenMode
 import ru.hse.edu.ar.presentation.screens.PreparationsScreen
 import ru.hse.edu.geoar.ar.ArGeoEngine
 import ru.hse.edu.geoar.ar.ArGeoFactory
+import ru.hse.edu.geoar.ar.PlacedMarkerSnapshot
 import ru.hse.edu.locallense.R
 import ru.hse.edu.placemarks.presentation.screens.PlacemarksScreen
 import ru.hse.locallense.common.Core
@@ -121,8 +124,36 @@ fun AppNavigation() {
     var isArScreenActive by remember { mutableStateOf(false) }
     var compassMarkers by remember { mutableStateOf<List<ArPlacemark>>(emptyList()) }
 
-    val initialHeading by ArGeoFactory.headingProvider.smoothedValue.collectAsState()
-    val userLocation by ArGeoFactory.locationTracker.locationState.collectAsState()
+    val sensorHeading by ArGeoFactory.headingProvider.smoothedValue.collectAsState()
+
+    val effectiveHeading by produceState<Float?>(initialValue = null, arGeoEngine) {
+        arGeoEngine?.arPoseLocationTracker?.effectiveUserHeading?.collect { value = it }
+    }
+    val placedMarkers by produceState(
+        initialValue = emptyList(),
+        arGeoEngine,
+    ) {
+        arGeoEngine?.placedMarkers?.collect { value = it }
+    }
+
+    val compassHeading = effectiveHeading ?: sensorHeading
+
+    val compassMarkerData = remember(compassMarkers, placedMarkers) {
+        if (placedMarkers.isEmpty()) emptyList()
+        else {
+            val byId = placedMarkers.associateBy { it.id }
+            compassMarkers.mapNotNull { placemark ->
+                val snap = byId[placemark.id] ?: return@mapNotNull null
+                ArCompassMarkerData(
+                    id = placemark.id,
+                    color = placemark.color,
+                    distanceMeters = snap.distanceMeters,
+                    screenBearingDegrees = snap.screenBearingDegrees.toFloat(),
+                    altitudeDeltaMeters = snap.altitudeDifferenceMeters,
+                )
+            }
+        }
+    }
 
 
     Scaffold(
@@ -205,10 +236,10 @@ fun AppNavigation() {
                         PreparationsScreen(
                             initialLatitude = initialLatitude,
                             initialLongitude = initialLongitude,
-                            initialHeading = initialHeading,
+                            initialHeading = sensorHeading,
                             onHeadingChange = { heading ->
                                 if (heading == null) {
-//                                    arGeoEngine?.arPoseLocationTracker?.unlockHeading()
+                                    arGeoEngine?.arPoseLocationTracker?.unlockHeading()
                                 } else {
                                     arGeoEngine?.arPoseLocationTracker?.forceHeading(heading)
                                 }
@@ -309,9 +340,8 @@ fun AppNavigation() {
 
             if (isArScreenActive) {
                 ArCompassOverlay(
-                    markers = compassMarkers,
-                    userHeading = initialHeading,
-                    userLocation = userLocation,
+                    markers = compassMarkerData,
+                    userHeading = compassHeading,
                     modifier = Modifier
                         .align(Alignment.TopCenter)
                         .padding(top = 4.dp, start = 12.dp, end = 12.dp),

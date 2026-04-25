@@ -176,6 +176,7 @@ private fun placeMarker(
     }
 
     val arGeoObject = ArGeoObject(
+        id = marker.id,
         locationData = marker.locationData,
         node = viewNode,
         isWallAnchor = marker.isWallAnchor,

@@ -111,11 +111,16 @@ object ArMath {
         realDistanceMeters: Double,
         altitudeDifference: Double,
         compressedDistance: Float
-    ): Float = (altitudeDifference * compressedDistance / realDistanceMeters).toFloat()
+    ): Float {
+        if (realDistanceMeters < MIN_HORIZONTAL_DISTANCE_FOR_VERTICAL_OFFSET_M) return 0f
+        return (altitudeDifference * compressedDistance / realDistanceMeters).toFloat()
+    }
 
     private fun smoothStep(value: Double): Double =
         value * value * (3.0 - 2.0 * value)
 
     private fun uniformScale(value: Float): Scale =
         Scale(value, value, value)
+
+    private const val MIN_HORIZONTAL_DISTANCE_FOR_VERTICAL_OFFSET_M = 0.01
 }

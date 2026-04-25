@@ -102,6 +102,11 @@ class LocationKalmanFilter(
         return buildEstimate()
     }
 
+    fun currentAccuracyMeters(): Double? {
+        if (!isInitialized) return null
+        return sqrt(maxOf(varianceEastMeters2, varianceNorthMeters2))
+    }
+
     private fun buildEstimate(): LocationData {
         val latitudeDegrees = estimatedLatitudeDegrees()
         val longitudeDegrees = estimatedLongitudeDegrees()

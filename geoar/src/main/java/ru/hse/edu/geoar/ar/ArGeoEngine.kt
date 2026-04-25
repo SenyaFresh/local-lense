@@ -4,9 +4,12 @@ import com.google.ar.core.Plane
 import com.google.ar.core.TrackingState
 import io.github.sceneview.ar.ARSceneView
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import ru.hse.edu.geoar.location.ArFrameData
 import ru.hse.edu.geoar.location.ArPoseLocationTracker
+import ru.hse.edu.geoar.math.GeoMath
 import java.util.concurrent.CopyOnWriteArrayList
 
 enum class ArGeoEngineMode {
@@ -35,10 +38,14 @@ class ArGeoEngine(
         headingProvider = headingProvider,
         sceneView = sceneView,
         locationTracker = locationTracker,
-        scope = scope
-    )
+        scope = scope,
+        anchorPersistence = ArGeoFactory.anchorPersistence,
+    ).also { ArGeoFactory.activeArPoseLocationTracker = it }
     private val controllers = CopyOnWriteArrayList<ArGeoObjectController>()
     private var isRunning = false
+
+    private val _placedMarkers = MutableStateFlow<List<PlacedMarkerSnapshot>>(emptyList())
+    val placedMarkers: StateFlow<List<PlacedMarkerSnapshot>> = _placedMarkers.asStateFlow()
 
     init {
         sceneView.planeRenderer.isEnabled = true
@@ -97,6 +104,7 @@ class ArGeoEngine(
             sceneView.removeChildNode(it.arGeoObject.node)
         }
         controllers.clear()
+        _placedMarkers.value = emptyList()
     }
 
     private fun applyMode(newMode: ArGeoEngineMode) {
@@ -128,11 +136,28 @@ class ArGeoEngine(
                 initialCameraHeading = frameData.initialCameraHeading,
             )
         }
+        _placedMarkers.value = controllers.map { controller ->
+            val info = controller.info.value
+            val obj = controller.arGeoObject
+            val screenBearing = GeoMath.relativeBearingDegrees(frameData.cameraPose, obj.node)
+            val distance = info?.distanceMeters
+                ?: GeoMath.distanceMeters(frameData.userLocation, obj)
+            PlacedMarkerSnapshot(
+                id = obj.id,
+                locationData = obj.locationData,
+                distanceMeters = distance,
+                screenBearingDegrees = screenBearing,
+                altitudeDifferenceMeters = obj.locationData.altitude - frameData.userLocation.altitude,
+            )
+        }
     }
 
     fun stop() {
         isRunning = false
         arPoseLocationTracker.onFrameUpdate = null
         arPoseLocationTracker.stop()
+        if (ArGeoFactory.activeArPoseLocationTracker === arPoseLocationTracker) {
+            ArGeoFactory.activeArPoseLocationTracker = null
+        }
     }
 }

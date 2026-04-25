@@ -2,6 +2,7 @@ package ru.hse.edu.geoar.ar
 
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
+import ru.hse.edu.geoar.location.AnchorPersistence
 import ru.hse.edu.geoar.location.LocationTracker
 import ru.hse.edu.geoar.sensors.HeadingProvider
 import ru.hse.edu.geoar.sensors.LinearAccelerationProvider
@@ -20,6 +21,13 @@ object ArGeoFactory {
     lateinit var locationTracker: LocationTracker
         private set
 
+    lateinit var anchorPersistence: AnchorPersistence
+        private set
+
+    @Volatile
+    var activeArPoseLocationTracker: ru.hse.edu.geoar.location.ArPoseLocationTracker? = null
+        internal set
+
     fun init(context: Context, scope: CoroutineScope) {
         if (isInitialized) return
         isInitialized = true
@@ -35,6 +43,7 @@ object ArGeoFactory {
             scope = scope,
             context = context
         )
+        anchorPersistence = AnchorPersistence(context)
         locationTracker.start()
     }
 }

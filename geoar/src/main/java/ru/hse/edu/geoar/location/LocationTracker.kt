@@ -39,6 +39,8 @@ class LocationTracker(
         _locationState.value = locationData
     }
 
+    fun currentAccuracyMeters(): Double? = locationKalmanFilter.currentAccuracyMeters()
+
     fun start() {
         if (locationCallback != null) return
         locationKalmanFilter.reset()
