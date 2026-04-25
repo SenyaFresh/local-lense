@@ -38,6 +38,7 @@ import ru.hse.edu.geoar.ar.ArGeoObjectPlacementResult
 import ru.hse.edu.geoar.ar.state.InitialState
 import ru.hse.edu.geoar.ar.state.PlacedAirState
 import ru.hse.locallense.common.entities.LocationData
+import ru.hse.locallense.components.theme.PlacemarkPalette
 
 @Composable
 fun ArGeoMarkerComposable(
@@ -90,7 +91,7 @@ private fun PinMarker(
         Box(
             modifier = Modifier
                 .size(10.dp)
-                .background(Color(0xFF7C4DFF), CircleShape),
+                .background(PlacemarkPalette.Default, CircleShape),
         )
         Spacer(Modifier.width(8.dp))
         Text(
@@ -123,7 +124,7 @@ private fun ContentCard(name: String, text: String) {
             Box(
                 modifier = Modifier
                     .size(8.dp)
-                    .background(Color(0xFF7C4DFF), CircleShape),
+                    .background(PlacemarkPalette.Default, CircleShape),
             )
             Spacer(Modifier.width(8.dp))
             Text(
@@ -181,7 +182,7 @@ private fun PhotoCard(name: String, photoPath: String, caption: String) {
             Box(
                 modifier = Modifier
                     .size(6.dp)
-                    .background(Color(0xFF7C4DFF), CircleShape),
+                    .background(PlacemarkPalette.Default, CircleShape),
             )
             Spacer(Modifier.width(6.dp))
             Text(
@@ -246,7 +247,7 @@ private fun PreviewPinMarker() {
             name = "Кафе «Место»",
             type = ArPlacemark.Type.Simple,
             locationData = LocationData(55.7558, 37.6173, altitude = 200.0),
-            color = Color(0xFF7C4DFF),
+            color = PlacemarkPalette.Default,
             tags = emptyList(),
             isWallAnchor = false,
         ),
@@ -291,7 +292,7 @@ private fun PreviewContentCardLong() {
                         "Является объектом культурного наследия федерального значения."
             ),
             locationData = LocationData(55.7558, 37.6173, altitude = 200.0),
-            color = Color(0xFF7C4DFF),
+            color = PlacemarkPalette.Default,
             tags = emptyList(),
             isWallAnchor = false,
         ),

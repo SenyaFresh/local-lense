@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ru.hse.edu.geoar.ar.ArGeoConfig
 import ru.hse.locallense.components.composables.MapPin
+import ru.hse.locallense.components.theme.PlacemarkPalette
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.ceil
@@ -397,7 +398,7 @@ private fun cardinalLabel(deg: Int): String = when (deg) {
 private fun PreviewCompassSpread() {
     ArCompassOverlay(
         markers = listOf(
-            previewMarker(1L, Color(0xFF7C4DFF), distance = 25.0, bearing = -28f, alt = 5.0),
+            previewMarker(1L, PlacemarkPalette.Default, distance = 25.0, bearing = -28f, alt = 5.0),
             previewMarker(2L, Color(0xFF00C853), distance = 110.0, bearing = -10f, alt = -3.0),
             previewMarker(3L, Color(0xFFFF6D00), distance = 78.0, bearing = 6f, alt = 0.5),
             previewMarker(4L, Color(0xFF2962FF), distance = 230.0, bearing = 24f, alt = 0.2),
@@ -426,7 +427,7 @@ private fun PreviewCompassEmpty() {
 private fun PreviewCompassStack() {
     ArCompassOverlay(
         markers = listOf(
-            previewMarker(1L, Color(0xFF7C4DFF), distance = 60.0, bearing = -1f, alt = 4.0),
+            previewMarker(1L, PlacemarkPalette.Default, distance = 60.0, bearing = -1f, alt = 4.0),
             previewMarker(2L, Color(0xFF00C853), distance = 65.0, bearing = 1f, alt = -5.0),
             previewMarker(3L, Color(0xFFFF6D00), distance = 90.0, bearing = 3f),
         ),

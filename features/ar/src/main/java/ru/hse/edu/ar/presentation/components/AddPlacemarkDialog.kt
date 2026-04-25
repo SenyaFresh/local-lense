@@ -75,6 +75,8 @@ import ru.hse.locallense.common.entities.Tag
 import ru.hse.locallense.components.composables.buttons.DefaultPrimaryButton
 import ru.hse.locallense.components.composables.buttons.DefaultSecondaryButton
 import ru.hse.locallense.components.composables.inputs.DefaultTextField
+import ru.hse.locallense.components.theme.PlacemarkPalette
+import ru.hse.locallense.components.theme.RgbChannel
 import java.io.File
 import java.util.UUID
 import kotlin.math.roundToInt
@@ -117,7 +119,7 @@ fun AddPlacemarkDialog(
         }
     }
 
-    val defaultColor = Color(0xFF7C4DFF)
+    val defaultColor = PlacemarkPalette.Default
     var selectedColor by remember { mutableStateOf(defaultColor) }
     var isCustomColor by remember { mutableStateOf(false) }
     var showColorPicker by remember { mutableStateOf(false) }
@@ -129,12 +131,7 @@ fun AddPlacemarkDialog(
     var showNewTagInput by remember { mutableStateOf(false) }
     var newTagName by remember { mutableStateOf("") }
 
-    val presetColors = remember {
-        listOf(
-            Color(0xFFEF5350), Color(0xFFFF9800), Color(0xFFFFEB3B),
-            Color(0xFF4CAF50), Color(0xFF2196F3), Color(0xFF7C4DFF),
-        )
-    }
+    val presetColors = PlacemarkPalette.Presets
 
     val isValid = name.isNotBlank() && when (selectedType) {
         PlacemarkTypeOption.SIMPLE -> true
@@ -260,19 +257,19 @@ fun AddPlacemarkDialog(
                                     "R",
                                     red,
                                     { red = it; selectedColor = Color(red, green, blue) },
-                                    Color(0xFFF44336)
+                                    RgbChannel.Red,
                                 )
                                 ChannelSlider(
                                     "G",
                                     green,
                                     { green = it; selectedColor = Color(red, green, blue) },
-                                    Color(0xFF4CAF50)
+                                    RgbChannel.Green,
                                 )
                                 ChannelSlider(
                                     "B",
                                     blue,
                                     { blue = it; selectedColor = Color(red, green, blue) },
-                                    Color(0xFF2196F3)
+                                    RgbChannel.Blue,
                                 )
                             }
                         }

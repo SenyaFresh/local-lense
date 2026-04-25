@@ -63,18 +63,8 @@ import ru.hse.edu.placemarks.domain.entities.Placemark
 import ru.hse.locallense.common.entities.LocationData
 import ru.hse.locallense.common.entities.Tag
 import ru.hse.locallense.common.round
+import ru.hse.locallense.components.theme.PlacemarkPalette
 import kotlin.math.roundToInt
-
-private val tagColorPalette = listOf(
-    Color(0xFF1565C0),
-    Color(0xFF2E7D32),
-    Color(0xFFE65100),
-    Color(0xFF6A1B9A),
-    Color(0xFF00838F),
-    Color(0xFFC62828),
-    Color(0xFFF9A825),
-    Color(0xFF37474F),
-)
 
 @Composable
 fun PlacemarkListItem(
@@ -365,9 +355,7 @@ private fun PlacemarkActionButton(
 
 @Composable
 private fun PlacemarkTag(tag: String) {
-    val color = remember(tag) {
-        tagColorPalette[(tag.hashCode() and 0x7FFFFFFF) % tagColorPalette.size]
-    }
+    val color = remember(tag) { PlacemarkPalette.tagColor(tag) }
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(6.dp))
@@ -397,7 +385,7 @@ fun PlacemarkListItemWithTagsPreview() {
                         "Является объектом культурного наследия федерального значения."
             ),
             locationData = LocationData(55.7558, 37.6173, altitude = 200.0),
-            color = Color(0xFF7C4DFF),
+            color = PlacemarkPalette.Default,
             tags = listOf(
                 Tag(0L, "Архитектура"),
                 Tag(1L, "История"),
@@ -421,7 +409,7 @@ fun PlacemarkListItemWithoutTagsPreview() {
                         "Является объектом культурного наследия федерального значения."
             ),
             locationData = LocationData(55.7558, 37.6173, altitude = 200.0),
-            color = Color(0xFF7C4DFF),
+            color = PlacemarkPalette.Default,
             tags = emptyList(),
         ),
         onPlacemarkDelete = {},
