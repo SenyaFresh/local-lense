@@ -25,7 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ru.hse.edu.ar.R
-import ru.hse.edu.ar.presentation.components.formatHeading
+import ru.hse.edu.ar.presentation.components.heading.formatHeading
 
 @Composable
 internal fun HeadingInfoCard(

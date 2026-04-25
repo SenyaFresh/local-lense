@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ru.hse.edu.ar.presentation.components.heading.normalizeHeading
 import ru.hse.edu.geoar.ar.ArGeoConfig
 import ru.hse.locallense.components.composables.MapPin
 import ru.hse.locallense.components.theme.PlacemarkPalette

@@ -29,8 +29,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ru.hse.edu.ar.R
-import ru.hse.edu.ar.presentation.components.HeadingPickerComposable
-import ru.hse.edu.ar.presentation.components.normalizeHeading
+import ru.hse.edu.ar.presentation.components.heading.HeadingPicker
+import ru.hse.edu.ar.presentation.components.heading.normalizeHeading
 import ru.hse.edu.ar.presentation.components.preparations.CompassCalibrationCard
 import ru.hse.edu.ar.presentation.components.preparations.HeadingInfoCard
 import ru.hse.edu.ar.presentation.components.preparations.LocationInfoCard
@@ -103,7 +103,7 @@ fun PreparationsScreen(
         }
 
         SlideInOverlay(visible = isHeadingPickerVisible) {
-            HeadingPickerComposable(
+            HeadingPicker(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background),
