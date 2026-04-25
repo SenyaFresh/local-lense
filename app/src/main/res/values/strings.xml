@@ -3,4 +3,5 @@
     <string name="ar">AR</string>
     <string name="map">Карта</string>
     <string name="placemarks">Список меток</string>
+    <string name="app_exit_confirmation">Нажмите еще раз, чтобы выйти</string>
 </resources>

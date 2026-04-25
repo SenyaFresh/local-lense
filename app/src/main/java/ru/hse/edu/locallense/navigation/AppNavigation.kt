@@ -1,8 +1,6 @@
 package ru.hse.edu.locallense.navigation
 
-import android.content.Intent
 import android.view.View
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -14,7 +12,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SearchOff
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,46 +20,37 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navigation
-import androidx.navigation.toRoute
 import io.github.sceneview.ar.ARSceneView
-import kotlinx.coroutines.delay
-import ru.hse.edu.ar.domain.entities.ArPlacemark
 import ru.hse.edu.ar.presentation.components.ArCompassMarkerData
 import ru.hse.edu.ar.presentation.components.ArCompassOverlay
-import ru.hse.edu.ar.presentation.screens.ArScreen
-import ru.hse.edu.ar.presentation.screens.ArScreenMode
-import ru.hse.edu.ar.presentation.screens.MapScreen
-import ru.hse.edu.ar.presentation.screens.MapScreenMode
-import ru.hse.edu.ar.presentation.screens.PreparationsScreen
-import ru.hse.edu.geoar.ar.ArGeoEngine
 import ru.hse.edu.geoar.ar.ArGeoFactory
-import ru.hse.edu.geoar.ar.PlacedMarkerSnapshot
 import ru.hse.edu.locallense.R
-import ru.hse.edu.placemarks.presentation.screens.PlacemarksScreen
-import ru.hse.locallense.common.Core
+import ru.hse.edu.locallense.navigation.graphs.arGraph
+import ru.hse.edu.locallense.navigation.graphs.mapGraph
+import ru.hse.edu.locallense.navigation.graphs.placemarksGraph
+import ru.hse.edu.locallense.navigation.state.ArSceneController
+import ru.hse.edu.locallense.navigation.state.BackToExitConfirmation
+import ru.hse.edu.locallense.navigation.state.rememberArSceneController
 
 @Composable
 fun AppNavigation() {
+    val navController = rememberNavController()
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val sceneController = rememberArSceneController()
+
     var initialLatitude: Double? by remember { mutableStateOf(null) }
     var initialLongitude: Double? by remember { mutableStateOf(null) }
-
-    val context = LocalContext.current.applicationContext
-    val coroutineScope = rememberCoroutineScope()
-
-    var arSceneView by remember { mutableStateOf<ARSceneView?>(null) }
-    var arGeoEngine by remember { mutableStateOf<ArGeoEngine?>(null) }
+    var isPlacemarksSearchEnabled by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         ArGeoFactory.locationTracker.locationState.collect {
@@ -71,112 +59,30 @@ fun AppNavigation() {
         }
     }
 
-    val navController = rememberNavController()
-    val currentBackStackEntry = navController.currentBackStackEntryAsState()
-
-    val titleRes: Int? = when (currentBackStackEntry.value.routeClass()) {
-        PlacemarksGraph.PlacemarksScreen::class -> R.string.placemarks
-        ArGraph.ArScreen::class -> R.string.ar
-        MapGraph.MapScreen::class -> R.string.map
-        else -> null
-    }
-
-    var placemarksScreenSearchEnabled by remember { mutableStateOf(false) }
-
-    val leftIconAction: IconAction? = if (navController.previousBackStackEntry == null) {
-        null
-    } else {
-        IconAction(Icons.AutoMirrored.Filled.KeyboardArrowLeft) { navController.popBackStack() }
-    }
-
-    var exit by remember { mutableStateOf(false) }
-
-    LaunchedEffect(key1 = exit) {
-        if (exit) {
-            delay(2000)
-            exit = false
-        }
-    }
-
-    BackHandler {
-        if (exit) {
-            context.startActivity(Intent(Intent.ACTION_MAIN).apply {
-                addCategory(Intent.CATEGORY_HOME)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            })
-        } else {
-            exit = true
-            Core.toaster.showToast("Нажмите еще раз, чтобы выйти")
-        }
-    }
-
-    val rightIconsActions: List<IconAction>? = when (currentBackStackEntry.value.routeClass()) {
-        PlacemarksGraph.PlacemarksScreen::class -> listOf(
-            IconAction(
-                imageVector = if (!placemarksScreenSearchEnabled) Icons.Default.Search else Icons.Default.SearchOff,
-                onClick = { placemarksScreenSearchEnabled = !placemarksScreenSearchEnabled }
-            ),
-        )
-
-        else -> null
-    }
-
-    var isArScreenActive by remember { mutableStateOf(false) }
-    var compassMarkers by remember { mutableStateOf<List<ArPlacemark>>(emptyList()) }
-
     val sensorHeading by ArGeoFactory.headingProvider.smoothedValue.collectAsState()
+    var isArScreenActive by remember { mutableStateOf(false) }
 
-    val effectiveHeading by produceState<Float?>(initialValue = null, arGeoEngine) {
-        arGeoEngine?.arPoseLocationTracker?.effectiveUserHeading?.collect { value = it }
-    }
-    val placedMarkers by produceState(
-        initialValue = emptyList(),
-        arGeoEngine,
-    ) {
-        arGeoEngine?.placedMarkers?.collect { value = it }
-    }
-
-    val compassHeading = effectiveHeading ?: sensorHeading
-
-    val compassMarkerData = remember(compassMarkers, placedMarkers) {
-        if (placedMarkers.isEmpty()) emptyList()
-        else {
-            val byId = placedMarkers.associateBy { it.id }
-            compassMarkers.mapNotNull { placemark ->
-                val snap = byId[placemark.id] ?: return@mapNotNull null
-                ArCompassMarkerData(
-                    id = placemark.id,
-                    color = placemark.color,
-                    distanceMeters = snap.distanceMeters,
-                    screenBearingDegrees = snap.screenBearingDegrees.toFloat(),
-                    altitudeDeltaMeters = snap.altitudeDifferenceMeters,
-                )
-            }
-        }
-    }
-
+    BackToExitConfirmation()
 
     Scaffold(
         topBar = {
             AppTopBar(
-                titleRes = titleRes,
-                leftIconAction = leftIconAction,
-                rightIconsActions = rightIconsActions
+                titleRes = currentBackStackEntry.titleRes(),
+                leftIconAction = navController.backIconAction(),
+                rightIconsActions = currentBackStackEntry.rightIcons(
+                    isSearchEnabled = isPlacemarksSearchEnabled,
+                    onSearchToggle = { isPlacemarksSearchEnabled = !isPlacemarksSearchEnabled },
+                ),
             )
         },
         bottomBar = {
-            Column {
-                AppNavigationBar(
-                    navigationController = navController,
-                    tabs = MainTabs
-                )
-            }
-        }
+            Column { AppNavigationBar(navigationController = navController, tabs = MainTabs) }
+        },
     ) { padding ->
         Box(
             modifier = Modifier
                 .padding(padding)
-                .fillMaxSize()
+                .fillMaxSize(),
         ) {
             NavHost(
                 navController = navController,
@@ -185,163 +91,44 @@ fun AppNavigation() {
                 exitTransition = { fadeOut(tween(200)) },
                 popEnterTransition = { fadeIn(tween(200)) },
                 popExitTransition = { fadeOut(tween(200)) },
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             ) {
-                navigation<PlacemarksGraph>(
-                    startDestination = PlacemarksGraph.PlacemarksScreen
-                ) {
-                    composable<PlacemarksGraph.PlacemarksScreen> {
-                        PlacemarksScreen(
-                            searchEnabled = placemarksScreenSearchEnabled,
-                            onSearchEnabledChange = { placemarksScreenSearchEnabled = it },
-                            onPlacemarkOpenOnMap = { id ->
-                                navController.navigate(
-                                    MapGraph.MapScreen(
-                                        navMode = MapNavMode.VIEW_SINGLE,
-                                        placemarkId = id,
-                                    )
-                                )
-                            },
-                            onPlacemarkOpenInAr = { id ->
-                                navController.navigate(
-                                    ArGraph.ArScreen(
-                                        navMode = ArNavMode.VIEW_SINGLE,
-                                        placemarkId = id,
-                                    )
-                                )
-                            },
-                            onAddNewPlacemarkOnMap = {
-                                navController.navigate(
-                                    MapGraph.MapScreen(
-                                        navMode = MapNavMode.ADD_NEW,
-                                    )
-                                )
-                            },
-                            onAddNewPlacemarkInAr = {
-                                navController.navigate(
-                                    ArGraph.ArScreen(
-                                        navMode = ArNavMode.ADD_NEW,
-                                    )
-                                )
-                            },
-                        )
-                        isArScreenActive = false
-                    }
-                }
-
-                navigation<ArGraph>(
-                    startDestination = ArGraph.PreparationsScreen
-                ) {
-                    composable<ArGraph.PreparationsScreen> {
-                        PreparationsScreen(
-                            initialLatitude = initialLatitude,
-                            initialLongitude = initialLongitude,
-                            initialHeading = sensorHeading,
-                            onHeadingChange = { heading ->
-                                if (heading == null) {
-                                    arGeoEngine?.arPoseLocationTracker?.unlockHeading()
-                                } else {
-                                    arGeoEngine?.arPoseLocationTracker?.forceHeading(heading)
-                                }
-                            },
-                            onContinue = { lat, lng ->
-                                ArGeoFactory.locationTracker.setExactLocation(lat, lng)
-                                navController.navigate(
-                                    ArGraph.ArScreen(
-                                        navMode = ArNavMode.VIEW_ALL,
-                                    )
-                                )
-                            }
-                        )
-                        isArScreenActive = false
-                    }
-                    composable<ArGraph.ArScreen> { backStackEntry ->
-                        val args = backStackEntry.toRoute<ArGraph.ArScreen>()
-                        val mode = when (args.navMode) {
-                            ArNavMode.VIEW_ALL -> ArScreenMode.ViewAll
-                            ArNavMode.VIEW_SINGLE -> ArScreenMode.ViewSingle(args.placemarkId!!)
-                            ArNavMode.ADD_NEW -> ArScreenMode.AddNew
-                        }
-                        val engine = arGeoEngine
-                        val sceneView = arSceneView
-                        if (engine != null && sceneView != null) {
-                            ArScreen(
-                                mode = mode,
-                                arGeoEngine = engine,
-                                arSceneView = sceneView,
-                                onPlacemarkAdded = {
-                                    navController.navigate(PlacemarksGraph.PlacemarksScreen) {
-                                        popUpTo(PlacemarksGraph.PlacemarksScreen) {
-                                            inclusive = true
-                                        }
-                                    }
-                                },
-                                onCompassMarkersChange = { compassMarkers = it },
-                            )
-                            isArScreenActive = true
-                        }
-                    }
-                }
-
-                navigation<MapGraph>(
-                    startDestination = MapGraph.MapScreen()
-                ) {
-                    composable<MapGraph.MapScreen> { backStackEntry ->
-                        val args = backStackEntry.toRoute<MapGraph.MapScreen>()
-                        val mode = when (args.navMode) {
-                            MapNavMode.VIEW_ALL -> MapScreenMode.ViewAll
-                            MapNavMode.VIEW_SINGLE -> MapScreenMode.ViewSingle(args.placemarkId!!)
-                            MapNavMode.ADD_NEW -> MapScreenMode.AddNew
-                        }
-                        val lat = initialLatitude
-                        val lng = initialLongitude
-                        if (lat != null && lng != null) {
-                            MapScreen(
-                                mode = mode,
-                                initialLatitude = lat,
-                                initialLongitude = lng,
-                                onPlacemarkAdded = {
-                                    navController.navigate(PlacemarksGraph.PlacemarksScreen) {
-                                        popUpTo(PlacemarksGraph.PlacemarksScreen) {
-                                            inclusive = true
-                                        }
-                                    }
-                                },
-                            )
-                        } else {
-                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator()
-                            }
-                        }
-                        isArScreenActive = false
-                    }
-                }
+                placemarksGraph(
+                    navController = navController,
+                    isSearchEnabled = { isPlacemarksSearchEnabled },
+                    onSearchEnabledChange = { isPlacemarksSearchEnabled = it },
+                    onActiveChanged = { isArScreenActive = false },
+                )
+                arGraph(
+                    navController = navController,
+                    sceneController = sceneController,
+                    initialLatitude = { initialLatitude },
+                    initialLongitude = { initialLongitude },
+                    sensorHeading = { sensorHeading },
+                    onArScreenActive = { active -> isArScreenActive = active },
+                )
+                mapGraph(
+                    navController = navController,
+                    initialLatitude = { initialLatitude },
+                    initialLongitude = { initialLongitude },
+                    onActiveChanged = { isArScreenActive = false },
+                )
             }
 
             AndroidView(
                 factory = { ctx ->
-                    ARSceneView(ctx).also { sceneView ->
-                        arSceneView = sceneView
-                        arGeoEngine = ArGeoEngine(
-                            sceneView = sceneView,
-                            scope = coroutineScope,
-                        )
-                    }
+                    ARSceneView(ctx).also { view -> sceneController.mount(view) }
                 },
                 modifier = Modifier.fillMaxSize(),
-                update = { sceneView ->
-                    sceneView.visibility = if (isArScreenActive) {
-                        View.VISIBLE
-                    } else {
-                        View.INVISIBLE
-                    }
+                update = { view ->
+                    view.visibility = if (isArScreenActive) View.VISIBLE else View.INVISIBLE
                 },
             )
 
             if (isArScreenActive) {
                 ArCompassOverlay(
-                    markers = compassMarkerData,
-                    userHeading = compassHeading,
+                    markers = rememberCompassMarkerData(sceneController),
+                    userHeading = rememberCompassHeading(sceneController, sensorHeading),
                     modifier = Modifier
                         .align(Alignment.TopCenter)
                         .padding(top = 4.dp, start = 12.dp, end = 12.dp),
@@ -349,4 +136,62 @@ fun AppNavigation() {
             }
         }
     }
+}
+
+@Composable
+private fun rememberCompassHeading(
+    sceneController: ArSceneController,
+    sensorHeading: Float?,
+): Float {
+    val effectiveHeading by produceState<Float?>(null, sceneController.engine) {
+        sceneController.engine?.arPoseLocationTracker?.effectiveUserHeading?.collect { value = it }
+    }
+    return effectiveHeading ?: sensorHeading ?: 0f
+}
+
+@Composable
+private fun rememberCompassMarkerData(
+    sceneController: ArSceneController,
+): List<ArCompassMarkerData> {
+    val placedMarkers by produceState(emptyList(), sceneController.engine) {
+        sceneController.engine?.placedMarkers?.collect { value = it }
+    }
+    return remember(sceneController.compassMarkers, placedMarkers) {
+        if (placedMarkers.isEmpty()) return@remember emptyList()
+        val byId = placedMarkers.associateBy { it.id }
+        sceneController.compassMarkers.mapNotNull { placemark ->
+            val snap = byId[placemark.id] ?: return@mapNotNull null
+            ArCompassMarkerData(
+                id = placemark.id,
+                color = placemark.color,
+                distanceMeters = snap.distanceMeters,
+                screenBearingDegrees = snap.screenBearingDegrees.toFloat(),
+                altitudeDeltaMeters = snap.altitudeDifferenceMeters,
+            )
+        }
+    }
+}
+
+private fun NavBackStackEntry?.titleRes(): Int? = when (routeClass()) {
+    PlacemarksGraph.PlacemarksScreen::class -> R.string.placemarks
+    ArGraph.ArScreen::class -> R.string.ar
+    MapGraph.MapScreen::class -> R.string.map
+    else -> null
+}
+
+private fun NavController.backIconAction(): IconAction? =
+    if (previousBackStackEntry == null) null
+    else IconAction(Icons.AutoMirrored.Filled.KeyboardArrowLeft) { popBackStack() }
+
+private fun NavBackStackEntry?.rightIcons(
+    isSearchEnabled: Boolean,
+    onSearchToggle: () -> Unit,
+): List<IconAction>? = when (routeClass()) {
+    PlacemarksGraph.PlacemarksScreen::class -> listOf(
+        IconAction(
+            imageVector = if (isSearchEnabled) Icons.Default.SearchOff else Icons.Default.Search,
+            onClick = onSearchToggle,
+        )
+    )
+    else -> null
 }
