@@ -13,6 +13,10 @@ fun PlacemarkWithTags.toPlacemark(): Placemark {
         PlacemarkType.TEXT -> Placemark.Type.Text(placemark.content ?: "")
         PlacemarkType.PHOTO -> Placemark.Type.Photo(placemark.content ?: "")
         PlacemarkType.AUDIO -> Placemark.Type.Audio(placemark.content ?: "")
+        PlacemarkType.TEXT_PHOTO -> Placemark.Type.TextPhoto(
+            text = placemark.content.orEmpty(),
+            photoPath = placemark.contentSecondary.orEmpty(),
+        )
     }
 
     return Placemark(

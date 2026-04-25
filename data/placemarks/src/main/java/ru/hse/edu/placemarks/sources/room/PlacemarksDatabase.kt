@@ -12,7 +12,7 @@ import ru.hse.edu.placemarks.entities.TagDataEntity
         TagDataEntity::class,
         PlacemarkTagCrossRef::class,
     ],
-    version = 2,
+    version = 1,
 )
 abstract class PlacemarksDatabase : RoomDatabase() {
 

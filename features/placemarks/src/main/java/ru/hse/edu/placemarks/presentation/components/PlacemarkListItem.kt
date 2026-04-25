@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.border
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.rounded.LocationOn
@@ -49,9 +50,12 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import java.io.File
 import kotlinx.coroutines.launch
 import ru.hse.edu.placemarks.domain.entities.Placemark
 import ru.hse.locallense.common.entities.LocationData
@@ -144,7 +148,15 @@ fun PlacemarkListItem(
                         .padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    PlacemarkColorIndicator(color = placemark.color)
+                    val type = placemark.type
+                    if (type is Placemark.Type.TextPhoto) {
+                        PlacemarkPhotoIndicator(
+                            photoPath = type.photoPath,
+                            accent = placemark.color,
+                        )
+                    } else {
+                        PlacemarkColorIndicator(color = placemark.color)
+                    }
 
                     Spacer(modifier = Modifier.width(12.dp))
 
@@ -224,6 +236,31 @@ private fun PlacemarkColorIndicator(
             contentDescription = null,
             tint = color,
             modifier = Modifier.size(24.dp)
+        )
+    }
+}
+
+@Composable
+private fun PlacemarkPhotoIndicator(
+    photoPath: String,
+    accent: Color,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .size(44.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(accent.copy(alpha = 0.15f))
+            .border(1.dp, accent.copy(alpha = 0.4f), RoundedCornerShape(12.dp)),
+        contentAlignment = Alignment.Center,
+    ) {
+        AsyncImage(
+            model = File(photoPath),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(44.dp)
+                .clip(RoundedCornerShape(12.dp)),
         )
     }
 }

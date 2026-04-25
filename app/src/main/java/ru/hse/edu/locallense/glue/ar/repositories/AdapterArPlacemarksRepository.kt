@@ -8,6 +8,7 @@ import ru.hse.edu.locallense.glue.ar.mappers.toArPlacemark
 import ru.hse.edu.locallense.glue.ar.mappers.toPlacemarkWithTags
 import ru.hse.edu.locallense.glue.ar.mappers.toTag
 import ru.hse.edu.locallense.glue.ar.mappers.toTagDataEntity
+import ru.hse.edu.locallense.glue.photo.PlacemarkPhotoCleanup
 import ru.hse.edu.placemarks.repositories.PlacemarksDataRepository
 import ru.hse.locallense.common.ResultContainer
 import ru.hse.locallense.common.entities.Tag
@@ -15,6 +16,7 @@ import javax.inject.Inject
 
 class AdapterArPlacemarksRepository @Inject constructor(
     private val placemarksDataRepository: PlacemarksDataRepository,
+    private val photoCleanup: PlacemarkPhotoCleanup,
 ) : ArPlacemarksRepository {
     override suspend fun getPlacemarks(): Flow<ResultContainer<List<ArPlacemark>>> {
         return placemarksDataRepository.getPlacemarks().map { result ->
@@ -31,6 +33,7 @@ class AdapterArPlacemarksRepository @Inject constructor(
     }
 
     override suspend fun deletePlacemark(id: Long) {
+        photoCleanup.deletePhotoFor(id)
         placemarksDataRepository.deletePlacemark(id)
     }
 

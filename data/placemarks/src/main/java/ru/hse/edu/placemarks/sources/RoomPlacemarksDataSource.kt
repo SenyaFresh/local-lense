@@ -16,7 +16,10 @@ class RoomPlacemarksDataSource @Inject constructor(
             context,
             PlacemarksDatabase::class.java,
             "placemarks.db"
-        ).build()
+        )
+            .fallbackToDestructiveMigration(dropAllTables = true)
+            .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
+            .build()
     }
 
     override suspend fun getPlacemarks(): List<PlacemarkWithTags> {

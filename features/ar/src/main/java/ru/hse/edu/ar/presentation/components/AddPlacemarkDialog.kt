@@ -1,5 +1,10 @@
 package ru.hse.edu.ar.presentation.components
 
+import android.content.Context
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -10,6 +15,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -22,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.AddAPhoto
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -41,6 +48,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,23 +56,32 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import coil3.compose.AsyncImage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.hse.edu.ar.domain.entities.ArPlacemark
 import ru.hse.locallense.common.entities.LocationData
 import ru.hse.locallense.common.entities.Tag
 import ru.hse.locallense.components.composables.buttons.DefaultPrimaryButton
 import ru.hse.locallense.components.composables.buttons.DefaultSecondaryButton
 import ru.hse.locallense.components.composables.inputs.DefaultTextField
+import java.io.File
+import java.util.UUID
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
 enum class PlacemarkTypeOption(val label: String) {
     SIMPLE("Обычная"),
     TEXT("Текстовая"),
+    PHOTO_TEXT("Фото и текст"),
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -81,6 +98,22 @@ fun AddPlacemarkDialog(
     var selectedType by remember { mutableStateOf(PlacemarkTypeOption.SIMPLE) }
     var name by remember { mutableStateOf("") }
     var text by remember { mutableStateOf("") }
+    var photoPath by remember { mutableStateOf<String?>(null) }
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+    ) { uri: Uri? ->
+        if (uri != null) {
+            scope.launch {
+                val path = withContext(Dispatchers.IO) {
+                    copyImageUriToInternal(context, uri)
+                }
+                if (path != null) photoPath = path
+            }
+        }
+    }
 
     val defaultColor = Color(0xFF7C4DFF)
     var selectedColor by remember { mutableStateOf(defaultColor) }
@@ -104,6 +137,7 @@ fun AddPlacemarkDialog(
     val isValid = name.isNotBlank() && when (selectedType) {
         PlacemarkTypeOption.SIMPLE -> true
         PlacemarkTypeOption.TEXT -> text.isNotBlank()
+        PlacemarkTypeOption.PHOTO_TEXT -> text.isNotBlank() && photoPath != null
     }
 
     Dialog(onDismissRequest = onDismiss) {
@@ -149,6 +183,28 @@ fun AddPlacemarkDialog(
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = { Text("Текст заметки") },
                     )
+                }
+
+                AnimatedVisibility(visible = selectedType == PlacemarkTypeOption.PHOTO_TEXT) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        PhotoPickerTile(
+                            photoPath = photoPath,
+                            onPick = {
+                                photoPickerLauncher.launch(
+                                    PickVisualMediaRequest(
+                                        ActivityResultContracts.PickVisualMedia.ImageOnly
+                                    )
+                                )
+                            },
+                            onClear = { photoPath = null },
+                        )
+                        DefaultTextField(
+                            text = text,
+                            onValueChange = { text = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("Подпись к фото") },
+                        )
+                    }
                 }
 
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -341,6 +397,10 @@ fun AddPlacemarkDialog(
                             val type = when (selectedType) {
                                 PlacemarkTypeOption.SIMPLE -> ArPlacemark.Type.Simple
                                 PlacemarkTypeOption.TEXT -> ArPlacemark.Type.Text(text)
+                                PlacemarkTypeOption.PHOTO_TEXT -> ArPlacemark.Type.TextPhoto(
+                                    text = text,
+                                    photoPath = photoPath!!,
+                                )
                             }
                             onConfirm(
                                 ArPlacemark(
@@ -472,6 +532,92 @@ private fun ChannelSlider(
             textAlign = TextAlign.End,
         )
     }
+}
+
+@Composable
+private fun PhotoPickerTile(
+    photoPath: String?,
+    onPick: () -> Unit,
+    onClear: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(160.dp)
+            .clip(MaterialTheme.shapes.medium)
+            .then(
+                if (photoPath == null) {
+                    Modifier
+                        .background(
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                        )
+                        .border(
+                            width = 1.5.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant,
+                            shape = MaterialTheme.shapes.medium,
+                        )
+                } else {
+                    Modifier
+                }
+            )
+            .clickable(onClick = onPick),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (photoPath == null) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.AddAPhoto,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(32.dp),
+                )
+                Text(
+                    text = "Загрузить фото",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        } else {
+            AsyncImage(
+                model = File(photoPath),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.55f))
+                    .clickable(onClick = onClear),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Убрать фото",
+                    tint = Color.White,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
+        }
+    }
+}
+
+private fun copyImageUriToInternal(context: Context, uri: Uri): String? {
+    return runCatching {
+        val dir = File(context.filesDir, "placemark_photos").apply { mkdirs() }
+        val target = File(dir, "${UUID.randomUUID()}.jpg")
+        val copied = context.contentResolver.openInputStream(uri)?.use { input ->
+            target.outputStream().use { input.copyTo(it) }
+            true
+        } ?: false
+        if (copied) target.absolutePath else null
+    }.getOrNull()
 }
 
 @Preview(showBackground = true)

@@ -1,11 +1,14 @@
 package ru.hse.edu.ar.presentation.components
 
+import android.graphics.BitmapFactory
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,14 +19,19 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.io.File
 import ru.hse.edu.ar.domain.entities.ArPlacemark
 import ru.hse.edu.geoar.ar.ArGeoConfig
 import ru.hse.edu.geoar.ar.ArGeoObjectPlacementResult
@@ -41,14 +49,30 @@ fun ArGeoMarkerComposable(
     val distance = placementResult.distanceMeters
     val isFar = distance > ArGeoConfig.AR_RADIUS
 
-    if (isFar || arPlacemark.type is ArPlacemark.Type.Simple) {
+    if (isFar) {
         PinMarker(
             name = arPlacemark.name,
             distanceMeters = distance,
         )
-    } else {
-        val text = (arPlacemark.type as ArPlacemark.Type.Text).text
-        ContentCard(name = arPlacemark.name, text = text)
+        return
+    }
+
+    when (val type = arPlacemark.type) {
+        is ArPlacemark.Type.Text -> ContentCard(
+            name = arPlacemark.name,
+            text = type.text,
+        )
+        is ArPlacemark.Type.TextPhoto -> PhotoCard(
+            name = arPlacemark.name,
+            photoPath = type.photoPath,
+            caption = type.text,
+        )
+        is ArPlacemark.Type.Simple,
+        is ArPlacemark.Type.Photo,
+        is ArPlacemark.Type.Audio -> PinMarker(
+            name = arPlacemark.name,
+            distanceMeters = distance,
+        )
     }
 }
 
@@ -134,6 +158,86 @@ private fun ContentCard(name: String, text: String) {
     }
 }
 
+@Composable
+private fun PhotoCard(name: String, photoPath: String, caption: String) {
+    val bitmap = remember(photoPath) {
+        runCatching {
+            val file = File(photoPath)
+            if (!file.exists()) return@runCatching null
+            val opts = BitmapFactory.Options().apply {
+                inSampleSize = 2
+                inPreferredConfig = android.graphics.Bitmap.Config.ARGB_8888
+            }
+            BitmapFactory.decodeFile(file.absolutePath, opts)?.asImageBitmap()
+        }.getOrNull()
+    }
+    Column(
+        modifier = Modifier
+            .widthIn(min = 100.dp, max = 140.dp)
+            .background(Color.Black.copy(alpha = 0.9f), RoundedCornerShape(12.dp))
+            .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
+            .padding(10.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(6.dp)
+                    .background(Color(0xFF7C4DFF), CircleShape),
+            )
+            Spacer(Modifier.width(6.dp))
+            Text(
+                text = name.uppercase(),
+                color = Color.White.copy(alpha = 0.5f),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 1.0.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(Color.White.copy(alpha = 0.15f)),
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(4f / 3f)
+                .clip(RoundedCornerShape(8.dp))
+                .background(Color.White.copy(alpha = 0.05f)),
+        ) {
+            if (bitmap != null) {
+                Image(
+                    bitmap = bitmap,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxWidth().aspectRatio(4f / 3f),
+                )
+            }
+        }
+
+        if (caption.isNotBlank()) {
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = caption,
+                color = Color.White,
+                fontSize = 12.sp,
+                lineHeight = 16.sp,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
 @Preview(showBackground = true, backgroundColor = 0xFF2B2B2B, name = "Pin · Far")
 @Composable
 private fun PreviewPinMarker() {
@@ -197,5 +301,15 @@ private fun PreviewContentCardLong() {
             bearing = 270.0,
             state = PlacedAirState(),
         ),
+    )
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF2B2B2B, name = "Card · Close · Photo + caption")
+@Composable
+private fun PreviewPhotoCard() {
+    PhotoCard(
+        name = "Любимое место",
+        photoPath = "",
+        caption = "Здесь мы пили кофе зимним утром.",
     )
 }

@@ -21,6 +21,7 @@ uiTextGoogleFonts = "1.10.4"
 composeNavigation = "2.9.7"
 ktxImmutableCollections = "0.4.0"
 yandexMapkit = "4.29.0-lite"
+coil = "3.0.4"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -62,6 +63,8 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 androidx-compose-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }
 
 yandex-mapkit = { group = "com.yandex.android", name = "maps.mobile", version.ref = "yandexMapkit" }
+
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

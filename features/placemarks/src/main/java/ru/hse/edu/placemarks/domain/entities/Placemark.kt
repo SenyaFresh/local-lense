@@ -17,5 +17,6 @@ data class Placemark(
         data class Text(val text: String) : Type
         data class Photo(val filepath: String) : Type
         data class Audio(val filepath: String) : Type
+        data class TextPhoto(val text: String, val photoPath: String) : Type
     }
 }

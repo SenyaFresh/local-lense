@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import ru.hse.edu.locallense.glue.ar.mappers.toTag
 import ru.hse.edu.locallense.glue.ar.mappers.toTagDataEntity
+import ru.hse.edu.locallense.glue.photo.PlacemarkPhotoCleanup
 import ru.hse.edu.locallense.glue.placemarks.mappers.toPlacemark
 import ru.hse.edu.placemarks.domain.entities.Placemark
 import ru.hse.edu.placemarks.domain.repositories.PlacemarksRepository
@@ -14,6 +15,7 @@ import ru.hse.locallense.common.entities.Tag
 
 class AdapterPlacemarksRepository @Inject constructor(
     private val placemarksDataRepository: PlacemarksDataRepository,
+    private val photoCleanup: PlacemarkPhotoCleanup,
 ) : PlacemarksRepository {
     override suspend fun getPlacemarks(): Flow<ResultContainer<List<Placemark>>> {
         return placemarksDataRepository.getPlacemarks().map { result ->
@@ -26,6 +28,7 @@ class AdapterPlacemarksRepository @Inject constructor(
     }
 
     override suspend fun deletePlacemark(id: Long) {
+        photoCleanup.deletePhotoFor(id)
         placemarksDataRepository.deletePlacemark(id)
     }
 

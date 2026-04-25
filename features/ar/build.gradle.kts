@@ -46,6 +46,8 @@ dependencies {
 
     implementation(libs.yandex.mapkit)
 
+    implementation(libs.coil.compose)
+
     implementation(libs.dagger)
     ksp(libs.dagger.compiler)
 }

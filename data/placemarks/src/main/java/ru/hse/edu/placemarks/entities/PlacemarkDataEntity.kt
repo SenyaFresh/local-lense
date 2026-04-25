@@ -15,6 +15,7 @@ data class PlacemarkDataEntity(
     val color: Int,
     val type: PlacemarkType,
     val content: String?,
+    @ColumnInfo(name = "content_secondary") val contentSecondary: String? = null,
 )
 
 enum class PlacemarkType {
@@ -22,4 +23,5 @@ enum class PlacemarkType {
     TEXT,
     PHOTO,
     AUDIO,
+    TEXT_PHOTO,
 }
