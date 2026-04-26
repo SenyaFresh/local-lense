@@ -22,7 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ru.hse.edu.ar.R
 import ru.hse.edu.ar.presentation.format.formatCoordinates
@@ -105,19 +104,5 @@ internal fun LocationInfoCard(
                 )
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun LocationInfoCardPreview() {
-    MaterialTheme {
-        LocationInfoCard(
-            latitude = 55.7558,
-            longitude = 37.6173,
-            isCustomLocation = false,
-            onChangeClick = {},
-            modifier = Modifier.padding(16.dp),
-        )
     }
 }

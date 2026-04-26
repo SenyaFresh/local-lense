@@ -25,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.Dispatchers
@@ -270,24 +269,4 @@ private fun buildPlacemark(
         tags = availableTags.filter { it.id in selectedTagIds },
         isWallAnchor = isWallAnchor,
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun AddPlacemarkDialogPreview() {
-    MaterialTheme {
-        AddPlacemarkDialog(
-            locationData = LocationData(
-                latitude = 55.7558,
-                longitude = 37.6173,
-                altitude = 150.0,
-            ),
-            isWallAnchor = false,
-            onDismiss = {},
-            onConfirm = {},
-            onAddTag = {},
-            onDeleteTag = {},
-            availableTags = emptyList(),
-        )
-    }
 }

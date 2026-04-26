@@ -20,7 +20,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ru.hse.edu.placemarks.domain.entities.Placemark
 import ru.hse.edu.placemarks.presentation.components.listitem.DeleteActionReveal
@@ -29,9 +28,6 @@ import ru.hse.edu.placemarks.presentation.components.listitem.PlacemarkInfo
 import ru.hse.edu.placemarks.presentation.components.listitem.PlacemarkPhotoIndicator
 import ru.hse.edu.placemarks.presentation.components.listitem.PlacemarkQuickActions
 import ru.hse.edu.placemarks.presentation.components.listitem.rememberPlacemarkSwipeState
-import ru.hse.locallense.common.entities.LocationData
-import ru.hse.locallense.common.entities.Tag
-import ru.hse.locallense.components.theme.PlacemarkPalette
 
 @Composable
 fun PlacemarkListItem(
@@ -123,42 +119,4 @@ private fun PlacemarkRow(
             onOpenInAr = onOpenInAr,
         )
     }
-}
-
-@Preview
-@Composable
-private fun PlacemarkListItemWithTagsPreview() {
-    PlacemarkListItem(
-        placemark = Placemark(
-            id = 4L,
-            name = "Историческая справка",
-            type = Placemark.Type.Text(
-                "Этот дом был построен в 1893 году архитектором Ф. О. Шехтелем. " +
-                        "Является объектом культурного наследия федерального значения."
-            ),
-            locationData = LocationData(55.7558, 37.6173, altitude = 200.0),
-            color = PlacemarkPalette.Default,
-            tags = listOf(Tag(0L, "Архитектура"), Tag(1L, "История")),
-        ),
-        onPlacemarkDelete = {},
-    )
-}
-
-@Preview
-@Composable
-private fun PlacemarkListItemWithoutTagsPreview() {
-    PlacemarkListItem(
-        placemark = Placemark(
-            id = 4L,
-            name = "Историческая справка",
-            type = Placemark.Type.Text(
-                "Этот дом был построен в 1893 году архитектором Ф. О. Шехтелем. " +
-                        "Является объектом культурного наследия федерального значения."
-            ),
-            locationData = LocationData(55.7558, 37.6173, altitude = 200.0),
-            color = PlacemarkPalette.Default,
-            tags = emptyList(),
-        ),
-        onPlacemarkDelete = {},
-    )
 }

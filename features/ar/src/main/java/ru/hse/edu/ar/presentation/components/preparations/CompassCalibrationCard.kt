@@ -17,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ru.hse.edu.ar.R
 
@@ -61,13 +60,5 @@ internal fun CompassCalibrationCard(modifier: Modifier = Modifier) {
                 )
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun CompassCalibrationCardPreview() {
-    MaterialTheme {
-        CompassCalibrationCard(modifier = Modifier.padding(16.dp))
     }
 }

@@ -17,7 +17,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import ru.hse.edu.ar.presentation.components.compass.ChipStartPadding
@@ -28,7 +27,6 @@ import ru.hse.edu.ar.presentation.components.compass.VISIBLE_HALF_WINDOW_DEG
 import ru.hse.edu.ar.presentation.components.compass.layoutInlineMarkers
 import ru.hse.edu.ar.presentation.components.heading.normalizeHeading
 import ru.hse.edu.geoar.ar.ArGeoConfig
-import ru.hse.locallense.components.theme.PlacemarkPalette
 
 private val StripHeight = 44.dp
 private val PinSize = 14.dp to 19.dp
@@ -136,62 +134,3 @@ private fun List<ArCompassMarkerData>.toVisibleCompassMarkers(): List<CompassMar
             altitudeDelta = marker.altitudeDeltaMeters,
         )
     }.sortedBy { it.distance }
-
-@Preview(showBackground = true, backgroundColor = 0xFF333333, name = "Compass · spread")
-@Composable
-private fun PreviewCompassSpread() {
-    ArCompassOverlay(
-        markers = listOf(
-            previewMarker(1L, PlacemarkPalette.Default, distance = 25.0, bearing = -28f, alt = 5.0),
-            previewMarker(2L, Color(0xFF00C853), distance = 110.0, bearing = -10f, alt = -3.0),
-            previewMarker(3L, Color(0xFFFF6D00), distance = 78.0, bearing = 6f, alt = 0.5),
-            previewMarker(4L, Color(0xFF2962FF), distance = 230.0, bearing = 24f, alt = 0.2),
-        ),
-        userHeading = 35f,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(12.dp),
-    )
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFF333333, name = "Compass · empty")
-@Composable
-private fun PreviewCompassEmpty() {
-    ArCompassOverlay(
-        markers = emptyList(),
-        userHeading = 0f,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(12.dp),
-    )
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFF333333, name = "Compass · stack overlap")
-@Composable
-private fun PreviewCompassStack() {
-    ArCompassOverlay(
-        markers = listOf(
-            previewMarker(1L, PlacemarkPalette.Default, distance = 60.0, bearing = -1f, alt = 4.0),
-            previewMarker(2L, Color(0xFF00C853), distance = 65.0, bearing = 1f, alt = -5.0),
-            previewMarker(3L, Color(0xFFFF6D00), distance = 90.0, bearing = 3f),
-        ),
-        userHeading = 0f,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(12.dp),
-    )
-}
-
-private fun previewMarker(
-    id: Long,
-    color: Color,
-    distance: Double,
-    bearing: Float,
-    alt: Double = 0.0,
-) = ArCompassMarkerData(
-    id = id,
-    color = color,
-    distanceMeters = distance,
-    screenBearingDegrees = bearing,
-    altitudeDeltaMeters = alt,
-)

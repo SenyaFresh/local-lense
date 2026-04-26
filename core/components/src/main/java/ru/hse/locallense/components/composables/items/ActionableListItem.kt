@@ -3,7 +3,6 @@ package ru.hse.locallense.components.composables.items
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,7 +23,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ru.hse.locallense.components.R
 import ru.hse.locallense.components.composables.ActionIcon
@@ -108,66 +106,6 @@ fun LoadingActionableListItem(withDelete: Boolean = false) {
                     .background(color = MaterialTheme.colorScheme.onSurfaceVariant)
                     .align(Alignment.CenterEnd)
             )
-        }
-    }
-}
-
-@Preview(showSystemUi = true)
-@Composable
-fun ActionableListItemPreview() {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.padding(20.dp)
-    ) {
-        (1..2).forEach {
-            ActionableListItem(
-                label = "Category $it",
-                isActive = it % 2 == 0,
-                onClick = { }
-            )
-        }
-    }
-}
-
-@Preview(showSystemUi = true)
-@Composable
-fun LoadingActionableListItemPreview() {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.padding(20.dp)
-    ) {
-        repeat(2) {
-            LoadingActionableListItem()
-        }
-
-    }
-}
-
-@Preview(showSystemUi = true)
-@Composable
-fun ActionableListItemWithDeletePreview() {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.padding(20.dp)
-    ) {
-        (1..3).forEach {
-            ActionableListItem(
-                label = "Category $it",
-                onDelete = { },
-            )
-        }
-    }
-}
-
-@Preview(showSystemUi = true)
-@Composable
-fun LoadingActionableListItemWithDeletePreview() {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.padding(20.dp)
-    ) {
-        repeat(3) {
-            LoadingActionableListItem(withDelete = true)
         }
     }
 }

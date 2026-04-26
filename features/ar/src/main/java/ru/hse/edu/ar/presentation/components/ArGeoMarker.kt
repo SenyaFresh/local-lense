@@ -28,7 +28,6 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.io.File
@@ -36,9 +35,6 @@ import ru.hse.edu.ar.domain.entities.ArPlacemark
 import ru.hse.edu.geoar.ar.ArGeoConfig
 import ru.hse.edu.geoar.ar.ArGeoObjectPlacementResult
 import ru.hse.edu.geoar.ar.state.InitialState
-import ru.hse.edu.geoar.ar.state.PlacedAirState
-import ru.hse.locallense.common.entities.LocationData
-import ru.hse.locallense.components.theme.PlacemarkPalette
 
 @Composable
 fun ArGeoMarker(
@@ -241,81 +237,4 @@ private fun PhotoCard(name: String, photoPath: String, caption: String, dotColor
             )
         }
     }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFF2B2B2B, name = "Pin · Far")
-@Composable
-private fun PreviewPinMarker() {
-    ArGeoMarker(
-        arPlacemark = ArPlacemark(
-            id = 1L,
-            name = "Кафе «Место»",
-            type = ArPlacemark.Type.Simple,
-            locationData = LocationData(55.7558, 37.6173, altitude = 200.0),
-            color = PlacemarkPalette.Default,
-            tags = emptyList(),
-            isWallAnchor = false,
-        ),
-        placementResult = ArGeoObjectPlacementResult(
-            distanceMeters = 42.0,
-            bearing = 90.0,
-            state = PlacedAirState(),
-        ),
-    )
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFF2B2B2B, name = "Card · Close · Text (short)")
-@Composable
-private fun PreviewContentCardShort() {
-    ArGeoMarker(
-        arPlacemark = ArPlacemark(
-            id = 3L,
-            name = "Заметка",
-            type = ArPlacemark.Type.Text("Привет! Здесь был я!"),
-            locationData = LocationData(55.7558, 37.6173, altitude = 200.0),
-            color = Color(0xFF7C4D00),
-            tags = emptyList(),
-            isWallAnchor = false,
-        ),
-        placementResult = ArGeoObjectPlacementResult(
-            distanceMeters = 3.0,
-            bearing = 45.0,
-            state = PlacedAirState(),
-        ),
-    )
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFF2B2B2B, name = "Card · Close · Text (long)")
-@Composable
-private fun PreviewContentCardLong() {
-    ArGeoMarker(
-        arPlacemark = ArPlacemark(
-            id = 4L,
-            name = "Историческая справка",
-            type = ArPlacemark.Type.Text(
-                "Этот дом был построен в 1893 году архитектором Ф. О. Шехтелем. " +
-                        "Является объектом культурного наследия федерального значения."
-            ),
-            locationData = LocationData(55.7558, 37.6173, altitude = 200.0),
-            color = PlacemarkPalette.Default,
-            tags = emptyList(),
-            isWallAnchor = false,
-        ),
-        placementResult = ArGeoObjectPlacementResult(
-            distanceMeters = 7.0,
-            bearing = 270.0,
-            state = PlacedAirState(),
-        ),
-    )
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFF2B2B2B, name = "Card · Close · Photo + caption")
-@Composable
-private fun PreviewPhotoCard() {
-    PhotoCard(
-        name = "Любимое место",
-        photoPath = "",
-        caption = "Здесь мы пили кофе зимним утром.",
-        dotColor = PlacemarkPalette.Default,
-    )
 }
