@@ -2,10 +2,6 @@ package ru.hse.locallense.common
 
 import kotlinx.coroutines.CoroutineScope
 
-/**
- * Common singleton variables.
- * Call [Core.init] before using any variable.
- */
 object Core {
 
     private lateinit var coreProvider: CoreProvider

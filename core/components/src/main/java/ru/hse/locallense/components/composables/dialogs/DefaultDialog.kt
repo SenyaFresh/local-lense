@@ -16,21 +16,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-/**
- * A Composable function that creates a dialog with a customizable title and content.
- *
- * This function creates a dialog using the `BasicAlertDialog` composable, which can be customized with a
- * title, content, and a dismiss action. The dialog includes a surface with rounded corners and tonal elevation.
- * The title is displayed at the top with a bold font, and the content is passed as a composable lambda.
- * The dialog can be dismissed when the user taps outside or when the dismiss action is triggered.
- *
- * @param onDismiss A lambda function that is executed when the dialog is dismissed, either by user interaction
- *                  (e.g., tapping outside) or other actions in the UI.
- * @param title The title text displayed at the top of the dialog. It is shown with a bold font and a font size of 18sp.
- * @param modifier An optional [Modifier] to customize the appearance or behavior of the dialog.
- * @param content A composable lambda that defines the content of the dialog, allowing flexibility to include
- *                any UI elements inside the dialog's body.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DefaultDialog(

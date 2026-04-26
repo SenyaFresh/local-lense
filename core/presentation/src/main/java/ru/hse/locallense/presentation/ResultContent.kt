@@ -17,12 +17,6 @@ import kotlinx.coroutines.delay
 import ru.hse.locallense.common.Core
 import ru.hse.locallense.common.ResultContainer
 
-/**
- * Renders [container] as one of three states:
- * - [ResultContainer.Loading] — delayed spinner via [onLoading];
- * - [ResultContainer.Error] — friendly error with retry button calling [onTryAgain];
- * - [ResultContainer.Done] — [onSuccess] body.
- */
 @Composable
 fun ResultContent(
     container: ResultContainer<*>,

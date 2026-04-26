@@ -2,9 +2,6 @@ package ru.hse.edu.locallense.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-/**
- * Light theme colors.
- */
 val primaryLight = Color(0xFF0078E8)
 val onPrimaryLight = Color(0xFFFFFFFF)
 val primaryContainerLight = Color(0xFFD9E7FF)
@@ -44,9 +41,6 @@ val surfaceContainerLight = Color(0xFFE9EFF2)
 val surfaceContainerHighLight = Color(0xFFE3E9EC)
 val surfaceContainerHighestLight = Color(0xFFDDE3E6)
 
-/**
- * Dark theme colors.
- */
 val primaryDark = Color(0xFFAAC7FF)
 val onPrimaryDark = Color(0xFF0A305F)
 val primaryContainerDark = Color(0xFF284777)

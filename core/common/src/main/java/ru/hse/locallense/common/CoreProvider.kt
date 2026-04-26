@@ -2,9 +2,6 @@ package ru.hse.locallense.common
 
 import kotlinx.coroutines.CoroutineScope
 
-/**
- * Provides global entities.
- */
 interface CoreProvider {
 
     val errorHandler: ErrorHandler

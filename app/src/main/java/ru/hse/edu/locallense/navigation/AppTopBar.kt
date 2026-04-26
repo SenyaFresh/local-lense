@@ -13,18 +13,6 @@ import androidx.compose.ui.res.stringResource
 
 data class IconAction(val imageVector: ImageVector, val onClick: () -> Unit)
 
-/**
- * Composable function that displays a top app bar with a customizable title and icon actions.
- *
- * The `AppTopBar` is a wrapper around the `TopAppBar` that allows for the addition of a title,
- * a left navigation icon, and a list of right-side icons with corresponding click actions.
- *
- * @param titleRes The resource ID of the string to be displayed as the title (optional).
- * @param leftIconAction The action for the left-side icon (optional). If provided, the icon
- * is displayed in the navigation position.
- * @param rightIconsActions A list of actions for the right-side icons (optional). If provided,
- * multiple icons will be displayed in the actions area.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppTopBar(

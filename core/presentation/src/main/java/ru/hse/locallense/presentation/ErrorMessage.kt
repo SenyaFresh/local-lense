@@ -12,16 +12,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 
-/**
- * Displays an error message with a retry button that triggers an action when clicked.
- *
- * This composable allows showing a custom error message along with a button for retrying the action.
- * The button, when clicked, triggers the [onClickRetry] callback to handle the retry action.
- *
- * @param message The error message text to be displayed.
- * @param onClickRetry A callback function that is invoked when the retry button is clicked.
- * @param modifier Modifier to be applied to the composable.
- */
 @Composable
 fun ErrorMessage(
     message: String,

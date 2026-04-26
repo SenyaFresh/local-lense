@@ -60,9 +60,6 @@ class DefaultLazyFlowLoader<T>(
         inputFlow.value = Value.InstantValue(resultContainer = container)
     }
 
-    /**
-     * Preparing new load. If old load did not complete cancelling it.
-     */
     private fun prepareNewLoad(
         createdCompletableDeferred: Boolean,
         silently: Boolean,
@@ -103,10 +100,6 @@ class DefaultLazyFlowLoader<T>(
             completableDeferred!!.await()
         }
 
-    /**
-     * Called when someone subscribes and cancelling [cancellationJob] that was was waiting for
-     * someone to subscribe and starts first loading.
-     */
     private fun onStart() {
         subscribersCount++
         if (subscribersCount == 1) {
@@ -115,10 +108,6 @@ class DefaultLazyFlowLoader<T>(
         }
     }
 
-    /**
-     * Called when subscriber stops collecting value. If there is no subscribers left,
-     * waiting [cacheTimeoutMillis] for someone to subscribe, then cancelling [scope].
-     */
     private fun onStop(job: Job?) {
         subscribersCount--
         job?.cancel()
@@ -135,9 +124,6 @@ class DefaultLazyFlowLoader<T>(
         }
     }
 
-    /**
-     * Starting first loading.
-     */
     private fun startLoading() {
         if (scope != null) return
         outputFlow.value = ResultContainer.Loading
@@ -152,9 +138,6 @@ class DefaultLazyFlowLoader<T>(
         }
     }
 
-    /**
-     * Loading value with specified params.
-     */
     private suspend fun loadValue(loadValue: Value.LoadValue<T>) {
         try {
             val job = scope?.launch {
@@ -177,10 +160,6 @@ class DefaultLazyFlowLoader<T>(
         }
     }
 
-    /**
-     * Keeps [ResultContainer] in [InstantValue] if value should be changed instantly
-     * or [ValueLoader] in [LoadValue] if value should be loaded.
-     */
     sealed class Value<T> {
         class InstantValue<T>(val resultContainer: ResultContainer<T>) : Value<T>()
         class LoadValue<T>(

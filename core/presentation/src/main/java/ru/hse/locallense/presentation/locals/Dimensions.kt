@@ -14,9 +14,4 @@ data class Dimensions(
     val extraLarge: Dp = 64.dp
 )
 
-/**
- * A CompositionLocal for providing default spacing dimensions across the composable hierarchy.
- *
- * This is used to allow different composables to access and use the same spacing values without having to pass them explicitly.
- */
 val LocalSpacing = compositionLocalOf { Dimensions() }

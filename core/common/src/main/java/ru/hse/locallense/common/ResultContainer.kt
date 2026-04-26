@@ -2,21 +2,8 @@ package ru.hse.locallense.common
 
 import kotlinx.coroutines.runBlocking
 
-/**
- * Container for current status of async operation.
- *
- * Contains [map] method for converting data and [suspendMap] method for converting data
- * from a coroutine.
- *
- * @see ResultContainer.Loading
- * @see ResultContainer.Error
- * @see ResultContainer.Done
- */
 sealed class ResultContainer<out T> {
 
-    /**
-     * Convert ResultContainer type to another type using specified [mapper].
-     */
     fun <R> map(mapper: ((T) -> R)? = null): ResultContainer<R> {
         return runBlocking {
             val suspendMapper: (suspend (T) -> R)? = if (mapper == null) {
@@ -31,9 +18,6 @@ sealed class ResultContainer<out T> {
     }
 
     companion object {
-        /**
-         * Wrap specified containers into one.
-         */
         fun wrap(vararg values: ResultContainer<Any>): ResultContainer<Unit> {
             return values.fold(Done(Unit) as ResultContainer<Unit>) { accumulator, value ->
                 when (value) {
@@ -45,24 +29,12 @@ sealed class ResultContainer<out T> {
         }
     }
 
-    /**
-     * Convert ResultContainer type to another type using specified suspend [mapper].
-     */
     protected abstract suspend fun <R> suspendMap(mapper: (suspend (T) -> R)? = null): ResultContainer<R>
 
-    /**
-     * Get value of ReturnContainer if it is possible or throw an exception.
-     */
     abstract fun unwrap(): T
 
-    /**
-     * Get value of ReturnContainer if it is possible or null.
-     */
     abstract fun unwrapOrNull(): T?
 
-    /**
-     * Operation in progress.
-     */
     data object Loading : ResultContainer<Nothing>() {
         override suspend fun <R> suspendMap(mapper: (suspend (Nothing) -> R)?): ResultContainer<R> {
             return this
@@ -77,9 +49,6 @@ sealed class ResultContainer<out T> {
         }
     }
 
-    /**
-     * Operation failed.
-     */
     data class Error(
         val exception: Exception
     ) : ResultContainer<Nothing>() {
@@ -96,9 +65,6 @@ sealed class ResultContainer<out T> {
         }
     }
 
-    /**
-     * Operation was completed successfully.
-     */
     data class Done<T>(
         val value: T
     ) : ResultContainer<T>() {

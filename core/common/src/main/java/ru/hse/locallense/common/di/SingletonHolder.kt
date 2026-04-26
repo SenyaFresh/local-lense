@@ -1,8 +1,5 @@
 package ru.hse.locallense.common.di
 
-/**
- * Singleton holder for Dagger dependency injection.
- */
 open class SingletonHolder<out T>(private val constructor: () -> T) {
 
     @Volatile

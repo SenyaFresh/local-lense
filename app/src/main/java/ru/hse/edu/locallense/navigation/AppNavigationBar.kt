@@ -42,13 +42,6 @@ import androidx.navigation.NavGraph
 import androidx.navigation.compose.currentBackStackEntryAsState
 import kotlinx.collections.immutable.ImmutableList
 
-/**
- * A composable function that displays a navigation bar with tabs for navigating between
- * different sections of the app.
- *
- * @param navigationController The [NavController] used to navigate between the different routes.
- * @param tabs A list of [AppTab] objects representing the tabs to be displayed in the navigation bar.
- */
 @Composable
 fun AppNavigationBar(
     navigationController: NavController,

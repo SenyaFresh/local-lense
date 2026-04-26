@@ -165,7 +165,6 @@ fun PlacemarksContent(
             }
         }
 
-
         Spacer(modifier = Modifier.height(LocalSpacing.current.extraSmall))
 
         PlacemarksColumn(

@@ -8,9 +8,6 @@ import ru.hse.edu.locallense.di.DaggerAppComponent
 import ru.hse.edu.placemarks.di.PlacemarksDepsStore
 import ru.hse.locallense.common.Core
 
-/**
- * Base application class for setting up application-wide dependencies and configurations.
- */
 class BaseApplication : Application() {
     val appComponent: AppComponent by lazy {
         DaggerAppComponent.builder()

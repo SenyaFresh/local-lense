@@ -17,15 +17,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
 
-/**
- * Adds a shimmer effect to the Modifier, typically used to create a loading animation
- * that simulates a shimmering light across a view. The effect is based on a gradient
- * that moves horizontally, creating a "shine" effect across the surface.
- *
- * This modifier can be applied to any Composable element to create a shimmer animation.
- *
- * @return The modified [Modifier] with a shimmer effect applied.
- */
 fun Modifier.shimmerEffect(): Modifier = composed {
     var size by remember { mutableStateOf(IntSize.Zero) }
     val transition = rememberInfiniteTransition(label = "")

@@ -35,7 +35,6 @@ class ArViewModel @Inject constructor(
         MutableStateFlow<ResultContainer<List<Tag>>>(ResultContainer.Loading)
     val tags = _tags.asStateFlow()
 
-
     init {
         collectPlacemarks()
         collectTags()
@@ -62,11 +61,9 @@ class ArViewModel @Inject constructor(
         }
     }
 
-
     private fun addPlacemark(placemark: ArPlacemark) = viewModelScope.launch {
         addPlacemarkUseCase.invoke(placemark)
     }
-
 
     private fun deletePlacemark(id: Long) = viewModelScope.launch {
         deletePlacemarkUseCase.invoke(id)
