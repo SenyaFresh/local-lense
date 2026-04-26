@@ -51,10 +51,11 @@ import com.yandex.mapkit.map.CameraListener
 import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.mapview.MapView
 import ru.hse.edu.ar.R
+import ru.hse.edu.ar.presentation.format.formatCoordinates
 import ru.hse.locallense.components.composables.MapPin
 
 @Composable
-fun LocationPickerComposable(
+fun LocationPicker(
     modifier: Modifier = Modifier,
     title: String,
     initialLatitude: Double,

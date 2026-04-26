@@ -13,12 +13,12 @@ import ru.hse.edu.ar.di.ArDiContainer
 import ru.hse.edu.ar.di.rememberArDiContainer
 import ru.hse.edu.ar.presentation.components.AddPlacemarkDialog
 import ru.hse.edu.ar.presentation.events.PlacemarkEvent
-import ru.hse.edu.ar.presentation.mapkit.LocationPickerComposable
-import ru.hse.edu.ar.presentation.mapkit.PlacemarksMapComposable
+import ru.hse.edu.ar.presentation.mapkit.LocationPicker
+import ru.hse.edu.ar.presentation.mapkit.PlacemarksMap
 import ru.hse.edu.ar.presentation.viewmodels.ArViewModel
 import ru.hse.edu.geoar.ar.ArGeoFactory
 import ru.hse.locallense.common.entities.LocationData
-import ru.hse.locallense.presentation.ResultContainerComposable
+import ru.hse.locallense.presentation.ResultContent
 
 sealed class MapScreenMode {
     data object ViewAll : MapScreenMode()
@@ -63,7 +63,7 @@ fun MapScreen(
 
     when (mode) {
         is MapScreenMode.AddNew -> {
-            LocationPickerComposable(
+            LocationPicker(
                 title = stringResource(R.string.ar_map_pick_location_title),
                 initialLatitude = initialLatitude,
                 initialLongitude = initialLongitude,
@@ -78,7 +78,7 @@ fun MapScreen(
         }
 
         else -> {
-            ResultContainerComposable(
+            ResultContent(
                 container = markersResult,
                 onTryAgain = { },
                 onSuccess = {
@@ -87,7 +87,7 @@ fun MapScreen(
                         is MapScreenMode.ViewSingle -> markersResult.unwrap()
                             .filter { it.id == mode.placemarkId }
                     }
-                    PlacemarksMapComposable(
+                    PlacemarksMap(
                         placemarks = markers,
                         initialLatitude = initialLatitude,
                         initialLongitude = initialLongitude,

@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.sp
 import ru.hse.edu.placemarks.R
 import ru.hse.edu.placemarks.domain.entities.Placemark
 import ru.hse.locallense.common.ResultContainer
-import ru.hse.locallense.presentation.ResultContainerComposable
+import ru.hse.locallense.presentation.ResultContent
 import ru.hse.locallense.presentation.locals.LocalSpacing
 
 @Composable
@@ -26,7 +26,7 @@ fun PlacemarksColumn(
     onPlacemarkOpenOnMap: (Long) -> Unit,
     onPlacemarkOpenInAr: (Long) -> Unit
 ) {
-    ResultContainerComposable(
+    ResultContent(
         container = placemarks,
         onTryAgain = { },
         onSuccess = {

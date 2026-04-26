@@ -41,7 +41,7 @@ import ru.hse.locallense.common.entities.LocationData
 import ru.hse.locallense.components.theme.PlacemarkPalette
 
 @Composable
-fun ArGeoMarkerComposable(
+fun ArGeoMarker(
     arPlacemark: ArPlacemark,
     placementResult: ArGeoObjectPlacementResult?,
 ) {
@@ -241,7 +241,7 @@ private fun PhotoCard(name: String, photoPath: String, caption: String) {
 @Preview(showBackground = true, backgroundColor = 0xFF2B2B2B, name = "Pin · Far")
 @Composable
 private fun PreviewPinMarker() {
-    ArGeoMarkerComposable(
+    ArGeoMarker(
         arPlacemark = ArPlacemark(
             id = 1L,
             name = "Кафе «Место»",
@@ -262,7 +262,7 @@ private fun PreviewPinMarker() {
 @Preview(showBackground = true, backgroundColor = 0xFF2B2B2B, name = "Card · Close · Text (short)")
 @Composable
 private fun PreviewContentCardShort() {
-    ArGeoMarkerComposable(
+    ArGeoMarker(
         arPlacemark = ArPlacemark(
             id = 3L,
             name = "Заметка",
@@ -283,7 +283,7 @@ private fun PreviewContentCardShort() {
 @Preview(showBackground = true, backgroundColor = 0xFF2B2B2B, name = "Card · Close · Text (long)")
 @Composable
 private fun PreviewContentCardLong() {
-    ArGeoMarkerComposable(
+    ArGeoMarker(
         arPlacemark = ArPlacemark(
             id = 4L,
             name = "Историческая справка",

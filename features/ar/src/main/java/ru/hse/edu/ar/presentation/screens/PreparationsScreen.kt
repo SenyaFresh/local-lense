@@ -34,7 +34,7 @@ import ru.hse.edu.ar.presentation.components.heading.normalizeHeading
 import ru.hse.edu.ar.presentation.components.preparations.CompassCalibrationCard
 import ru.hse.edu.ar.presentation.components.preparations.HeadingInfoCard
 import ru.hse.edu.ar.presentation.components.preparations.LocationInfoCard
-import ru.hse.edu.ar.presentation.mapkit.LocationPickerComposable
+import ru.hse.edu.ar.presentation.mapkit.LocationPicker
 import ru.hse.locallense.components.composables.buttons.DefaultPrimaryButton
 import ru.hse.locallense.presentation.OnLoadingEffect
 
@@ -85,7 +85,7 @@ fun PreparationsScreen(
         )
 
         SlideInOverlay(visible = isMapVisible) {
-            LocationPickerComposable(
+            LocationPicker(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background),

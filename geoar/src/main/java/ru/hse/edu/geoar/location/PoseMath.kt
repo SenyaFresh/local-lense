@@ -1,7 +1,7 @@
 package ru.hse.edu.geoar.location
 
 import com.google.ar.core.Pose
-import ru.hse.edu.geoar.math.Dimens
+import ru.hse.edu.geoar.math.GeoConstants
 import ru.hse.locallense.common.entities.LocationData
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -37,8 +37,8 @@ internal fun poseToLocation(
     val eastMeters = forward * sinH + right * cosH
     val northMeters = forward * cosH - right * sinH
 
-    val deltaLat = northMeters / Dimens.metersPerDegreeLatitude()
-    val metersPerDegLon = Dimens.metersPerDegreeLongitude(initialLocation.latitude)
+    val deltaLat = northMeters / GeoConstants.metersPerDegreeLatitude()
+    val metersPerDegLon = GeoConstants.metersPerDegreeLongitude(initialLocation.latitude)
     val deltaLon = if (metersPerDegLon != 0.0) eastMeters / metersPerDegLon else 0.0
 
     return LocationData(

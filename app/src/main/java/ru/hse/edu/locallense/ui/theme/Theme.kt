@@ -101,7 +101,6 @@ fun LocalLenseTheme(
         else -> lightScheme
     }
 
-    // Matches status bar color with background.
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {

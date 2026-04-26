@@ -61,11 +61,11 @@ fun PlacemarksScreen(
     val selectedSortType by viewModel.sortType.collectAsState()
     val currentSearchText by viewModel.searchQuery.collectAsState()
 
-    var showAddMethodDialog by remember { mutableStateOf(false) }
+    var isAddMethodDialogVisible by remember { mutableStateOf(false) }
 
-    if (showAddMethodDialog) {
+    if (isAddMethodDialogVisible) {
         AddPlacemarkMethodDialog(
-            onDismiss = { showAddMethodDialog = false },
+            onDismiss = { isAddMethodDialogVisible = false },
             onAddOnMap = onAddNewPlacemarkOnMap,
             onAddInAr = onAddNewPlacemarkInAr,
         )
@@ -86,7 +86,7 @@ fun PlacemarksScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         AddFloatingActionButton(
-            onClick = { showAddMethodDialog = true },
+            onClick = { isAddMethodDialogVisible = true },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(LocalSpacing.current.medium)

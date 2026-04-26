@@ -17,15 +17,14 @@ import kotlinx.coroutines.delay
 import ru.hse.locallense.common.Core
 import ru.hse.locallense.common.ResultContainer
 
-
 /**
- * Represents a container that can:
- * - show progress bar when [container] is [ResultContainer.Loading];
- * - show error when [container] is [ResultContainer.Error] and button to handle error;
- * - show [onSuccess] composable when [container] is [ResultContainer.Done].
+ * Renders [container] as one of three states:
+ * - [ResultContainer.Loading] — delayed spinner via [onLoading];
+ * - [ResultContainer.Error] — friendly error with retry button calling [onTryAgain];
+ * - [ResultContainer.Done] — [onSuccess] body.
  */
 @Composable
-fun ResultContainerComposable(
+fun ResultContent(
     container: ResultContainer<*>,
     onTryAgain: () -> Unit,
     modifier: Modifier = Modifier,

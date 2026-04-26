@@ -20,7 +20,7 @@ import ru.hse.edu.ar.di.ArDiContainer
 import ru.hse.edu.ar.di.rememberArDiContainer
 import ru.hse.edu.ar.domain.entities.ArPlacemark
 import ru.hse.edu.ar.presentation.components.AddPlacemarkDialog
-import ru.hse.edu.ar.presentation.components.ArGeoMarkerComposable
+import ru.hse.edu.ar.presentation.components.ArGeoMarker
 import ru.hse.edu.ar.presentation.events.PlacemarkEvent
 import ru.hse.edu.ar.presentation.viewmodels.ArViewModel
 import ru.hse.edu.geoar.ar.ArGeoEngine
@@ -29,7 +29,7 @@ import ru.hse.edu.geoar.ar.ArGeoObject
 import ru.hse.edu.geoar.ar.ArGeoObjectPlacementResult
 import ru.hse.edu.geoar.ar.ArTapResult
 import ru.hse.locallense.components.composables.sceneview.createComposeViewNode
-import ru.hse.locallense.presentation.ResultContainerComposable
+import ru.hse.locallense.presentation.ResultContent
 
 sealed class ArScreenMode {
     data object ViewAll : ArScreenMode()
@@ -87,7 +87,7 @@ fun ArScreen(
         }
 
         else -> {
-            ResultContainerComposable(
+            ResultContent(
                 container = markersResult,
                 onTryAgain = { },
                 onSuccess = {
@@ -172,7 +172,7 @@ private fun placeMarker(
     val placementResult = mutableStateOf<ArGeoObjectPlacementResult?>(null)
 
     val viewNode = sceneView.createComposeViewNode(activity) {
-        ArGeoMarkerComposable(marker, placementResult.value)
+        ArGeoMarker(marker, placementResult.value)
     }
 
     val arGeoObject = ArGeoObject(

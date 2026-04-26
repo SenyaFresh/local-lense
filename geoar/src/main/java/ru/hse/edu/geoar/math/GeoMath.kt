@@ -3,7 +3,7 @@ package ru.hse.edu.geoar.math
 import com.google.ar.core.Pose
 import io.github.sceneview.node.Node
 import ru.hse.edu.geoar.ar.ArGeoObject
-import ru.hse.edu.geoar.math.Dimens.EARTH_RADIUS_METERS
+import ru.hse.edu.geoar.math.GeoConstants.EARTH_RADIUS_METERS
 import ru.hse.locallense.common.entities.LocationData
 import kotlin.math.atan2
 import kotlin.math.cos

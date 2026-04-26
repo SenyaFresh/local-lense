@@ -25,7 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ru.hse.edu.ar.R
-import ru.hse.edu.ar.presentation.mapkit.formatCoordinates
+import ru.hse.edu.ar.presentation.format.formatCoordinates
 
 @Composable
 internal fun LocationInfoCard(

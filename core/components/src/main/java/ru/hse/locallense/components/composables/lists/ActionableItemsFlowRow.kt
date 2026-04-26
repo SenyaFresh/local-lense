@@ -18,7 +18,7 @@ import ru.hse.locallense.components.composables.items.ActionableListItem
 import ru.hse.locallense.components.composables.items.LoadingActionableListItem
 import ru.hse.locallense.components.entities.ActionableItem
 import ru.hse.locallense.presentation.ErrorMessage
-import ru.hse.locallense.presentation.ResultContainerComposable
+import ru.hse.locallense.presentation.ResultContent
 import ru.hse.locallense.presentation.locals.LocalSpacing
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -44,7 +44,7 @@ fun ActionableItemsFlowRow(
             )
         }
     } else {
-        ResultContainerComposable(
+        ResultContent(
             container = items,
             onTryAgain = onReloadItems,
             onLoading = {

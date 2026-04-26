@@ -1,8 +1,8 @@
 package ru.hse.edu.geoar.location
 
-import ru.hse.edu.geoar.math.Dimens.STEP_LENGTH_METERS
-import ru.hse.edu.geoar.math.Dimens.metersPerDegreeLatitude
-import ru.hse.edu.geoar.math.Dimens.metersPerDegreeLongitude
+import ru.hse.edu.geoar.math.GeoConstants.STEP_LENGTH_METERS
+import ru.hse.edu.geoar.math.GeoConstants.metersPerDegreeLatitude
+import ru.hse.edu.geoar.math.GeoConstants.metersPerDegreeLongitude
 import ru.hse.locallense.common.entities.LocationData
 import kotlin.math.cos
 import kotlin.math.pow

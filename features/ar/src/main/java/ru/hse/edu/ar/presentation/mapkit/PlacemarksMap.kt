@@ -62,7 +62,7 @@ import ru.hse.edu.ar.R
 import ru.hse.edu.ar.domain.entities.ArPlacemark
 
 @Composable
-fun PlacemarksMapComposable(
+fun PlacemarksMap(
     modifier: Modifier = Modifier,
     placemarks: List<ArPlacemark> = emptyList(),
     initialLatitude: Double,
