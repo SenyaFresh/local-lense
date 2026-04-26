@@ -4,9 +4,11 @@ import com.google.ar.core.Plane
 import com.google.ar.core.TrackingState
 import io.github.sceneview.ar.ARSceneView
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import ru.hse.edu.geoar.location.ArFrameData
 import ru.hse.edu.geoar.location.ArPoseLocationTracker
 import ru.hse.edu.geoar.math.GeoMath
@@ -43,6 +45,7 @@ class ArGeoEngine(
     ).also { ArGeoFactory.activeArPoseLocationTracker = it }
     private val controllers = CopyOnWriteArrayList<ArGeoObjectController>()
     private var isRunning = false
+    private var visibilityJob: Job? = null
 
     private val _placedMarkers = MutableStateFlow<List<PlacedMarkerSnapshot>>(emptyList())
     val placedMarkers: StateFlow<List<PlacedMarkerSnapshot>> = _placedMarkers.asStateFlow()
@@ -93,6 +96,7 @@ class ArGeoEngine(
     fun place(arGeoObject: ArGeoObject): StateFlow<ArGeoObjectPlacementResult?> {
         val controller = ArGeoObjectController(arGeoObject)
         controllers.add(controller)
+        arGeoObject.node.isVisible = false
         sceneView.addChildNode(arGeoObject.node)
         ensureRunning()
         return controller.info
@@ -124,6 +128,15 @@ class ArGeoEngine(
         isRunning = true
         arPoseLocationTracker.onFrameUpdate = { frameData -> processFrame(frameData) }
         arPoseLocationTracker.start()
+        visibilityJob = scope.launch {
+            arPoseLocationTracker.trackingState.collect { state ->
+                if (state != TrackingState.TRACKING) {
+                    for (controller in controllers) {
+                        controller.arGeoObject.node.isVisible = false
+                    }
+                }
+            }
+        }
     }
 
     private fun processFrame(frameData: ArFrameData) {
@@ -154,6 +167,8 @@ class ArGeoEngine(
 
     fun stop() {
         isRunning = false
+        visibilityJob?.cancel()
+        visibilityJob = null
         arPoseLocationTracker.onFrameUpdate = null
         arPoseLocationTracker.stop()
         if (ArGeoFactory.activeArPoseLocationTracker === arPoseLocationTracker) {

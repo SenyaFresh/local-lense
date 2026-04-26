@@ -54,6 +54,7 @@ fun ArGeoMarker(
         PinMarker(
             name = arPlacemark.name,
             distanceMeters = distance,
+            dotColor = arPlacemark.color,
         )
         return
     }
@@ -62,16 +63,19 @@ fun ArGeoMarker(
         is ArPlacemark.Type.Text -> ContentCard(
             name = arPlacemark.name,
             text = type.text,
+            dotColor = arPlacemark.color,
         )
         is ArPlacemark.Type.TextPhoto -> PhotoCard(
             name = arPlacemark.name,
             photoPath = type.photoPath,
             caption = type.text,
+            dotColor = arPlacemark.color,
         )
         is ArPlacemark.Type.Simple,
         is ArPlacemark.Type.Photo -> PinMarker(
             name = arPlacemark.name,
             distanceMeters = distance,
+            dotColor = arPlacemark.color,
         )
     }
 }
@@ -80,6 +84,7 @@ fun ArGeoMarker(
 private fun PinMarker(
     name: String,
     distanceMeters: Double,
+    dotColor: Color,
 ) {
     Row(
         modifier = Modifier
@@ -91,7 +96,7 @@ private fun PinMarker(
         Box(
             modifier = Modifier
                 .size(10.dp)
-                .background(PlacemarkPalette.Default, CircleShape),
+                .background(dotColor, CircleShape),
         )
         Spacer(Modifier.width(8.dp))
         Text(
@@ -112,7 +117,7 @@ private fun PinMarker(
 }
 
 @Composable
-private fun ContentCard(name: String, text: String) {
+private fun ContentCard(name: String, text: String, dotColor: Color) {
     Column(
         modifier = Modifier
             .widthIn(min = 160.dp, max = 260.dp)
@@ -124,7 +129,7 @@ private fun ContentCard(name: String, text: String) {
             Box(
                 modifier = Modifier
                     .size(8.dp)
-                    .background(PlacemarkPalette.Default, CircleShape),
+                    .background(dotColor, CircleShape),
             )
             Spacer(Modifier.width(8.dp))
             Text(
@@ -159,7 +164,7 @@ private fun ContentCard(name: String, text: String) {
 }
 
 @Composable
-private fun PhotoCard(name: String, photoPath: String, caption: String) {
+private fun PhotoCard(name: String, photoPath: String, caption: String, dotColor: Color) {
     val bitmap = remember(photoPath) {
         runCatching {
             val file = File(photoPath)
@@ -182,7 +187,7 @@ private fun PhotoCard(name: String, photoPath: String, caption: String) {
             Box(
                 modifier = Modifier
                     .size(6.dp)
-                    .background(PlacemarkPalette.Default, CircleShape),
+                    .background(dotColor, CircleShape),
             )
             Spacer(Modifier.width(6.dp))
             Text(
@@ -311,5 +316,6 @@ private fun PreviewPhotoCard() {
         name = "Любимое место",
         photoPath = "",
         caption = "Здесь мы пили кофе зимним утром.",
+        dotColor = PlacemarkPalette.Default,
     )
 }

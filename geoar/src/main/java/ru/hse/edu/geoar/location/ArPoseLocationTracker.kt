@@ -55,6 +55,9 @@ class ArPoseLocationTracker(
     private val _effectiveUserHeading = MutableStateFlow<Float?>(null)
     val effectiveUserHeading: StateFlow<Float?> = _effectiveUserHeading.asStateFlow()
 
+    private val _trackingState = MutableStateFlow<TrackingState?>(null)
+    val trackingState: StateFlow<TrackingState?> = _trackingState.asStateFlow()
+
     val isHeadingLocked: Boolean get() = headingLocked
 
     var onFrameUpdate: ((ArFrameData) -> Unit)? = null
@@ -90,6 +93,8 @@ class ArPoseLocationTracker(
         headingLocked = false
         _effectiveUserLocation.value = null
         _effectiveUserHeading.value = null
+        _trackingState.value = null
+        lastTrackingState = null
     }
 
     fun forceHeading(heading: Float) {
@@ -125,6 +130,7 @@ class ArPoseLocationTracker(
         val camera = frame.camera
         val pose = camera.pose
         val trackingState = camera.trackingState
+        _trackingState.value = trackingState
 
         val previousState = lastTrackingState
         lastTrackingState = trackingState
@@ -133,6 +139,7 @@ class ArPoseLocationTracker(
             TrackingState.TRACKING -> {
                 lastPose = pose
                 if (!warmup.isCommitted && warmup.shouldCommit()) commitAnchor(pose)
+                emitFrameIfReady(frame, pose)
             }
             TrackingState.PAUSED -> Unit
             TrackingState.STOPPED -> {
@@ -145,8 +152,6 @@ class ArPoseLocationTracker(
                 clearAnchor()
             }
         }
-
-        if (trackingState == TrackingState.TRACKING) emitFrameIfReady(frame, pose)
     }
 
     private fun commitAnchor(pose: Pose) {
