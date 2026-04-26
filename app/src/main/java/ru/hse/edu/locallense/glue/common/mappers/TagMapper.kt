@@ -1,4 +1,4 @@
-package ru.hse.edu.locallense.glue.ar.mappers
+package ru.hse.edu.locallense.glue.common.mappers
 
 import ru.hse.edu.placemarks.entities.TagDataEntity
 import ru.hse.locallense.common.entities.Tag

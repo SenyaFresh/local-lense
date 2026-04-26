@@ -3,8 +3,8 @@ package ru.hse.edu.locallense.glue.placemarks.repositories
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import ru.hse.edu.locallense.glue.ar.mappers.toTag
-import ru.hse.edu.locallense.glue.ar.mappers.toTagDataEntity
+import ru.hse.edu.locallense.glue.common.mappers.toTag
+import ru.hse.edu.locallense.glue.common.mappers.toTagDataEntity
 import ru.hse.edu.locallense.glue.photo.PlacemarkPhotoCleanup
 import ru.hse.edu.locallense.glue.placemarks.mappers.toPlacemark
 import ru.hse.edu.placemarks.domain.entities.Placemark

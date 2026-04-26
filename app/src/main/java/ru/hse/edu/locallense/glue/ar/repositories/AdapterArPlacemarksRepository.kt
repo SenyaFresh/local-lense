@@ -6,8 +6,8 @@ import ru.hse.edu.ar.domain.entities.ArPlacemark
 import ru.hse.edu.ar.domain.repositories.ArPlacemarksRepository
 import ru.hse.edu.locallense.glue.ar.mappers.toArPlacemark
 import ru.hse.edu.locallense.glue.ar.mappers.toPlacemarkWithTags
-import ru.hse.edu.locallense.glue.ar.mappers.toTag
-import ru.hse.edu.locallense.glue.ar.mappers.toTagDataEntity
+import ru.hse.edu.locallense.glue.common.mappers.toTag
+import ru.hse.edu.locallense.glue.common.mappers.toTagDataEntity
 import ru.hse.edu.locallense.glue.photo.PlacemarkPhotoCleanup
 import ru.hse.edu.placemarks.repositories.PlacemarksDataRepository
 import ru.hse.locallense.common.ResultContainer
